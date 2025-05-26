@@ -13,7 +13,7 @@ def main() -> None:
 
     #this uses the file as a tileset
     tileset = tcod.tileset.load_tilesheet(
-        "dejavu10x10_gs_tc.png", 32,8, tcod.tileset.CHARMAP_TCOD
+        "Res/dejavu10x10_gs_tc.png", 32,8, tcod.tileset.CHARMAP_TCOD
     )
     event_handler = EventHandler()
     #this creates the screen (the game window)
