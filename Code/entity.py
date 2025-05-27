@@ -1,43 +1,59 @@
 from __future__ import annotations
 
 import copy
-from typing import Tuple
-from typing import Tuple, TypeVar, TYPE_CHECKING
+from typing import Optional, Tuple, TypeVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
-   from game_map import GameMap
+    from game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
 
+
 class Entity:
-    #this is a generic class to represent every entity in game
-    #the player enemies items etc.
+    # this is a generic class to represent every entity in game
+    # the player enemies items etc.
+    gamemap: GameMap
 
     def __init__(
-            self,
-            x: int = 0,
-            y: int = 0,
-            char: str = "?",
-            color:Tuple[int,int,int] = (255,255,255),
-            name: str = "<unnamed>",
-            blockes_movement: bool = False,
-            ):
-        #set object variables
-        self.x = x #cords of entity
+        self,
+        gamemap: Optional[GameMap] = None,
+        x: int = 0,
+        y: int = 0,
+        char: str = "?",
+        color: Tuple[int, int, int] = (255, 255, 255),
+        name: str = "<unnamed>",
+        blockes_movement: bool = False,
+    ):
+        # set object variables
+        self.x = x  # cords of entity
         self.y = y
-        self.char = char #this is the character that represents the entity (player = @)
-        self.color = color #color of entity
-        self.name = name #name of entity
-        self.blocks_movement = blockes_movement #blocks or does not block movement
+        self.char = (
+            char  # this is the character that represents the entity (player = @)
+        )
+        self.color = color  # color of entity
+        self.name = name  # name of entity
+        self.blocks_movement = blockes_movement  # blocks or does not block movement
+        if gamemap:
+            self.gamemap = gamemap
+            gamemap.entities.add(self)
 
-    def spawn(self:T,gamemap: GameMap, x:int, y:int)->T:
+    def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
         clone = copy.deepcopy(self)
         clone.x = x
         clone.y = y
+        clone.gamemap = gamemap
         gamemap.entities.add(clone)
         return clone
 
-    def move(self, dx:int,dy: int) -> None:
+    def place(self, x: int, y: int, gamemap: Optional[GameMap] = None) -> None:
+        self.x = x
+        self.y = y
+        if gamemap:
+            if hasattr(self, "gamemap"):
+                self.gamemap.entities.remove(self)
+            self.gamemap = gamemap
+            gamemap.entities.add(self)
+
+    def move(self, dx: int, dy: int) -> None:
         self.x += dx
         self.y += dy
-        
