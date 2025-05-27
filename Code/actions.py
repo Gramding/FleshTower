@@ -30,7 +30,7 @@ class MeleeAction(ActionWithDirection):
         target = engine.game_map.get_blocking_entity_at_location(dest_x,dest_y)
         if not target:
             return
-        print(f"You kick the{target.name}, its furous!!!")
+        print(f"You kick the {target.name}, its angry!!!")
 
 class MovementAction(ActionWithDirection):
 
