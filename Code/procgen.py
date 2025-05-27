@@ -3,6 +3,7 @@ from typing import Tuple, List, Iterator, TYPE_CHECKING
 from game_map import GameMap
 import tile_types
 import tcod
+import entity_factory
 import random
 if TYPE_CHECKING:
     from entity import Entity
@@ -36,6 +37,23 @@ class RectangularRoom:
             and self.y1 <= other.y2
             and self.y2 >= other.y1
         )
+    
+def place_entities(
+        room:RectangularRoom, dungeon: GameMap, maximum_monsters: int,
+)->None:
+    #choose random number of monsters
+    number_of_monsters = random.randint(0,maximum_monsters)
+    #iterate for each monster to be palced
+    for i in range(number_of_monsters):
+        #get random positions of monster
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+
+        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            if random.random() < 0.8:
+                entity_factory.orc.spawn(dungeon,x,y)
+            else:
+                entity_factory.troll.spawn(dungeon,x,y)
 
 def tunnel_between(
         start: Tuple[int, int], end: Tuple[int, int]
@@ -61,10 +79,11 @@ def generate_dungeon(
         room_max_size: int, #max size of a room in dungeon
         map_width: int, #width of map
         map_height: int, #height of map
+        max_monsters_per_room: int,
         player: Entity, #player entity
 )->GameMap:
     #create new dungeon
-    dungeon = GameMap(map_width,map_height)
+    dungeon = GameMap(map_width,map_height,entities=[player])
     #this is a runnning list of all the rooms generated
     rooms: List[RectangularRoom] = []
     #iterate from 0 to max_rooms
@@ -92,6 +111,8 @@ def generate_dungeon(
             #with negative index to get previos room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x,y] = tile_types.floor
+
+        place_entities(new_room, dungeon, max_monsters_per_room)
         #room is build sucessfully and appended
         rooms.append(new_room)
     return dungeon

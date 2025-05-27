@@ -1,15 +1,41 @@
+from __future__ import annotations
+
+import copy
 from typing import Tuple
+from typing import Tuple, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+   from game_map import GameMap
+
+T = TypeVar("T", bound="Entity")
 
 class Entity:
     #this is a generic class to represent every entity in game
     #the player enemies items etc.
 
-    def __init__(self,x: int,y: int, char: str, color:Tuple[int,int,int]):
+    def __init__(
+            self,
+            x: int = 0,
+            y: int = 0,
+            char: str = "?",
+            color:Tuple[int,int,int] = (255,255,255),
+            name: str = "<unnamed>",
+            blockes_movement: bool = False,
+            ):
         #set object variables
         self.x = x #cords of entity
         self.y = y
         self.char = char #this is the character that represents the entity (player = @)
         self.color = color #color of entity
+        self.name = name #name of entity
+        self.blocks_movement = blockes_movement #blocks or does not block movement
+
+    def spawn(self:T,gamemap: GameMap, x:int, y:int)->T:
+        clone = copy.deepcopy(self)
+        clone.x = x
+        clone.y = y
+        gamemap.entities.add(clone)
+        return clone
 
     def move(self, dx:int,dy: int) -> None:
         self.x += dx
