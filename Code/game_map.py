@@ -7,10 +7,7 @@ class GameMap:
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        self.tiles = np.full((width,height), fill_value= tile_types.floor , order="F")
-        #this fundamentally creates a wall  in game
-        #the cords are from 10:33, on y axis 10
-        self.tiles[10:33,10] = tile_types.wall
+        self.tiles = np.full((width,height), fill_value= tile_types.wall , order="F")
 
     def in_bounds(self, x:int, y:int)-> bool:
         #returns true if give x and y are within the maps boundaries
