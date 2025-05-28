@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import tcod
+import color
 import copy
 from engine import Engine
 from input_handlers import EventHandler
@@ -13,7 +14,7 @@ def main() -> None:
     screen_height = 50
 
     map_width = 80
-    map_height = 45
+    map_height = 43
 
     room_max_size = 10
     room_min_size = 6
@@ -38,6 +39,9 @@ def main() -> None:
         engine=engine,
     )
     engine.update_fov()
+    engine.message_log.add_message(
+        "Hey welcome to another floor of the Flesh Tower", color.welcome_text
+    )
     # this creates the screen (the game window)
     # screen size and name are passed
     # the with expression is used for resource management
@@ -48,8 +52,11 @@ def main() -> None:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         # the game loop
         while True:
-            engine.render(console=root_console, context=context)
-            engine.event_handler.handle_events()
+            root_console.clear()
+            engine.event_handler.on_render(console=root_console)
+            context.present(root_console)
+            # engine.render(console=root_console, context=context)
+            engine.event_handler.handle_events(context)
 
 
 # this exits so that programm is run exlusivly through this file
