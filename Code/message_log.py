@@ -39,7 +39,7 @@ class MessageLog:
 
     def render(
         self,
-        console: tcod.Console,
+        console: tcod.console.Console,
         x: int,
         y: int,
         width: int,
@@ -49,7 +49,7 @@ class MessageLog:
 
     @staticmethod
     def render_messages(
-        console: tcod.console,
+        console: tcod.console.Console,
         x: int,
         y: int,
         width: int,
