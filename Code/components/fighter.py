@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
+    parent: Actor
+
     def __init__(self, hp: int, defense: int, power: int):
         self.max_hp = hp
         self._hp = hp
@@ -26,23 +28,42 @@ class Fighter(BaseComponent):
         # this enshures that HP can never be negative
         # and never more than maximum
         self._hp = max(0, min(value, self.max_hp))
-        if self._hp == 0 and self.entity.ai:
+        if self._hp == 0 and self.parent.ai:
             self.die()
 
     def die(self) -> None:
-        if self.engine.player is self.entity:
+        if self.engine.player is self.parent:
             death_message = "You died!"
             death_message_color = color.player_die
             self.engine.event_handler = GameOverEventHandler(self.engine)
         else:
-            death_message = f"{self.entity.name} is dead!"
+            death_message = f"{self.parent.name} is dead!"
             death_message_color = color.enemy_die
 
-        self.entity.char = "%"
-        self.entity.color = (191, 0, 0)
-        self.entity.blocks_movement = False
-        self.entity.ai = None
-        self.entity.name = f"remains of {self.entity.name}"
-        self.entity.render_order = RenderOrder.CORPSE
+        self.parent.char = "%"
+        self.parent.color = (191, 0, 0)
+        self.parent.blocks_movement = False
+        self.parent.ai = None
+        self.parent.name = f"remains of {self.parent.name}"
+        self.parent.render_order = RenderOrder.CORPSE
 
         self.engine.message_log.add_message(death_message, death_message_color)
+
+    def heal(self, amount: int) -> int:
+        # check if at full HP
+        if self.hp == self.max_hp:
+            return 0
+        # calc new hp value
+        new_hp_value = self.hp + amount
+        # if larger than max set to max
+        if new_hp_value > self.max_hp:
+            new_hp_value = self.max_hp
+        # amount healed
+        amount_recovered = new_hp_value - self.hp
+        # set HP
+        self.hp = new_hp_value
+
+        return amount_recovered
+
+    def take_damage(self, amount: int) -> None:
+        self.hp -= amount
