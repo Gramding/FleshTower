@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Tuple, Callable
 import tcod
 import actions
 from actions import Action, BumpAction, WaitAction, PickupAction
@@ -45,6 +45,11 @@ WAIT_KEYS = {
     tcod.event.KeySym.PERIOD,
     tcod.event.KeySym.KP_5,
     tcod.event.KeySym.CLEAR,
+}
+
+CONFIRM_KEYS = {
+    tcod.event.KeySym.RETURN,
+    tcod.event.KeySym.KP_ENTER,
 }
 
 
@@ -181,6 +186,95 @@ class InventoryDropHandler(InventoryEventHandler):
         return actions.DropItem(self.engine.player, item)
 
 
+class SelectIndexHandler(AskUserEventHandler):
+    def __init__(self, engine):
+        super().__init__(engine)
+        player = self.engine.player
+        engine.mouse_location = player.x, player.y
+
+    def on_render(self, console):
+        super().on_render(console)
+        x, y = self.engine.mouse_location
+        console.rgb["bg"][x, y] = color.white
+        console.rgb["fg"][x, y] = color.black
+
+    def ev_keydown(self, event):
+        key = event.sym
+        if key in MOVE_KEYS:
+            modifier = 1
+            if event.mod & (tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT):
+                modifier *= 5
+            if event.mod & (tcod.event.KeySym.LCTRL | tcod.event.KeySym.RCTRL):
+                modifier *= 10
+            if event.mod & (tcod.event.KeySym.LALT | tcod.event.KeySym.RALT):
+                modifier *= 20
+
+            x, y = self.engine.mouse_location
+
+            dx, dy = MOVE_KEYS[key]
+            x += dx * modifier
+            y += dy * modifier
+            x = max(0, min(x, self.engine.game_map.width - 1))
+            y = max(0, min(y, self.engine.game_map.height - 1))
+            self.engine.mouse_location = x, y
+            return None
+        elif key in CONFIRM_KEYS:
+            return self.on_index_selected(*self.engine.mouse_location)
+        return super().ev_keydown(event)
+
+    def ev_mousebuttondown(self, event):
+        if self.engine.game_map.in_bounds(*event.tile):
+            if event.button == 1:
+                return self.on_index_selected(*event.tile)
+        return super().ev_mousebuttondown(event)
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        raise NotImplementedError()
+
+
+class LookHandler(SelectIndexHandler):
+    def on_index_selected(self, x, y):
+        self.engine.event_handler = MainGameEventHandler(self.engine)
+
+
+class SingleRangedAttackHandler(SelectIndexHandler):
+    def __init__(
+        self, engine, callback: Callable[[Tuple[int, int]]]
+    ) -> Optional[Action]:
+        super().__init__(engine)
+        self.callback = callback
+
+    def on_index_selected(self, x, y) -> Optional[Action]:
+        return self.callback((x, y))
+
+
+class AreaRangedAttackHandler(SelectIndexHandler):
+    def __init__(
+        self,
+        engine: Engine,
+        radius: int,
+        callback: Callable[[Tuple[int, int]], Optional[Action]],
+    ):
+        super().__init__(engine)
+        self.radius = radius
+        self.callback = callback
+
+    def on_render(self, console):
+        super().on_render(console)
+        x, y = self.engine.mouse_location
+        console.draw_frame(
+            x=x - self.radius - 1,
+            y=y - self.radius - 1,
+            width=self.radius**2,
+            height=self.radius**2,
+            fg=color.red,
+            clear=False,
+        )
+
+    def on_index_selected(self, x, y):
+        return self.callback((x, y))
+
+
 class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         action: Optional[Action] = None
@@ -205,6 +299,8 @@ class MainGameEventHandler(EventHandler):
             self.engine.event_handler = InventoryActivateHandler(self.engine)
         elif key == tcod.event.KeySym.d:
             self.engine.event_handler = InventoryDropHandler(self.engine)
+        elif key == tcod.event.KeySym.SLASH:
+            self.engine.event_handler = LookHandler(self.engine)
 
         # No valid key was pressed
         return action

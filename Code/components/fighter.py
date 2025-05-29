@@ -65,5 +65,6 @@ class Fighter(BaseComponent):
 
         return amount_recovered
 
-    def take_damage(self, amount: int) -> None:
-        self.hp -= amount
+    def take_damage(self, amount: int) -> int:
+        self.hp -= amount - self.defense
+        return amount - self.defense
