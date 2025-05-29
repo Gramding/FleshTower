@@ -107,6 +107,7 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
+            return MainGameEventHandler(self.engine)
         return self
 
     def handle_action(self, action: Optional[Action]) -> bool:
