@@ -32,6 +32,17 @@ class WaitAction(Action):
         pass
 
 
+class TakeStairsAction(Action):
+    def perform(self):
+        if (self.entity.x, self.entity.y) == self.engine.game_map.upstairs_location:
+            self.engine.game_world.generate_floor()
+            self.engine.message_log.add_message(
+                "You go up the fleshy stairs", color.ascend
+            )
+        else:
+            raise exceptions.Impossible("No stairs here")
+
+
 class PickupAction(Action):
     def __init__(self, entity: Actor):
         super().__init__(entity)

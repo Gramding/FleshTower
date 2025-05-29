@@ -6,13 +6,14 @@ import pickle
 import traceback
 from typing import Optional
 
+from tcod import libtcodpy
 import tcod
 
 import color
 from engine import Engine
 import entity_factory
 import input_handlers
-from procgen import generate_dungeon
+from game_map import GameWorld
 
 background_image = tcod.image.load("Res/main_menu.png")[:, :, :3]
 
@@ -32,7 +33,8 @@ def new_game() -> Engine:
 
     engine = Engine(player=player)
 
-    engine.game_map = generate_dungeon(
+    engine.game_world = GameWorld(
+        engine=engine,
         max_rooms=max_rooms,
         room_min_size=room_min_size,
         room_max_size=room_max_size,
@@ -40,8 +42,8 @@ def new_game() -> Engine:
         map_height=map_height,
         max_monsters_per_room=max_monsters_per_room,
         max_items_per_room=max_items_per_room,
-        engine=engine,
     )
+    engine.game_world.generate_floor()
     engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
@@ -64,7 +66,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             console.height // 2 - 4,
             "FLESH TOWER",
             fg=color.menu_title,
-            alignment=tcod.CENTER,
+            alignment=libtcodpy.CENTER,
         )
 
         menu_width = 24
@@ -77,8 +79,8 @@ class MainMenu(input_handlers.BaseEventHandler):
                 text.ljust(menu_width),
                 fg=color.menu_text,
                 bg=color.black,
-                alignment=tcod.CENTER,
-                bg_blend=tcod.BKGND_ALPHA(64),
+                alignment=libtcodpy.CENTER,
+                bg_blend=libtcodpy.BKGND_ALPHA(64),
             )
 
     def ev_keydown(self, event):

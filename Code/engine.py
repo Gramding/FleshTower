@@ -10,7 +10,7 @@ from tcod.map import compute_fov
 
 import exceptions
 
-from game_map import GameMap
+from game_map import GameMap, GameWorld
 from message_log import MessageLog
 from render_functions import render_bar, render_names_at_mouse_location
 
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 class Engine:
     game_map: GameMap
+    game_world: GameWorld
 
     def __init__(self, player: Actor):
         self.message_log = MessageLog()

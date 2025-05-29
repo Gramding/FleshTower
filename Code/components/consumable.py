@@ -44,7 +44,7 @@ class HealingConsumable(Consumable):
 
         if amount_recovered > 0:
             self.engine.message_log.add_message(
-                f"You consume the {self.parent.name}, and recover {amount_recovered} HP!",
+                f"You drink a {self.parent.name}, and recover {amount_recovered} HP!",
                 color.health_recovered,
             )
             self.consume()
@@ -129,10 +129,6 @@ class ConfusionConsumable(Consumable):
 
     def get_action(self, consumer) -> SingleRangedAttackHandler:
         self.engine.message_log.add_message("Slect a target", color.needs_target)
-        self.engine.event_handler = SingleRangedAttackHandler(
-            self.engine,
-            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
-        )
         return SingleRangedAttackHandler(
             self.engine,
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),

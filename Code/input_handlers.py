@@ -61,6 +61,7 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         """Handle an event and return the next active event handler."""
         state = self.dispatch(event)
         if isinstance(state, BaseEventHandler):
+
             return state
         assert not isinstance(state, Action), f"{self!r} can not handle actions."
         return self
@@ -88,7 +89,7 @@ class PopupMessage(BaseEventHandler):
             self.text,
             fg=color.white,
             bg=color.black,
-            alignment=tcod.CENTER,
+            alignment=libtcodpy.CENTER,
         )
 
     def ev_keydown(self, event):
@@ -171,7 +172,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
+        width = len(self.TITLE) + 6
 
         console.draw_frame(
             x=x,
@@ -259,6 +260,7 @@ class SelectIndexHandler(AskUserEventHandler):
             return None
         elif key in CONFIRM_KEYS:
             return self.on_index_selected(*self.engine.mouse_location)
+
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(self, event) -> Optional[ActionOrHandler]:
@@ -319,8 +321,14 @@ class MainGameEventHandler(EventHandler):
         action: Optional[Action] = None
 
         key = event.sym
+        modifier = event.mod
 
         player = self.engine.player
+
+        if key == tcod.event.KeySym.PERIOD and modifier & (
+            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        ):
+            return actions.TakeStairsAction(player)
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
@@ -342,6 +350,7 @@ class MainGameEventHandler(EventHandler):
             return LookHandler(self.engine)
 
         # No valid key was pressed
+        # action = None
         return action
 
 
