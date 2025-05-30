@@ -32,10 +32,10 @@ class Fighter(BaseComponent):
 
     def die(self) -> None:
         if self.engine.player is self.parent:
-            death_message = "You died!"
+            death_message = "Your flesh becomes part of the tower"
             death_message_color = color.player_die
         else:
-            death_message = f"{self.parent.name} is dead!"
+            death_message = f"{self.parent.name} returns to the tower"
             death_message_color = color.enemy_die
 
         self.parent.char = "%"
@@ -46,6 +46,7 @@ class Fighter(BaseComponent):
         self.parent.render_order = RenderOrder.CORPSE
 
         self.engine.message_log.add_message(death_message, death_message_color)
+        self.engine.player.level.add_xp(self.parent.level.xp_given)
 
     def heal(self, amount: int) -> int:
         # check if at full HP

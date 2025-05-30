@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 import color
 
 if TYPE_CHECKING:
@@ -33,6 +33,13 @@ def render_bar(
     console.print(
         x=1, y=45, string=f"HP:{current_value}/{maximum_value}", fg=color.bar_text
     )
+
+
+def render_tower_floor(
+    console: Console, tower_floor: int, location: Tuple[int, int]
+) -> None:
+    x, y = location
+    console.print(x=x, y=y, string=f"Tower floor: {tower_floor}")
 
 
 def render_names_at_mouse_location(
