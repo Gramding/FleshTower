@@ -24,7 +24,18 @@ class Action:
 
 class DropItem(Action):
     def perform(self):
+        if self.entity.equipment.item_is_equipped(self.item):
+            self.entity.equipment.toggle_equip(self.item)
         self.entity.inventory.drop(self.item)
+
+
+class EquipAction(Action):
+    def __init__(self, entity, item: Item):
+        super().__init__(entity)
+        self.item = item
+
+    def perform(self):
+        self.entity.equipment.toggle_equip(self.item)
 
 
 class WaitAction(Action):
@@ -81,7 +92,8 @@ class ItemAction(Action):
         return self.engine.game_map.get_actor_at_location(*self.target_xy)
 
     def perform(self) -> None:
-        self.item.consumable.activate(self)
+        if self.item.consumable:
+            self.item.consumable.activate(self)
 
 
 class ActionWithDirection(Action):
