@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
+from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union, List, Dict
+from components.effects import Effect
 
 from render_order import RenderOrder
 
@@ -80,6 +81,7 @@ class Entity:
 
 
 class Actor(Entity):
+
     def __init__(
         self,
         *,
@@ -113,6 +115,11 @@ class Actor(Entity):
         self.level.parent = self
         self.equipment: Equipment = equipment
         self.equipment.parent = self
+        # ---------------------------------------------#
+        # Let the Consumption begin
+        self.number_of_orcs_consumed = 0
+        self.number_of_trolls_consumed = 0
+        # ---------------------------------------------#
 
     @property
     def is_alive(self) -> bool:

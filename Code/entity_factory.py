@@ -5,6 +5,7 @@ from components import consumable, equippable
 from components.equipment import Equipment
 from entity import Actor, Item
 from components.level import Level
+import components.effects
 
 player = Actor(
     char="@",
@@ -26,6 +27,7 @@ orc = Actor(
     fighter=Fighter(hp=10, base_defense=0, base_power=3),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=35),
+    # consumption_effect=components.effects.OrcEffect(),
 )
 troll = Actor(
     char="t",

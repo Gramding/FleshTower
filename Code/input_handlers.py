@@ -201,6 +201,52 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
 
+class ConsumptionScreenEventHandler(AskUserEventHandler):
+    TITLE = "Corpses Consumed"
+
+    def on_render(self, console):
+        super().on_render(console)
+        number_of_consumption_attr = 0
+        for i in dir(self.engine.player):
+            if "number_of_" in i:
+                number_of_consumption_attr += 1
+        height = number_of_consumption_attr + 2
+
+        if height <= 3:
+            height = 3
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        width = len(self.TITLE) + 6
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        if number_of_consumption_attr > 0:
+            for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
+            for strung, i in enumerate(for_in):
+
+                console.print(
+                    x + 1,
+                    y + strung + 1,
+                    f"{i.replace("number_of_","").replace("_consumed","").capitalize()}: {getattr(self.engine.player,i)}",
+                )
+        else:
+            console.print(x + 1, y + 1, "(Empty)")
+
+
 class LevelUpEventHandler(AskUserEventHandler):
     TITLE = "Level Up"
 
@@ -453,6 +499,14 @@ class MainGameEventHandler(EventHandler):
         ):
             return actions.TakeStairsAction(player)
 
+        if key == tcod.event.KeySym.c and modifier & (
+            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        ):
+            return actions.ConsumeCorpseAction(player)
+
+        if key == tcod.event.KeySym.l:
+            return ConsumptionScreenEventHandler(self.engine)
+
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
             action = BumpAction(player, dx, dy)
@@ -540,3 +594,8 @@ class HistoryViewer(EventHandler):
         else:
             return MainGameEventHandler(self.engine)
         return None
+
+
+class CunsumptionEventHandler(EventHandler):
+    def __init__(self, engine):
+        super().__init__(engine)

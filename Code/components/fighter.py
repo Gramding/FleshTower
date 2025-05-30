@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import color
 from components.base_component import BaseComponent
 from render_order import RenderOrder
@@ -12,7 +12,13 @@ if TYPE_CHECKING:
 class Fighter(BaseComponent):
     parent: Actor
 
-    def __init__(self, hp: int, base_defense: int, base_power: int):
+    def __init__(
+        self,
+        hp: int,
+        base_defense: int,
+        base_power: int,
+        # consumption: Optional[ConsumeCorpse],
+    ):
         self.max_hp = hp
         self._hp = hp
         self.base_defense = base_defense

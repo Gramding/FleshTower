@@ -1,12 +1,21 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
 import exceptions
+
+from components.effects import Effect, OrcEffect, TrollEffect
 
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity, Item
+
+    # import components.effects
+
+consumption_dict: Dict[str, Effect] = {
+    "remains of Orc": OrcEffect(),
+    "remains of Troll": TrollEffect(),
+}
 
 
 class Action:
@@ -166,3 +175,18 @@ class BumpAction(ActionWithDirection):
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
             return MovementAction(self.entity, self.dx, self.dy).perform()
+
+
+class ConsumeCorpseAction(Action):
+    def perform(self):
+        for corpse in self.engine.game_map.entities:
+            if (
+                corpse.x == self.entity.x
+                and corpse.y == self.entity.y
+                and corpse != self.entity
+            ):
+                if not corpse.is_alive:
+                    # player is at location of corpse and enemy is dead!
+                    consumption_dict[corpse.name].activate(self.engine, corpse)
+                    return
+        raise exceptions.Impossible("No corpse here")
