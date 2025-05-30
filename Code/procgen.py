@@ -1,8 +1,9 @@
 from __future__ import annotations
-from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING
+from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
 from game_map import GameMap
 import tile_types
 import tcod
+import copy
 import entity_factory
 import random
 
@@ -109,6 +110,7 @@ def place_entities(
     room: RectangularRoom,
     dungeon: GameMap,
     floor_number: int,
+    boss: Optional[bool] = False,
 ) -> None:
     # choose random number of monsters and items
     number_of_monsters = random.randint(
@@ -129,6 +131,12 @@ def place_entities(
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             entity.spawn(dungeon, x, y)
+    if floor_number == 5 and boss:
+        entity_factory.lvl5_boss.spawn(
+            dungeon,
+            random.randint(room.x1 + 1, room.x2 - 1),
+            random.randint(room.y1 + 1, room.y2 - 1),
+        )
 
 
 def tunnel_between(
@@ -164,7 +172,10 @@ def generate_dungeon(
     # this is a runnning list of all the rooms generated
     rooms: List[RectangularRoom] = []
     center_of_last_room = (0, 0)
+    is_last_room = False
     # iterate from 0 to max_rooms
+    room_check = 0
+    boss = False
     for r in range(max_rooms):
         # randomly generate the size of the room
         room_width = random.randint(room_min_size, room_max_size)
@@ -178,20 +189,24 @@ def generate_dungeon(
         # check if current room intersects with other room already generated
         if any(new_room.intersects(other_room) for other_room in rooms):
             # continue (dont use this one and start anew)
+            room_check += 1
             continue
         # set tiles of room innter as floor
         dungeon.tiles[new_room.inner] = tile_types.floor
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
+            print(engine.game_world.current_floor)
+            player_spawn = new_room.center
         else:
             # now tunnels are built
             # with negative index to get previos room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.floor
             center_of_last_room = new_room.center
-
-        place_entities(new_room, dungeon, engine.game_world.current_floor)
+        if len(rooms) >= 8 and not boss:
+            boss = True
+        place_entities(new_room, dungeon, engine.game_world.current_floor, boss)
         dungeon.tiles[center_of_last_room] = tile_types.stairs_up
         dungeon.upstairs_location = center_of_last_room
         # room is build sucessfully and appended

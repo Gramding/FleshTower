@@ -52,11 +52,19 @@ class Engine:
             total_width=20,
         )
         render_functions.render_tower_floor(
-            console=console, tower_floor=self.game_world.current_floor, location=(0, 47)
+            console=console, tower_floor=self.game_world.current_floor, location=(0, 49)
         )
         render_functions.render_names_at_mouse_location(
             console=console, x=21, y=44, engine=self
         )
+
+        if self.player.is_mage:
+            render_functions.render_mana_bar(
+                console=console,
+                current_value=self.player.fighter.mana,
+                maximum_value=self.player.fighter.max_mana,
+                total_width=20,
+            )
 
     def save_as(self, filename: str) -> None:
         save_data = lzma.compress(pickle.dumps(self))

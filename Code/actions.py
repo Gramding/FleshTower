@@ -4,7 +4,14 @@ from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
 import exceptions
 
-from components.effects import Effect, OrcEffect, TrollEffect
+from components.effects import (
+    Effect,
+    OrcEffect,
+    TrollEffect,
+    Lvl5BossEffect,
+    LightningEffect,
+    HealthEffect,
+)
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -15,6 +22,9 @@ if TYPE_CHECKING:
 consumption_dict: Dict[str, Effect] = {
     "remains of Orc": OrcEffect(),
     "remains of Troll": TrollEffect(),
+    "remains of Weak Mage": Lvl5BossEffect(),
+    "Scroll of Lightning": LightningEffect(),
+    "Health Potion": HealthEffect(),
 }
 
 
@@ -185,8 +195,7 @@ class ConsumeCorpseAction(Action):
                 and corpse.y == self.entity.y
                 and corpse != self.entity
             ):
-                if not corpse.is_alive:
-                    # player is at location of corpse and enemy is dead!
-                    consumption_dict[corpse.name].activate(self.engine, corpse)
-                    return
+                # player is at location of corpse and enemy is dead!
+                consumption_dict[corpse.name].activate(self.engine, corpse)
+                return
         raise exceptions.Impossible("No corpse here")

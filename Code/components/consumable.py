@@ -91,7 +91,9 @@ class LightningDamageConsumable(Consumable):
         self.maximum_range = maximum_range
         self.fuck_around_find_out = 0
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(
+        self, action: actions.ItemAction, is_npc: Optional[bool] = False
+    ) -> None:
         consumer = action.entity
         target = None
         closest_distance = self.maximum_range + 1.0
@@ -110,7 +112,8 @@ class LightningDamageConsumable(Consumable):
             self.engine.message_log.add_message(
                 f"A bolt of lightning strikes {living_name} with a bang for {actual_damage} HP"
             )
-            self.consume()
+            if not is_npc:
+                self.consume()
         else:
             self.fuck_around_find_out += 1
             if self.fuck_around_find_out > 3:

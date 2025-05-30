@@ -35,6 +35,23 @@ def render_bar(
     )
 
 
+def render_mana_bar(
+    console: Console, current_value: int, maximum_value: int, total_width: int
+):
+    bar_width = int(float(current_value) / maximum_value * total_width)
+
+    console.draw_rect(x=0, y=47, width=total_width, height=1, ch=1, bg=color.bar_empty)
+
+    if bar_width > 0:
+        console.draw_rect(
+            x=0, y=47, width=bar_width, height=1, ch=1, bg=color.mana_bar_filled
+        )
+
+    console.print(
+        x=1, y=47, string=f"Mana:{current_value}/{maximum_value}", fg=color.bar_text
+    )
+
+
 def render_tower_floor(
     console: Console, tower_floor: int, location: Tuple[int, int]
 ) -> None:

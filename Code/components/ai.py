@@ -7,7 +7,15 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 import tcod
 
-from actions import Action, MeleeAction, MovementAction, WaitAction, BumpAction
+from actions import (
+    Action,
+    MeleeAction,
+    MovementAction,
+    WaitAction,
+    BumpAction,
+    ItemAction,
+)
+
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -85,3 +93,33 @@ class HostileEnemy(BaseAI):
             ).perform()
 
         return WaitAction(self.entity).perform()
+
+
+class HostileCaster(BaseAI):
+    def __init__(self, entity):
+        super().__init__(entity)
+        self.path: List[Tuple[int, int]] = []
+        self.spell_slots = 2
+
+    def perform(self):
+        target = self.engine.player
+        dx = target.x - self.entity.x
+        dy = target.y - self.entity.y
+        closest_distance = 10
+        distance = max(abs(dx), abs(dy))
+        for actor in self.engine.game_map.actors:
+            if (
+                actor.x != self.entity.x and actor.y != self.entity.y
+            ) and self.engine.game_map.visible[actor.x, actor.y]:
+                distance = self.entity.distance(actor.x, actor.y)
+
+                if distance < closest_distance:
+                    target = actor
+                    closest_distance = distance
+        if distance < 10 and self.spell_slots > 0:
+            # if target.
+            self.spell_slots -= 1
+            actual_damage = target.fighter.take_damage(8)
+            self.engine.message_log.add_message(
+                f"{self.entity.name} stikes you for {actual_damage} HP"
+            )

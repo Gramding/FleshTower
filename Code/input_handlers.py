@@ -236,12 +236,15 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
         )
         if number_of_consumption_attr > 0:
             for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
+            for attr in for_in:
+                if getattr(self.engine.player, attr) == 0:
+                    for_in.remove(attr)
             for strung, i in enumerate(for_in):
 
                 console.print(
                     x + 1,
                     y + strung + 1,
-                    f"{i.replace("number_of_","").replace("_consumed","").capitalize()}: {getattr(self.engine.player,i)}",
+                    f"{i.replace("number_of_","").replace("_consumed","").replace("_", " ").capitalize()}: {getattr(self.engine.player,i)}",
                 )
         else:
             console.print(x + 1, y + 1, "(Empty)")

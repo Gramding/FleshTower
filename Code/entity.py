@@ -115,10 +115,12 @@ class Actor(Entity):
         self.level.parent = self
         self.equipment: Equipment = equipment
         self.equipment.parent = self
+        self.is_mage = False
         # ---------------------------------------------#
         # Let the Consumption begin
         self.number_of_orcs_consumed = 0
         self.number_of_trolls_consumed = 0
+        self.number_of_weak_mages_consumed = 0
         # ---------------------------------------------#
 
     @property

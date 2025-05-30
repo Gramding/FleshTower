@@ -1,4 +1,4 @@
-from components.ai import HostileEnemy
+from components.ai import HostileEnemy, HostileCaster
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components import consumable, equippable
@@ -13,7 +13,7 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=1, base_power=2),
+    fighter=Fighter(hp=30, base_defense=20, base_power=2),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
 )
@@ -38,6 +38,17 @@ troll = Actor(
     fighter=Fighter(hp=16, base_defense=1, base_power=4),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
+)
+
+lvl5_boss = Actor(
+    char="m",
+    color=(0, 127, 50),
+    name="Weak Mage",
+    ai_cls=HostileCaster,
+    equipment=Equipment(),
+    fighter=Fighter(hp=30, base_defense=0, base_power=8),
+    inventory=Inventory(capacity=2),
+    level=Level(xp_given=1000),
 )
 
 health_potion = Item(

@@ -20,6 +20,8 @@ class Fighter(BaseComponent):
         # consumption: Optional[ConsumeCorpse],
     ):
         self.max_hp = hp
+        self.mana = 0
+        self.max_mana = 0
         self._hp = hp
         self.base_defense = base_defense
         self.base_power = base_power
