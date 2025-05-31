@@ -11,6 +11,9 @@ from components.effects import (
     Lvl5BossEffect,
     LightningEffect,
     HealthEffect,
+    ManaEffect,
+    FireballEffect,
+    ConfusionEffect,
 )
 
 if TYPE_CHECKING:
@@ -25,6 +28,9 @@ consumption_dict: Dict[str, Effect] = {
     "remains of Weak Mage": Lvl5BossEffect(),
     "Scroll of Lightning": LightningEffect(),
     "Health Potion": HealthEffect(),
+    "Mana Potion": ManaEffect(),
+    "Scroll of Fireball": FireballEffect(),
+    "Scroll of Confusion": ConfusionEffect(),
 }
 
 
@@ -39,13 +45,6 @@ class Action:
 
     def perform(self) -> None:
         raise NotImplementedError()
-
-
-class DropItem(Action):
-    def perform(self):
-        if self.entity.equipment.item_is_equipped(self.item):
-            self.entity.equipment.toggle_equip(self.item)
-        self.entity.inventory.drop(self.item)
 
 
 class EquipAction(Action):
@@ -113,6 +112,14 @@ class ItemAction(Action):
     def perform(self) -> None:
         if self.item.consumable:
             self.item.consumable.activate(self)
+
+
+class DropItem(ItemAction):
+    def perform(self):
+        if self.entity.equipment.item_is_equipped(self.item):
+            self.entity.equipment.toggle_equip(self.item)
+
+        self.entity.inventory.drop(self.item)
 
 
 class ActionWithDirection(Action):

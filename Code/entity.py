@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union, List, Dict
-from components.effects import Effect
 
 from render_order import RenderOrder
 
@@ -16,6 +15,7 @@ if TYPE_CHECKING:
     from components.inventory import Inventory
     from components.level import Level
     from game_map import GameMap
+    from components.spells import SpellBook
 
 T = TypeVar("T", bound="Entity")
 
@@ -94,6 +94,7 @@ class Actor(Entity):
         fighter: Fighter,
         equipment: Equipment,
         inventory: Inventory,
+        spellbook: SpellBook,
         level: Level,
     ):
         super().__init__(
@@ -116,11 +117,15 @@ class Actor(Entity):
         self.equipment: Equipment = equipment
         self.equipment.parent = self
         self.is_mage = False
+        self.spellbook: SpellBook = spellbook
         # ---------------------------------------------#
-        # Let the Consumption begin
+        # Let the Consumption begin Potions and such will not get tracked
         self.number_of_orcs_consumed = 0
         self.number_of_trolls_consumed = 0
         self.number_of_weak_mages_consumed = 0
+        self.number_of_scrolls_of_lightning_consumed = 0
+        self.number_of_scrolls_of_fireball_consumed = 0
+        self.number_of_scrolls_of_confusion_consumed = 0
         # ---------------------------------------------#
 
     @property

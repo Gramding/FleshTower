@@ -71,3 +71,8 @@ class Level(BaseComponent):
         self.engine.message_log.add_message("Your movements are getting swifter!")
 
         self.increase_level()
+
+    def increase_max_mana(self, amount: int = 10) -> None:
+        self.parent.fighter.max_mana += amount
+        self.engine.message_log.add_message("Your blood thickens with mana")
+        self.increase_level()

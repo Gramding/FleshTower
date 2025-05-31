@@ -5,7 +5,7 @@ from components import consumable, equippable
 from components.equipment import Equipment
 from entity import Actor, Item
 from components.level import Level
-import components.effects
+from components.spells import SpellBook
 
 player = Actor(
     char="@",
@@ -16,6 +16,7 @@ player = Actor(
     fighter=Fighter(hp=30, base_defense=20, base_power=2),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
+    spellbook=SpellBook(10),
 )
 
 orc = Actor(
@@ -27,7 +28,7 @@ orc = Actor(
     fighter=Fighter(hp=10, base_defense=0, base_power=3),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=35),
-    # consumption_effect=components.effects.OrcEffect(),
+    spellbook=SpellBook(0),
 )
 troll = Actor(
     char="t",
@@ -38,6 +39,7 @@ troll = Actor(
     fighter=Fighter(hp=16, base_defense=1, base_power=4),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
+    spellbook=SpellBook(0),
 )
 
 lvl5_boss = Actor(
@@ -49,6 +51,7 @@ lvl5_boss = Actor(
     fighter=Fighter(hp=30, base_defense=0, base_power=8),
     inventory=Inventory(capacity=2),
     level=Level(xp_given=1000),
+    spellbook=SpellBook(0),
 )
 
 health_potion = Item(
@@ -56,6 +59,13 @@ health_potion = Item(
     color=(127, 0, 255),
     name="Health Potion",
     consumable=consumable.HealingConsumable(amount=4),
+)
+
+mana_potion = Item(
+    char="!",
+    color=(0, 0, 255),
+    name="Mana Potion",
+    consumable=consumable.ManaConsumable(amount=10),
 )
 
 lightning_scroll = Item(

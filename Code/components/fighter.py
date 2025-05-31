@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional
 import color
 from components.base_component import BaseComponent
 from render_order import RenderOrder
+from components.spells import Spell
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -94,6 +95,24 @@ class Fighter(BaseComponent):
 
         return amount_recovered
 
+    def heal_mana(self, amount: int) -> int:
+        if self.mana == self.max_mana:
+            return 0
+        new_mana = self.mana + amount
+
+        if new_mana > self.max_mana:
+            new_mana = self.max_mana
+        amount_recovered = new_mana - self.mana
+        self.mana = new_mana
+
+        return amount_recovered
+
     def take_damage(self, amount: int) -> int:
         self.hp -= amount - self.defense
         return amount - self.defense
+
+    def cast_spell(self, spell: Spell) -> bool:
+        if self.mana >= spell.mana_cost:
+            self.mana -= spell.mana_cost
+            return True
+        return False

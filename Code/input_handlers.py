@@ -11,6 +11,7 @@ import libtcodpy
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Item
+    from components.spells import Spell
 
 MOVE_KEYS = {
     # Arrow keys.
@@ -202,7 +203,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
 
 class ConsumptionScreenEventHandler(AskUserEventHandler):
-    TITLE = "Corpses Consumed"
+    TITLE = "Things Consumed"
 
     def on_render(self, console):
         super().on_render(console)
@@ -210,10 +211,7 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
         for i in dir(self.engine.player):
             if "number_of_" in i:
                 number_of_consumption_attr += 1
-        height = number_of_consumption_attr + 2
-
-        if height <= 3:
-            height = 3
+        height = number_of_consumption_attr + 1
 
         if self.engine.player.x <= 30:
             x = 40
@@ -222,7 +220,7 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 6
+        width = len(self.TITLE) + 12
 
         console.draw_frame(
             x=x,
@@ -236,15 +234,21 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
         )
         if number_of_consumption_attr > 0:
             for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
+            for_in_2 = [a for a in dir(self.engine.player) if "number_of_" in a]
             for attr in for_in:
                 if getattr(self.engine.player, attr) == 0:
-                    for_in.remove(attr)
-            for strung, i in enumerate(for_in):
-
+                    for_in_2.remove(attr)
+            for strung, i in enumerate(for_in_2):
+                print = (
+                    i.replace("number_of_", "")
+                    .replace("_", " ")
+                    .replace("consumed", "")
+                    .capitalize()
+                )
                 console.print(
                     x + 1,
                     y + strung + 1,
-                    f"{i.replace("number_of_","").replace("_consumed","").replace("_", " ").capitalize()}: {getattr(self.engine.player,i)}",
+                    f"{print}: {getattr(self.engine.player,i)}",
                 )
         else:
             console.print(x + 1, y + 1, "(Empty)")
@@ -264,7 +268,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x,
             y=0,
             width=35,
-            height=8,
+            height=12,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -288,19 +292,26 @@ class LevelUpEventHandler(AskUserEventHandler):
             y=6,
             string=f"c) Agility (+1 defense, from {self.engine.player.fighter.defense})",
         )
+        console.print(
+            x=x + 1,
+            y=7,
+            string=f"d) Mana (+10 mana, from {self.engine.player.fighter.max_mana})",
+        )
 
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 0 <= index <= 2:
+        if 0 <= index <= 3:
             if index == 0:
                 player.level.increase_max_hp()
             elif index == 1:
                 player.level.increase_power()
-            else:
+            elif index == 2:
                 player.level.increase_defense()
+            else:
+                player.level.increase_max_mana()
         else:
             self.engine.message_log.add_message("Invalide selection", color.invalid)
 
@@ -396,6 +407,72 @@ class InventoryDropHandler(InventoryEventHandler):
 
     def on_item_selected(self, item) -> Optional[ActionOrHandler]:
         return actions.DropItem(self.engine.player, item)
+
+
+class SpellBookEventHandler(AskUserEventHandler):
+    def __init__(self, engine):
+        super().__init__(engine)
+
+    def on_render(self, console):
+        super().on_render(console)
+        number_of_spells_in_book = len(self.engine.player.spellbook.spells)
+        height = number_of_spells_in_book + 2
+
+        if height <= 3:
+            height = 3
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        width = len(self.TITLE) + 6
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        if number_of_spells_in_book > 0:
+            for i, spell in enumerate(self.engine.player.spellbook.spells):
+                spell_key = chr(ord("a") + i)
+
+                spell_string = f"({spell_key}) {spell.name}"
+
+                console.print(x + 1, y + i + 1, spell_string)
+        else:
+            console.print(x + 1, y + 1, "(Empty)")
+
+    def ev_keydown(self, event):
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+
+        if 0 <= index <= 26:
+            try:
+                selected_spell = player.spellbook.spells[index]
+            except IndexError:
+                self.engine.message_log.add_message(
+                    "Invalid page in spell book.", color.invalid
+                )
+                return None
+            return self.on_spell_selected(selected_spell)
+        return super().ev_keydown(event)
+
+
+class SpellBookActivateHandler(SpellBookEventHandler):
+    TITLE = "Select spell to use"
+
+    def on_spell_selected(self, spell: Spell) -> Optional[ActionOrHandler]:
+        return spell.activate()
 
 
 class SelectIndexHandler(AskUserEventHandler):
@@ -509,6 +586,9 @@ class MainGameEventHandler(EventHandler):
 
         if key == tcod.event.KeySym.l:
             return ConsumptionScreenEventHandler(self.engine)
+
+        if key == tcod.event.KeySym.p:
+            return SpellBookActivateHandler(self.engine)
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]

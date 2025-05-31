@@ -154,3 +154,24 @@ class ConfusionConsumable(Consumable):
             turns_remaining=self.number_of_turns,
         )
         self.consume()
+
+
+class ManaConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+        super().__init__()
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        amount_recovered = consumer.fighter.heal_mana(self.amount)
+        if self.engine.player.is_mage:
+            if amount_recovered > 0:
+                self.engine.message_log.add_message(
+                    f"You drink a {self.parent.name}, and recover {amount_recovered} Mana!",
+                    color.mana_bar_filled,
+                )
+                self.consume()
+            else:
+                raise Impossible(f"Your Mana is already full!")
+        else:
+            raise Impossible("The blue liquid has no effect on you")

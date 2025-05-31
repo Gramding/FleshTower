@@ -24,6 +24,7 @@ max_monsters_by_floor = [
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [(entity_factory.health_potion, 35)],
+    0: [(entity_factory.mana_potion, 35)],
     2: [(entity_factory.confusion_scroll, 10)],
     4: [(entity_factory.lightning_scroll, 25), (entity_factory.sword, 5)],
     6: [(entity_factory.fireball_scroll, 25), (entity_factory.chain_mail, 15)],
@@ -176,6 +177,7 @@ def generate_dungeon(
     # iterate from 0 to max_rooms
     room_check = 0
     boss = False
+    boss_count = 0
     for r in range(max_rooms):
         # randomly generate the size of the room
         room_width = random.randint(room_min_size, room_max_size)
@@ -197,15 +199,17 @@ def generate_dungeon(
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
             print(engine.game_world.current_floor)
-            player_spawn = new_room.center
         else:
             # now tunnels are built
             # with negative index to get previos room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.floor
             center_of_last_room = new_room.center
-        if len(rooms) >= 8 and not boss:
+        if len(rooms) >= 8 and not boss and boss_count == 0:
+            boss_count = 1
             boss = True
+        elif len(rooms) >= 8 and boss_count > 0:
+            boss = False
         place_entities(new_room, dungeon, engine.game_world.current_floor, boss)
         dungeon.tiles[center_of_last_room] = tile_types.stairs_up
         dungeon.upstairs_location = center_of_last_room

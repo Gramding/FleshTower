@@ -24,6 +24,8 @@ bar_empty = (0x40, 0x10, 0x10)
 
 mana_bar_filled = (0, 0, 255)
 
+spell_learned = (78, 84, 191)
+
 
 menu_title = (255, 255, 63)
 menu_text = white

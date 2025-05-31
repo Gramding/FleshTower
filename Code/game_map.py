@@ -96,6 +96,7 @@ class GameWorld:
         room_min_size: int,
         room_max_size: int,
         current_floor: int = 4,
+        boss_alive: Optional[bool] = False,
     ):
         self.engine = engine
 
