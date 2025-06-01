@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
 import random
-from components.spells import LightningSpell, FireballSpell
+from components.spells import LightningSpell, FireballSpell, ConfusionSpell, SpellBook
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -87,24 +87,12 @@ class LightningEffect(Effect):
 
     def activate(self, engine: Engine, corpse: Entity):
         engine.player.number_of_scrolls_of_lightning_consumed += 1
-        if random.randint(0, 10000000) > 90 and engine.player.is_mage:
-            if len(engine.player.spellbook.spells) > 0:
-                for spell in engine.player.spellbook.spells:
-                    if spell.name == "Lightning Spell":
-                        return super().activate(engine, corpse, False)
-                    else:
-                        engine.player.spellbook.add_spell_to_book(
-                            spell=LightningSpell(engine, "Lightning Spell", 10)
-                        )
-            else:
-                engine.player.spellbook.add_spell_to_book(
-                    spell=LightningSpell(engine, "Lightning Spell", 10)
-                )
-            engine.message_log.add_message(
-                f"You're flesh learns to cast: Lightning Spell", color.spell_learned
-            )
-            return super().activate(engine, corpse, True)
-        return super().activate(engine, corpse, False)
+        spell_name = "Lightning Spell"
+        success = engine.player.spellbook.learn_spell(
+            spell=LightningSpell(engine, spell_name, 10), engine=engine
+        )
+
+        return super().activate(engine, corpse, success)
 
 
 class FireballEffect(Effect):
@@ -114,24 +102,10 @@ class FireballEffect(Effect):
     def activate(self, engine: Engine, corpse):
         engine.player.number_of_scrolls_of_fireball_consumed += 1
         spell_name = "Fireball Spell"
-        if random.randint(0, 10000000) > 90 and engine.player.is_mage:
-            if len(engine.player.spellbook.spells) > 0:
-                for spell in engine.player.spellbook.spells:
-                    if spell.name == spell_name:
-                        return super().activate(engine, corpse, False)
-                    else:
-                        engine.player.spellbook.add_spell_to_book(
-                            spell=FireballSpell(engine, spell_name, 10, 3)
-                        )
-            else:
-                engine.player.spellbook.add_spell_to_book(
-                    spell=FireballSpell(engine, spell_name, 10, 3)
-                )
-            engine.message_log.add_message(
-                f"You're flesh learns to cast: {spell_name}", color.spell_learned
-            )
-            return super().activate(engine, corpse, True)
-        return super().activate(engine, corpse, False)
+        success = engine.player.spellbook.learn_spell(
+            spell=FireballSpell(engine, spell_name, 10, 3), engine=engine
+        )
+        return super().activate(engine, corpse, success)
 
 
 class ConfusionEffect(Effect):
@@ -140,7 +114,11 @@ class ConfusionEffect(Effect):
 
     def activate(self, engine: Engine, corpse):
         engine.player.number_of_scrolls_of_confusion_consumed += 1
-        return super().activate(engine, corpse, True)
+        spell_name = "Confusion Spell"
+        success = engine.player.spellbook.learn_spell(
+            spell=ConfusionSpell(engine=engine, name=spell_name, mana_cost=5)
+        )
+        return super().activate(engine, corpse, success)
 
 
 class HealthEffect(Effect):

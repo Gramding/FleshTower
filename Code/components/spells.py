@@ -1,6 +1,7 @@
 import engine
 import color
 
+import random
 import color
 from exceptions import Impossible
 from exceptions import Impossible
@@ -97,3 +98,19 @@ class SpellBook:
 
     def add_spell_to_book(self, spell: Spell):
         self.spells.append(spell)
+
+    def learn_spell(self, spell: Spell, engine: engine.Engine) -> bool:
+        if random.randint(0, 100) > 90 and engine.player.is_mage:
+            if len(engine.player.spellbook.spells) > 0:
+                for spell in engine.player.spellbook.spells:
+                    if spell.name == spell.name:
+                        return False
+                    else:
+                        self.add_spell_to_book(spell)
+            else:
+                self.add_spell_to_book(spell)
+            engine.message_log.add_message(
+                f"You're flesh learns to cast: {spell.name}", color.spell_learned
+            )
+            return True
+        return False
