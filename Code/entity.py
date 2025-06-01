@@ -126,6 +126,10 @@ class Actor(Entity):
         self.number_of_scrolls_of_lightning_consumed = 0
         self.number_of_scrolls_of_fireball_consumed = 0
         self.number_of_scrolls_of_confusion_consumed = 0
+        self.number_of_swords_consumed = 0
+        self.number_of_daggers_consumed = 0
+        self.number_of_leather_armor_consumed = 0
+        self.number_of_chain_mail_consumed = 0
         # ---------------------------------------------#
 
     @property

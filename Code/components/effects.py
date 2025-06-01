@@ -164,3 +164,17 @@ class ManaEffect(Effect):
             return super().activate(engine, corpse, True)
         else:
             return super().activate(engine, corpse, False)
+
+
+class SwordEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first):
+        if engine.player.number_of_swords_consumed < 1:
+            super().activate(engine, corpse, True)
+            engine.player.level.increase_power(1)
+            engine.player.number_of_swords_consumed += 1
+        else:
+            super().activate(engine, corpse, False)
+            engine.player.number_of_swords_consumed += 1
