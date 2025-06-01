@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
-import random
 from components.spells import LightningSpell, FireballSpell, ConfusionSpell, SpellBook
 
 if TYPE_CHECKING:
@@ -116,7 +115,13 @@ class ConfusionEffect(Effect):
         engine.player.number_of_scrolls_of_confusion_consumed += 1
         spell_name = "Confusion Spell"
         success = engine.player.spellbook.learn_spell(
-            spell=ConfusionSpell(engine=engine, name=spell_name, mana_cost=5)
+            spell=ConfusionSpell(
+                engine,
+                spell_name,
+                5,
+                10,
+            ),
+            engine=engine,
         )
         return super().activate(engine, corpse, success)
 
@@ -148,7 +153,7 @@ class SwordEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first):
+    def activate(self, engine, corpse):
         if engine.player.number_of_swords_consumed < 1:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1)
@@ -162,7 +167,7 @@ class DaggerEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first):
+    def activate(self, engine, corpse):
         if engine.player.number_of_daggers_consumed < 1:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1)
@@ -175,7 +180,7 @@ class LeatherArmorEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first):
+    def activate(self, engine, corpse):
         if engine.player.number_of_leather_armor_consumed < 1:
             super().activate(engine, corpse, True)
             engine.player.level.increase_defense(1)
@@ -188,7 +193,7 @@ class ChainMailEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first):
+    def activate(self, engine, corpse):
         if engine.player.number_of_chain_mail_consumed < 1:
             super().activate(engine, corpse, True)
             engine.player.level.increase_defense(1)

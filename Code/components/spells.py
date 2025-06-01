@@ -1,14 +1,13 @@
-import engine
+from engine import Engine
 import color
 
 import random
 import color
-from exceptions import Impossible
-from exceptions import Impossible
+from typing import TYPE_CHECKING
 
 
 class Spell:
-    def __init__(self, engine: engine.Engine, name: str, mana_cost: int):
+    def __init__(self, engine: Engine, name: str, mana_cost: int):
         self.engine = engine
         self.name = name
         self.mana_cost = mana_cost
@@ -46,7 +45,7 @@ class LightningSpell(Spell):
                     f"A bolt of lightning strikes {living_name} with a bang for {actual_damage} HP"
                 )
             else:
-                engine.MessageLog.add_message("No target in range", color.invalid)
+                self.engine.message_log.add_message("No target in range", color.invalid)
         pass
 
     def get_target(self):
@@ -74,25 +73,25 @@ class FireballSpell(Spell):
                         )
                         tarets_hit = True
                 if not tarets_hit:
-                    engine.MessageLog.add_message("No target in range", color.invalid)
+                    self.engine.message_log.add_message(
+                        "No target in range", color.invalid
+                    )
             else:
-                engine.MessageLog.add_message("No target in range", color.invalid)
+                self.engine.message_log.add_message("No target in range", color.invalid)
         pass
-
-    def get_target(self):
-        super().get_target()
 
 
 class ConfusionSpell(Spell):
-    def __init__(self, engine, name, mana_cost):
+    def __init__(self, engine, name, mana_cost, number_of_turns: int):
+        self.number_of_turns = number_of_turns
+        self.range = 8
         super().__init__(engine, name, mana_cost)
 
     def activate(self):
         if self.engine.player.fighter.cast_spell(self):
             self.get_target()
             if self.target:
-                living_name = self.target.name
-        return super().activate()
+                self.target.ai = self.target.ai.confused
 
 
 class SpellBook:
@@ -103,14 +102,13 @@ class SpellBook:
     def add_spell_to_book(self, spell: Spell):
         self.spells.append(spell)
 
-    def learn_spell(self, spell: Spell, engine: engine.Engine) -> bool:
-        if random.randint(0, 100) > 90 and engine.player.is_mage:
+    def learn_spell(self, spell: Spell, engine: Engine) -> bool:
+        if random.randint(0, 10000000) > 90 and engine.player.is_mage:
             if len(engine.player.spellbook.spells) > 0:
-                for spell in engine.player.spellbook.spells:
-                    if spell.name == spell.name:
+                for spellbook_spell in engine.player.spellbook.spells:
+                    if spellbook_spell.name == spell.name:
                         return False
-                    else:
-                        self.add_spell_to_book(spell)
+                self.add_spell_to_book(spell)
             else:
                 self.add_spell_to_book(spell)
             engine.message_log.add_message(

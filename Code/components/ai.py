@@ -13,7 +13,6 @@ from actions import (
     MovementAction,
     WaitAction,
     BumpAction,
-    ItemAction,
 )
 
 
@@ -72,6 +71,7 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
+        self.confused = ConfusedEnemy(entity, self, 8)
 
     def perform(self) -> None:
         target = self.engine.player
