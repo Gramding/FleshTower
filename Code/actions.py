@@ -25,6 +25,7 @@ consumption_dict: Dict[str, ef.Effect] = {
     "Chain Mail": ef.ChainMailEffect(),
     "Leather Armor": ef.LeatherArmorEffect(),
     "Dagger": ef.DaggerEffect(),
+    "Large Health Potion": ef.HealthEffect(),
 }
 
 

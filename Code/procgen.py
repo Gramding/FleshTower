@@ -23,8 +23,11 @@ max_monsters_by_floor = [
 ]
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factory.health_potion, 35)],
-    0: [(entity_factory.mana_potion, 35)],
+    0: [
+        (entity_factory.health_potion, 35),
+        (entity_factory.mana_potion, 35),
+        (entity_factory.large_health_potion, 35),
+    ],
     2: [(entity_factory.confusion_scroll, 10)],
     4: [(entity_factory.lightning_scroll, 25), (entity_factory.sword, 5)],
     6: [(entity_factory.fireball_scroll, 25), (entity_factory.chain_mail, 15)],
@@ -132,6 +135,7 @@ def place_entities(
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             if "Mana" in entity.name and not dungeon.engine.player.is_mage:
+                entity_factory.health_potion.spawn(dungeon, x, y)
                 continue
             entity.spawn(dungeon, x, y)
     if floor_number == 5 and boss:

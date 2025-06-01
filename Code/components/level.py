@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from components.base_component import BaseComponent
 
@@ -50,7 +50,9 @@ class Level(BaseComponent):
 
         self.current_level += 1
 
-    def increase_max_hp(self, amount: int = 20) -> None:
+    def increase_max_hp(
+        self, amount: int = 20, needs_level_up: Optional[bool] = True
+    ) -> None:
         if self.parent.is_mage:
             amount = int(amount / 2)
 
@@ -58,24 +60,33 @@ class Level(BaseComponent):
         self.parent.fighter.hp += amount
 
         self.engine.message_log.add_message("Your health improves!")
+        if needs_level_up:
+            self.increase_level()
 
-        self.increase_level()
-
-    def increase_power(self, amount: int = 1) -> None:
+    def increase_power(
+        self, amount: int = 1, needs_level_up: Optional[bool] = True
+    ) -> None:
         self.parent.fighter.base_power += amount
 
         self.engine.message_log.add_message("You feel stronger!")
 
-        self.increase_level()
+        if needs_level_up:
+            self.increase_level()
 
-    def increase_defense(self, amount: int = 1) -> None:
+    def increase_defense(
+        self, amount: int = 1, needs_level_up: Optional[bool] = True
+    ) -> None:
         self.parent.fighter.base_defense += amount
 
         self.engine.message_log.add_message("Your movements are getting swifter!")
 
-        self.increase_level()
+        if needs_level_up:
+            self.increase_level()
 
-    def increase_max_mana(self, amount: int = 10) -> None:
+    def increase_max_mana(
+        self, amount: int = 10, needs_level_up: Optional[bool] = True
+    ) -> None:
         self.parent.fighter.max_mana += amount
         self.engine.message_log.add_message("Your blood thickens with mana")
-        self.increase_level()
+        if needs_level_up:
+            self.increase_level()

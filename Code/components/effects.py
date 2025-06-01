@@ -36,7 +36,7 @@ class OrcEffect(Effect):
         # If player eats an orc health increses by one
         if engine.player.number_of_orcs_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_max_hp(1)
+            engine.player.level.increase_max_hp(1, False)
             engine.player.number_of_orcs_consumed += 1
         else:
             super().activate(engine, corpse, False)
@@ -50,7 +50,7 @@ class TrollEffect(Effect):
     def activate(self, engine, corpse):
         if engine.player.number_of_trolls_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1)
+            engine.player.level.increase_power(1, False)
             engine.player.number_of_trolls_consumed += 1
         else:
             super().activate(engine, corpse, False)
@@ -66,18 +66,17 @@ class Lvl5BossEffect(Effect):
             super().activate(engine, corpse, True)
             # TODO Implement the effect for consuming a mage
             engine.player.is_mage = True
-            engine.player.fighter.mana = 20
-            engine.player.fighter.max_mana = 20
-            engine.player.fighter.max_hp = int(engine.player.fighter.max_hp / 2)
-            engine.player.fighter.hp = int(engine.player.fighter.hp / 2)
+            engine.player.fighter.mana = 30
+            engine.player.fighter.max_mana = 30
+            engine.player.fighter.max_hp = 20
+            engine.player.fighter.hp = 20
             engine.message_log.add_message(
                 f"You feel the mana of the mage coursing through your blood. Your flesh weakens but your mind strengthens",
                 color.mage,
             )
-            engine.player.number_of_weak_mages_consumed += 1
         else:
             super().activate(engine, corpse, False)
-            engine.player.number_of_weak_mages_consumed += 1
+        engine.player.number_of_weak_mages_consumed += 1
 
 
 class LightningEffect(Effect):
@@ -156,7 +155,7 @@ class SwordEffect(Effect):
     def activate(self, engine, corpse):
         if engine.player.number_of_swords_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1)
+            engine.player.level.increase_power(1, False)
         else:
             super().activate(engine, corpse, False)
 
@@ -170,7 +169,7 @@ class DaggerEffect(Effect):
     def activate(self, engine, corpse):
         if engine.player.number_of_daggers_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1)
+            engine.player.level.increase_power(1, False)
         else:
             super().activate(engine, corpse, False)
         engine.player.number_of_daggers_consumed += 1
@@ -183,7 +182,7 @@ class LeatherArmorEffect(Effect):
     def activate(self, engine, corpse):
         if engine.player.number_of_leather_armor_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_defense(1)
+            engine.player.level.increase_defense(1, False)
         else:
             super().activate(engine, corpse, False)
         engine.player.number_of_leather_armor_consumed += 1
@@ -196,7 +195,7 @@ class ChainMailEffect(Effect):
     def activate(self, engine, corpse):
         if engine.player.number_of_chain_mail_consumed < 1:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_defense(1)
+            engine.player.level.increase_defense(1, False)
         else:
             super().activate(engine, corpse, False)
         engine.player.number_of_chain_mail_consumed += 1

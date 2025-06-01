@@ -13,7 +13,7 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=20, base_power=2),
+    fighter=Fighter(hp=30, base_defense=1, base_power=3),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
     spellbook=SpellBook(10),
@@ -59,6 +59,13 @@ health_potion = Item(
     color=(127, 0, 255),
     name="Health Potion",
     consumable=consumable.HealingConsumable(amount=4),
+)
+
+large_health_potion = Item(
+    char="!",
+    color=(255, 0, 127),
+    name="Large Health Potion",
+    consumable=consumable.HealingConsumable(amount=10),
 )
 
 mana_potion = Item(

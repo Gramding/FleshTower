@@ -42,6 +42,11 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
+    l_hp = copy.deepcopy(entity_factory.large_health_potion)
+
+    l_hp.parent = player.inventory
+    for i in range(3):
+        player.inventory.items.append(l_hp)
 
     return engine
 
