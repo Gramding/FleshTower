@@ -103,7 +103,7 @@ class SpellBook:
         self.spells.append(spell)
 
     def learn_spell(self, spell: Spell, engine: Engine) -> bool:
-        if random.randint(0, 10000000) > 90 and engine.player.is_mage:
+        if random.randint(0, 100) >= 90 and engine.player.is_mage:
             if len(engine.player.spellbook.spells) > 0:
                 for spellbook_spell in engine.player.spellbook.spells:
                     if spellbook_spell.name == spell.name:
