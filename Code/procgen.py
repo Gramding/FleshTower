@@ -131,6 +131,8 @@ def place_entities(
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            if "Mana" in entity.name and not dungeon.engine.player.is_mage:
+                continue
             entity.spawn(dungeon, x, y)
     if floor_number == 5 and boss:
         entity_factory.lvl5_boss.spawn(

@@ -207,11 +207,17 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
 
     def on_render(self, console):
         super().on_render(console)
+        for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
+        for_in_2 = [a for a in dir(self.engine.player) if "number_of_" in a]
         number_of_consumption_attr = 0
-        for i in dir(self.engine.player):
-            if "number_of_" in i:
-                number_of_consumption_attr += 1
-        height = number_of_consumption_attr + 1
+        for attr in for_in:
+            if getattr(self.engine.player, attr) == 0:
+                for_in_2.remove(attr)
+        number_of_consumption_attr = len(for_in_2)
+        if number_of_consumption_attr > 0:
+            height = number_of_consumption_attr + 2
+        else:
+            height = 3
 
         if self.engine.player.x <= 30:
             x = 40
@@ -292,11 +298,12 @@ class LevelUpEventHandler(AskUserEventHandler):
             y=6,
             string=f"c) Agility (+1 defense, from {self.engine.player.fighter.defense})",
         )
-        console.print(
-            x=x + 1,
-            y=7,
-            string=f"d) Mana (+10 mana, from {self.engine.player.fighter.max_mana})",
-        )
+        if self.engine.player.is_mage:
+            console.print(
+                x=x + 1,
+                y=7,
+                string=f"d) Mana (+10 mana, from {self.engine.player.fighter.max_mana})",
+            )
 
     def ev_keydown(self, event):
         player = self.engine.player
@@ -310,7 +317,7 @@ class LevelUpEventHandler(AskUserEventHandler):
                 player.level.increase_power()
             elif index == 2:
                 player.level.increase_defense()
-            else:
+            elif index == 3 and player.is_mage:
                 player.level.increase_max_mana()
         else:
             self.engine.message_log.add_message("Invalide selection", color.invalid)
