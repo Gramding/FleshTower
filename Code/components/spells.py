@@ -88,6 +88,10 @@ class ConfusionSpell(Spell):
         super().__init__(engine, name, mana_cost)
 
     def activate(self):
+        if self.engine.player.fighter.cast_spell(self):
+            self.get_target()
+            if self.target:
+                living_name = self.target.name
         return super().activate()
 
 

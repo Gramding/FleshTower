@@ -152,7 +152,46 @@ class SwordEffect(Effect):
         if engine.player.number_of_swords_consumed < 1:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1)
-            engine.player.number_of_swords_consumed += 1
         else:
             super().activate(engine, corpse, False)
-            engine.player.number_of_swords_consumed += 1
+
+        engine.player.number_of_swords_consumed += 1
+
+
+class DaggerEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first):
+        if engine.player.number_of_daggers_consumed < 1:
+            super().activate(engine, corpse, True)
+            engine.player.level.increase_power(1)
+        else:
+            super().activate(engine, corpse, False)
+        engine.player.number_of_daggers_consumed += 1
+
+
+class LeatherArmorEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first):
+        if engine.player.number_of_leather_armor_consumed < 1:
+            super().activate(engine, corpse, True)
+            engine.player.level.increase_defense(1)
+        else:
+            super().activate(engine, corpse, False)
+        engine.player.number_of_leather_armor_consumed += 1
+
+
+class ChainMailEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first):
+        if engine.player.number_of_chain_mail_consumed < 1:
+            super().activate(engine, corpse, True)
+            engine.player.level.increase_defense(1)
+        else:
+            super().activate(engine, corpse, False)
+        engine.player.number_of_chain_mail_consumed += 1

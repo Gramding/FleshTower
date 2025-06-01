@@ -198,7 +198,6 @@ def generate_dungeon(
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
-            print(engine.game_world.current_floor)
         else:
             # now tunnels are built
             # with negative index to get previos room

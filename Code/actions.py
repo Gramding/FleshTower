@@ -4,17 +4,7 @@ from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
 import exceptions
 
-from components.effects import (
-    Effect,
-    OrcEffect,
-    TrollEffect,
-    Lvl5BossEffect,
-    LightningEffect,
-    HealthEffect,
-    ManaEffect,
-    FireballEffect,
-    ConfusionEffect,
-)
+import components.effects as ef
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -22,15 +12,19 @@ if TYPE_CHECKING:
 
     # import components.effects
 
-consumption_dict: Dict[str, Effect] = {
-    "remains of Orc": OrcEffect(),
-    "remains of Troll": TrollEffect(),
-    "remains of Weak Mage": Lvl5BossEffect(),
-    "Scroll of Lightning": LightningEffect(),
-    "Health Potion": HealthEffect(),
-    "Mana Potion": ManaEffect(),
-    "Scroll of Fireball": FireballEffect(),
-    "Scroll of Confusion": ConfusionEffect(),
+consumption_dict: Dict[str, ef.Effect] = {
+    "remains of Orc": ef.OrcEffect(),
+    "remains of Troll": ef.TrollEffect(),
+    "remains of Weak Mage": ef.Lvl5BossEffect(),
+    "Scroll of Lightning": ef.LightningEffect(),
+    "Health Potion": ef.HealthEffect(),
+    "Mana Potion": ef.ManaEffect(),
+    "Scroll of Fireball": ef.FireballEffect(),
+    "Scroll of Confusion": ef.ConfusionEffect(),
+    "Sword": ef.SwordEffect(),
+    "Chain Mail": ef.ChainMailEffect(),
+    "Leather Armor": ef.LeatherArmorEffect(),
+    "Dagger": ef.DaggerEffect(),
 }
 
 
