@@ -176,11 +176,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=7,
-            title=self.TITLE,
+            height=8,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
+            title=self.TITLE,
         )
         console.print(
             x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}"
@@ -200,6 +200,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         console.print(
             x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
         )
+        console.print(x=x + 1, y=y + 6, string=f"Organs: {self.engine.player.currency}")
 
 
 class ConsumptionScreenEventHandler(AskUserEventHandler):

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 import color
-from components.spells import LightningSpell, FireballSpell, ConfusionSpell, SpellBook
+from components.spells import LightningSpell, FireballSpell, ConfusionSpell
+
+import random
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -15,6 +17,7 @@ class Effect:
 
     def activate(self, engine: Engine, corpse: Entity, first: bool):
         engine.player.logbook.write_to_book(entity_name=corpse.name)
+
         if first:
             engine.message_log.add_message(
                 f"You bury you're teeth in {corpse.name}",
@@ -28,12 +31,16 @@ class Effect:
             )
             engine.game_map.entities.remove(corpse)
 
+    def add_currency(self, engine: Engine, amount: int):
+        engine.player.currency += amount
+
 
 class DefautlEffect(Effect):
     def __init__(self):
         super().__init__()
 
     def activate(self, engine, corpse):
+        self.add_currency(engine=engine, amount=random.randint(0, 3))
         return super().activate(engine, corpse, False)
 
 
@@ -48,6 +55,7 @@ class OrcEffect(Effect):
             engine.player.level.increase_max_hp(1, False)
         else:
             super().activate(engine, corpse, False)
+        self.add_currency(engine, random.randint(3, 5))
 
 
 class TrollEffect(Effect):
@@ -60,6 +68,7 @@ class TrollEffect(Effect):
             engine.player.level.increase_power(1, False)
         else:
             super().activate(engine, corpse, False)
+        self.add_currency(engine, random.randint(3, 5))
 
 
 class Lvl5BossEffect(Effect):
@@ -81,6 +90,7 @@ class Lvl5BossEffect(Effect):
             )
         else:
             super().activate(engine, corpse, False)
+        self.add_currency(engine, random.randint(3, 5))
 
 
 class LightningEffect(Effect):

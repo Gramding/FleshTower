@@ -66,6 +66,6 @@ def main() -> None:
 
 
 # this exits so that programm is run exlusivly through this file
-# it checks for this beein the main file
+# it checks for this beeing the main file
 if __name__ == "__main__":
     main()

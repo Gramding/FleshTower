@@ -122,20 +122,8 @@ class Actor(Entity):
         self.is_mage = False
         self.spellbook: SpellBook = spellbook
         self.effect = effect
-        # ---------------------------------------------#
-        # Let the Consumption begin Potions and such will not get tracked
         self.logbook: LogBook = logbook
-        """ self.number_of_orcs_consumed = 0
-        self.number_of_trolls_consumed = 0
-        self.number_of_weak_mages_consumed = 0
-        self.number_of_scrolls_of_lightning_consumed = 0
-        self.number_of_scrolls_of_fireball_consumed = 0
-        self.number_of_scrolls_of_confusion_consumed = 0
-        self.number_of_swords_consumed = 0
-        self.number_of_daggers_consumed = 0
-        self.number_of_leather_armor_consumed = 0
-        self.number_of_chain_mail_consumed = 0 """
-        # ---------------------------------------------#
+        self.currency = 0
 
     @property
     def is_alive(self) -> bool:
