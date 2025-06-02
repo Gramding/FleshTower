@@ -11,7 +11,7 @@ import setup_game
 def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
     if isinstance(handler, input_handlers.EventHandler):
         handler.engine.save_as(filename)
-        print("The Flesh remebers this point in time")
+        print("The Flesh remembers this point in time")
 
 
 def main() -> None:
@@ -27,8 +27,12 @@ def main() -> None:
     # this creates the screen (the game window)
     # screen size and name are passed
     # the with expression is used for resource management
-    with tcod.context.new_terminal(
-        screen_width, screen_height, tileset=tileset, title="Flesh Tower", vsync=True
+    with tcod.context.new(
+        columns=screen_width,
+        rows=screen_height,
+        tileset=tileset,
+        title="Flesh Tower",
+        vsync=True,
     ) as context:
         # this creates the console in wich the game is displayed
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
@@ -51,6 +55,7 @@ def main() -> None:
                             traceback.format_exc(), color.error
                         )
         except exceptions.QuitWithoutSaving:
+
             raise
         except SystemExit:  # Save and quit.
             save_game(handler, "savegame.sav")

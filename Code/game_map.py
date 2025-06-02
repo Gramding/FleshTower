@@ -95,7 +95,7 @@ class GameWorld:
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
-        current_floor: int = 4,
+        current_floor: int = 0,
         # TODO implement cant move up if boss is alive
         boss_alive: Optional[bool] = False,
     ):

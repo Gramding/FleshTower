@@ -42,11 +42,13 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
+    """     
     l_hp = copy.deepcopy(entity_factory.large_health_potion)
 
     l_hp.parent = player.inventory
     for i in range(3):
-        player.inventory.items.append(l_hp)
+    player.inventory.items.append(l_hp) 
+    """
 
     return engine
 
@@ -92,7 +94,7 @@ class MainMenu(input_handlers.BaseEventHandler):
                 return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
             except FileNotFoundError:
                 return input_handlers.PopupMessage(
-                    self, "The flesh does not remeber youre presence"
+                    self, "The flesh does not remember youre presence"
                 )
             except Exception as exc:
                 traceback.print_exc()

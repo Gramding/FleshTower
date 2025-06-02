@@ -26,7 +26,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
         (entity_factory.health_potion, 35),
         (entity_factory.mana_potion, 35),
-        (entity_factory.large_health_potion, 35),
+        (entity_factory.large_health_potion, 5),
     ],
     2: [(entity_factory.confusion_scroll, 10)],
     4: [(entity_factory.lightning_scroll, 25), (entity_factory.sword, 5)],
@@ -34,7 +34,11 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factory.orc, 80)],
+    0: [
+        (entity_factory.orc, 10),
+        (entity_factory.rat, 60),
+        (entity_factory.goblin, 60),
+    ],
     3: [(entity_factory.troll, 15)],
     5: [(entity_factory.troll, 30)],
     7: [(entity_factory.troll, 60)],

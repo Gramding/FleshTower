@@ -29,6 +29,14 @@ class Effect:
             engine.game_map.entities.remove(corpse)
 
 
+class DefautlEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse):
+        return super().activate(engine, corpse, False)
+
+
 class OrcEffect(Effect):
     def __init__(self):
         super().__init__()
@@ -40,14 +48,6 @@ class OrcEffect(Effect):
             engine.player.level.increase_max_hp(1, False)
         else:
             super().activate(engine, corpse, False)
-
-
-class RatEffect(Effect):
-    def __init__(self):
-        super().__init__()
-
-    def activate(self, engine, corpse):
-        return super().activate(engine, corpse, False)
 
 
 class TrollEffect(Effect):

@@ -14,9 +14,9 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=50, base_power=3),
+    fighter=Fighter(hp=30, base_defense=0, base_power=3),
     inventory=Inventory(capacity=26),
-    level=Level(level_up_base=200),
+    level=Level(level_up_base=100),
     spellbook=SpellBook(10),
     logbook=LogBook(),
     effect=None,
@@ -33,7 +33,21 @@ rat = Actor(
     level=Level(xp_given=5),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=RatEffect(),
+    effect=DefautlEffect(),
+)
+
+goblin = Actor(
+    char="g",
+    color=(0, 128, 0),
+    name="Goblin",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=6, base_defense=0, base_power=2),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=20),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefautlEffect(),
 )
 
 orc = Actor(
