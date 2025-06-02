@@ -78,7 +78,6 @@ class Lvl5BossEffect(Effect):
     def activate(self, engine: Engine, corpse):
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
-            # TODO Implement the effect for consuming a mage
             engine.player.is_mage = True
             engine.player.fighter.mana = 30
             engine.player.fighter.max_mana = 30

@@ -268,7 +268,6 @@ class LevelUpEventHandler(AskUserEventHandler):
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
         console.print(x=x + 1, y=2, string="Select the towers blessing")
-        # TODO check if messages are ok like that
         console.print(
             x=x + 1,
             y=4,
