@@ -579,7 +579,7 @@ class MainGameEventHandler(EventHandler):
         if key == tcod.event.KeySym.l:
             return ConsumptionScreenEventHandler(self.engine)
 
-        if key == tcod.event.KeySym.p:
+        if key == tcod.event.KeySym.p and self.engine.player.is_mage:
             return SpellBookActivateHandler(self.engine)
 
         if key in MOVE_KEYS:

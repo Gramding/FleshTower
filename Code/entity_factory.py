@@ -14,7 +14,7 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=0, base_power=3),
+    fighter=Fighter(hp=30, base_defense=1, base_power=3),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=100),
     spellbook=SpellBook(10),
@@ -77,13 +77,48 @@ troll = Actor(
     effect=TrollEffect(),
 )
 
+zombie = Actor(
+    char="z",
+    color=(52, 71, 54),
+    name="Zombie",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=14, base_defense=3, base_power=2),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=100),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    # TODO Special effect for consumption
+    # should in this case be a negative one
+    # at 25 or so consumed, player turns undead
+    effect=DefautlEffect(),
+)
+
+flesh_golem = Actor(
+    char="G",
+    color=(128, 127, 0),
+    name="Flesh Golem",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=40, base_defense=4, base_power=5),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=250),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    # TODO special effect for consumption
+    # should be positive effect at 5 consumed
+    # effect player "gains" additional arm and does additional attack in meele range
+    # player looses mage and gains double hp
+    effect=DefautlEffect(),
+)
+
 lvl5_boss = Actor(
     char="m",
     color=(0, 127, 50),
     name="Weak Mage",
     ai_cls=HostileCaster,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=0, base_power=8),
+    fighter=Fighter(hp=20, base_defense=0, base_power=4),
     inventory=Inventory(capacity=2),
     level=Level(xp_given=1000),
     spellbook=SpellBook(0),
