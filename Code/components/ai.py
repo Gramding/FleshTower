@@ -116,10 +116,28 @@ class HostileCaster(BaseAI):
                 if distance < closest_distance:
                     target = actor
                     closest_distance = distance
-        if distance < 10 and self.spell_slots > 0:
-            # if target.
+        if (
+            distance < 10
+            and distance > 4
+            and self.spell_slots > 0
+            and self.engine.game_map.visible[target.x, target.y]
+        ):
             self.spell_slots -= 1
-            actual_damage = target.fighter.take_damage(8)
+            # Caster ignores defence
+            actual_damage = target.fighter.take_damage(8, True)
             self.engine.message_log.add_message(
                 f"{self.entity.name} stikes you for {actual_damage} HP"
             )
+        else:
+            if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+                if distance <= 1:
+                    return MeleeAction(self.entity, dx, dy).perform()
+                self.path = self.get_path_to(target.x, target.y)
+
+            if self.path:
+                dest_x, dest_y = self.path.pop(0)
+                return MovementAction(
+                    self.entity,
+                    dest_x - self.entity.x + 1,
+                    dest_y - self.entity.y + 1,
+                ).perform()

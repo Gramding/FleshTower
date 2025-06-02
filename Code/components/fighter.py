@@ -107,9 +107,13 @@ class Fighter(BaseComponent):
 
         return amount_recovered
 
-    def take_damage(self, amount: int) -> int:
-        self.hp -= amount - self.defense
-        return amount - self.defense
+    def take_damage(self, amount: int, ignore_defence: Optional[bool] = False) -> int:
+        if not ignore_defence:
+            self.hp -= amount - self.defense
+            return amount - self.defense
+        else:
+            self.hp -= amount
+            return amount
 
     def cast_spell(self, spell: Spell) -> bool:
         if self.mana >= spell.mana_cost:
