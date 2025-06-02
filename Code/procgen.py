@@ -115,17 +115,19 @@ def place_entities(
     dungeon: GameMap,
     floor_number: int,
     boss: Optional[bool] = False,
+    current_room: Optional[int] = 0,
 ) -> None:
     # choose random number of monsters and items
-    number_of_monsters = random.randint(
-        0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
-    )
+    monsters = []
+    if not current_room == 0:
+        number_of_monsters = random.randint(
+            0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
+        )
+        monsters: List[Entity] = get_entities_at_random(
+            enemy_chances, number_of_monsters, floor_number
+        )
     number_of_items = random.randint(
         0, get_max_value_for_floor(max_items_by_floor, floor_number)
-    )
-
-    monsters: List[Entity] = get_entities_at_random(
-        enemy_chances, number_of_monsters, floor_number
     )
     items: List[Entity] = get_entities_at_random(
         item_chances, number_of_items, floor_number
@@ -204,6 +206,7 @@ def generate_dungeon(
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
+            # this ensures that the first room is safe
         else:
             # now tunnels are built
             # with negative index to get previos room
@@ -215,7 +218,9 @@ def generate_dungeon(
             boss = True
         elif len(rooms) >= 8 and boss_count > 0:
             boss = False
-        place_entities(new_room, dungeon, engine.game_world.current_floor, boss)
+        place_entities(
+            new_room, dungeon, engine.game_world.current_floor, boss, len(rooms)
+        )
         dungeon.tiles[center_of_last_room] = tile_types.stairs_up
         dungeon.upstairs_location = center_of_last_room
         # room is build sucessfully and appended
