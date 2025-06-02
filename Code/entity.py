@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from components.level import Level
     from game_map import GameMap
     from components.spells import SpellBook
+    from components.effects import LogBook, Effect
 
 T = TypeVar("T", bound="Entity")
 
@@ -95,6 +96,8 @@ class Actor(Entity):
         equipment: Equipment,
         inventory: Inventory,
         spellbook: SpellBook,
+        logbook: LogBook,
+        effect: Effect,
         level: Level,
     ):
         super().__init__(
@@ -118,8 +121,10 @@ class Actor(Entity):
         self.equipment.parent = self
         self.is_mage = False
         self.spellbook: SpellBook = spellbook
+        self.effect = effect
         # ---------------------------------------------#
         # Let the Consumption begin Potions and such will not get tracked
+        self.logbook: LogBook = logbook
         self.number_of_orcs_consumed = 0
         self.number_of_trolls_consumed = 0
         self.number_of_weak_mages_consumed = 0
@@ -148,6 +153,7 @@ class Item(Entity):
         name: str = "<Unnamed>",
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
+        effect: Effect,
     ):
         super().__init__(
             x=x,
@@ -158,6 +164,7 @@ class Item(Entity):
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
+        self.effect = effect
         self.consumable = consumable
         if self.consumable:
             self.consumable.parent = self

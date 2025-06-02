@@ -43,6 +43,14 @@ class OrcEffect(Effect):
             engine.player.number_of_orcs_consumed += 1
 
 
+class RatEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse):
+        return super().activate(engine, corpse, False)
+
+
 class TrollEffect(Effect):
     def __init__(self):
         super().__init__()
@@ -199,3 +207,12 @@ class ChainMailEffect(Effect):
         else:
             super().activate(engine, corpse, False)
         engine.player.number_of_chain_mail_consumed += 1
+
+
+class LogBook:
+    def __init__(self):
+        self.effect = dict[Entity:int]
+        pass
+
+    def write_to_book(self, effect):
+        pass

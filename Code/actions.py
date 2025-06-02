@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     # import components.effects
 
-consumption_dict: Dict[str, ef.Effect] = {
+""" consumption_dict: Dict[str, ef.Effect] = {
     "remains of Orc": ef.OrcEffect(),
     "remains of Troll": ef.TrollEffect(),
     "remains of Weak Mage": ef.Lvl5BossEffect(),
@@ -26,7 +26,8 @@ consumption_dict: Dict[str, ef.Effect] = {
     "Leather Armor": ef.LeatherArmorEffect(),
     "Dagger": ef.DaggerEffect(),
     "Large Health Potion": ef.HealthEffect(),
-}
+    "remains of Rat": ef.RatEffect(),
+} """
 
 
 class Action:
@@ -198,6 +199,7 @@ class ConsumeCorpseAction(Action):
                 and corpse != self.entity
             ):
                 # player is at location of corpse and enemy is dead!
-                consumption_dict[corpse.name].activate(self.engine, corpse)
+                # consumption_dict[corpse.name].activate(self.engine, corpse)
+                corpse.effect.activate(self.engine, corpse)
                 return
         raise exceptions.Impossible("No corpse here")

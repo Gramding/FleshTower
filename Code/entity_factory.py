@@ -6,6 +6,7 @@ from components.equipment import Equipment
 from entity import Actor, Item
 from components.level import Level
 from components.spells import SpellBook
+from components.effects import *
 
 player = Actor(
     char="@",
@@ -17,6 +18,22 @@ player = Actor(
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
     spellbook=SpellBook(10),
+    logbook=LogBook(),
+    effect=None,
+)
+
+rat = Actor(
+    char="r",
+    color=(88, 57, 39),
+    name="Rat",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=3, base_defense=0, base_power=1),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=5),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=RatEffect(),
 )
 
 orc = Actor(
@@ -29,6 +46,8 @@ orc = Actor(
     inventory=Inventory(capacity=0),
     level=Level(xp_given=35),
     spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=OrcEffect(),
 )
 troll = Actor(
     char="t",
@@ -40,6 +59,8 @@ troll = Actor(
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
     spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=TrollEffect(),
 )
 
 lvl5_boss = Actor(
@@ -52,6 +73,8 @@ lvl5_boss = Actor(
     inventory=Inventory(capacity=2),
     level=Level(xp_given=1000),
     spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=Lvl5BossEffect(),
 )
 
 health_potion = Item(
@@ -59,6 +82,7 @@ health_potion = Item(
     color=(127, 0, 255),
     name="Health Potion",
     consumable=consumable.HealingConsumable(amount=4),
+    effect=HealthEffect(),
 )
 
 large_health_potion = Item(
@@ -66,6 +90,7 @@ large_health_potion = Item(
     color=(255, 0, 127),
     name="Large Health Potion",
     consumable=consumable.HealingConsumable(amount=10),
+    effect=HealthEffect(),
 )
 
 mana_potion = Item(
@@ -73,6 +98,7 @@ mana_potion = Item(
     color=(0, 0, 255),
     name="Mana Potion",
     consumable=consumable.ManaConsumable(amount=10),
+    effect=ManaEffect(),
 )
 
 lightning_scroll = Item(
@@ -80,6 +106,7 @@ lightning_scroll = Item(
     color=(255, 255, 0),
     name="Scroll of Lightning",
     consumable=consumable.LightningDamageConsumable(damage=20, maximum_range=5),
+    effect=LightningEffect(),
 )
 
 confusion_scroll = Item(
@@ -87,6 +114,7 @@ confusion_scroll = Item(
     color=(207, 63, 255),
     name="Scroll of Confusion",
     consumable=consumable.ConfusionConsumable(number_of_turns=10),
+    effect=ConfusionEffect(),
 )
 
 fireball_scroll = Item(
@@ -94,21 +122,37 @@ fireball_scroll = Item(
     color=(255, 0, 0),
     name="Scroll of Fireball",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
+    effect=FireballEffect,
 )
 
 dagger = Item(
-    char="/", color=(0, 191, 255), name="Dagger", equippable=equippable.Dagger()
+    char="/",
+    color=(0, 191, 255),
+    name="Dagger",
+    equippable=equippable.Dagger(),
+    effect=DaggerEffect,
 )
 
-sword = Item(char="/", color=(0, 191, 255), name="Sword", equippable=equippable.Sword())
+sword = Item(
+    char="/",
+    color=(0, 191, 255),
+    name="Sword",
+    equippable=equippable.Sword(),
+    effect=SwordEffect(),
+)
 
 leather_armor = Item(
     char="[",
     color=(139, 69, 19),
     name="Leather Armor",
     equippable=equippable.LeatherArmor(),
+    effect=LeatherArmorEffect(),
 )
 
 chain_mail = Item(
-    char="[", color=(139, 69, 19), name="Chain Mail", equippable=equippable.ChainMail()
+    char="[",
+    color=(139, 69, 19),
+    name="Chain Mail",
+    equippable=equippable.ChainMail(),
+    effect=ChainMailEffect(),
 )
