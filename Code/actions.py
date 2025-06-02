@@ -198,8 +198,6 @@ class ConsumeCorpseAction(Action):
                 and corpse.y == self.entity.y
                 and corpse != self.entity
             ):
-                # player is at location of corpse and enemy is dead!
-                # consumption_dict[corpse.name].activate(self.engine, corpse)
                 corpse.effect.activate(self.engine, corpse)
                 return
         raise exceptions.Impossible("No corpse here")

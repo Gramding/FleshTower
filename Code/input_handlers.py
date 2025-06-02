@@ -207,13 +207,7 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
 
     def on_render(self, console):
         super().on_render(console)
-        for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
-        for_in_2 = [a for a in dir(self.engine.player) if "number_of_" in a]
-        number_of_consumption_attr = 0
-        for attr in for_in:
-            if getattr(self.engine.player, attr) == 0:
-                for_in_2.remove(attr)
-        number_of_consumption_attr = len(for_in_2)
+        number_of_consumption_attr = len(self.engine.player.logbook.book)
         if number_of_consumption_attr > 0:
             height = number_of_consumption_attr + 2
         else:
@@ -239,22 +233,13 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
         )
         if number_of_consumption_attr > 0:
-            for_in = [a for a in dir(self.engine.player) if "number_of_" in a]
-            for_in_2 = [a for a in dir(self.engine.player) if "number_of_" in a]
-            for attr in for_in:
-                if getattr(self.engine.player, attr) == 0:
-                    for_in_2.remove(attr)
-            for strung, i in enumerate(for_in_2):
-                print = (
-                    i.replace("number_of_", "")
-                    .replace("_", " ")
-                    .replace("consumed", "")
-                    .capitalize()
-                )
+
+            for i, name in enumerate(self.engine.player.logbook.book):
+                print = name.replace("remains of ", "").capitalize()
                 console.print(
                     x + 1,
-                    y + strung + 1,
-                    f"{print}: {getattr(self.engine.player,i)}",
+                    y + i + 1,
+                    f"{print}: {self.engine.player.logbook.book[name]}",
                 )
         else:
             console.print(x + 1, y + 1, "(Empty)")

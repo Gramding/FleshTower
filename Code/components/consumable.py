@@ -48,6 +48,7 @@ class HealingConsumable(Consumable):
                 color.health_recovered,
             )
             self.consume()
+            consumer.logbook.write_to_book(self.parent.name)
         else:
             raise Impossible(f"Your HP is already full!")
 
@@ -171,6 +172,7 @@ class ManaConsumable(Consumable):
                     color.mana_bar_filled,
                 )
                 self.consume()
+                consumer.logbook.write_to_book(self.parent.name)
             else:
                 raise Impossible(f"Your Mana is already full!")
         else:

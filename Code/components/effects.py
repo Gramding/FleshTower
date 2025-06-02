@@ -14,6 +14,7 @@ class Effect:
         pass
 
     def activate(self, engine: Engine, corpse: Entity, first: bool):
+        engine.player.logbook.write_to_book(entity_name=corpse.name)
         if first:
             engine.message_log.add_message(
                 f"You bury you're teeth in {corpse.name}",
@@ -34,13 +35,11 @@ class OrcEffect(Effect):
 
     def activate(self, engine: Engine, corpse: Entity):
         # If player eats an orc health increses by one
-        if engine.player.number_of_orcs_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_max_hp(1, False)
-            engine.player.number_of_orcs_consumed += 1
         else:
             super().activate(engine, corpse, False)
-            engine.player.number_of_orcs_consumed += 1
 
 
 class RatEffect(Effect):
@@ -56,13 +55,11 @@ class TrollEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse):
-        if engine.player.number_of_trolls_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1, False)
-            engine.player.number_of_trolls_consumed += 1
         else:
             super().activate(engine, corpse, False)
-            engine.player.number_of_trolls_consumed += 1
 
 
 class Lvl5BossEffect(Effect):
@@ -70,7 +67,7 @@ class Lvl5BossEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
-        if engine.player.number_of_weak_mages_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             # TODO Implement the effect for consuming a mage
             engine.player.is_mage = True
@@ -84,7 +81,6 @@ class Lvl5BossEffect(Effect):
             )
         else:
             super().activate(engine, corpse, False)
-        engine.player.number_of_weak_mages_consumed += 1
 
 
 class LightningEffect(Effect):
@@ -92,7 +88,6 @@ class LightningEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse: Entity):
-        engine.player.number_of_scrolls_of_lightning_consumed += 1
         spell_name = "Lightning Spell"
         success = engine.player.spellbook.learn_spell(
             spell=LightningSpell(engine, spell_name, 10), engine=engine
@@ -106,7 +101,6 @@ class FireballEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
-        engine.player.number_of_scrolls_of_fireball_consumed += 1
         spell_name = "Fireball Spell"
         success = engine.player.spellbook.learn_spell(
             spell=FireballSpell(engine, spell_name, 10, 3), engine=engine
@@ -119,7 +113,6 @@ class ConfusionEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
-        engine.player.number_of_scrolls_of_confusion_consumed += 1
         spell_name = "Confusion Spell"
         success = engine.player.spellbook.learn_spell(
             spell=ConfusionSpell(
@@ -161,13 +154,11 @@ class SwordEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse):
-        if engine.player.number_of_swords_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1, False)
         else:
             super().activate(engine, corpse, False)
-
-        engine.player.number_of_swords_consumed += 1
 
 
 class DaggerEffect(Effect):
@@ -175,12 +166,11 @@ class DaggerEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse):
-        if engine.player.number_of_daggers_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_power(1, False)
         else:
             super().activate(engine, corpse, False)
-        engine.player.number_of_daggers_consumed += 1
 
 
 class LeatherArmorEffect(Effect):
@@ -188,12 +178,11 @@ class LeatherArmorEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse):
-        if engine.player.number_of_leather_armor_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_defense(1, False)
         else:
             super().activate(engine, corpse, False)
-        engine.player.number_of_leather_armor_consumed += 1
 
 
 class ChainMailEffect(Effect):
@@ -201,18 +190,20 @@ class ChainMailEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse):
-        if engine.player.number_of_chain_mail_consumed < 1:
+        if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.level.increase_defense(1, False)
         else:
             super().activate(engine, corpse, False)
-        engine.player.number_of_chain_mail_consumed += 1
 
 
 class LogBook:
     def __init__(self):
-        self.effect = dict[Entity:int]
+        self.book: dict[Entity:int] = {}
         pass
 
-    def write_to_book(self, effect):
-        pass
+    def write_to_book(self, entity_name: str):
+        if entity_name in self.book:
+            self.book[entity_name] += 1
+        else:
+            self.book[entity_name] = 1

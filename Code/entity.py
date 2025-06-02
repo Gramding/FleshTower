@@ -125,7 +125,7 @@ class Actor(Entity):
         # ---------------------------------------------#
         # Let the Consumption begin Potions and such will not get tracked
         self.logbook: LogBook = logbook
-        self.number_of_orcs_consumed = 0
+        """ self.number_of_orcs_consumed = 0
         self.number_of_trolls_consumed = 0
         self.number_of_weak_mages_consumed = 0
         self.number_of_scrolls_of_lightning_consumed = 0
@@ -134,7 +134,7 @@ class Actor(Entity):
         self.number_of_swords_consumed = 0
         self.number_of_daggers_consumed = 0
         self.number_of_leather_armor_consumed = 0
-        self.number_of_chain_mail_consumed = 0
+        self.number_of_chain_mail_consumed = 0 """
         # ---------------------------------------------#
 
     @property
