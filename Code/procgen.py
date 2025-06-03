@@ -39,8 +39,8 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.rat, 60),
         (entity_factory.goblin, 60),
     ],
-    2: [(entity_factory.zombie, 20)],
-    4: [(entity_factory.flesh_golem, 5)],
+    2: [(entity_factory.zombie, 1)],
+    4: [(entity_factory.flesh_golem, 1)],
     3: [(entity_factory.troll, 15)],
     5: [(entity_factory.troll, 30)],
     7: [(entity_factory.troll, 60)],
@@ -219,7 +219,7 @@ def generate_dungeon(
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.randFloor()
             center_of_last_room = new_room.center
-        if len(rooms) >= 8 and not boss and boss_count == 0:
+        if len(rooms) >= 6 and not boss and boss_count == 0:
             boss_count = 1
             boss = True
         elif len(rooms) >= 8 and boss_count > 0:

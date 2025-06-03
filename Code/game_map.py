@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Iterable, Iterator, Optional, TYPE_CHECKING
 import numpy as np  # type: ignore
 from tcod.console import Console
+import random
 
 from entity import Actor, Item
 import tile_types
@@ -117,6 +118,7 @@ class GameWorld:
         from procgen import generate_dungeon
 
         self.current_floor += 1
+        self.randSizes()
         self.engine.game_map = generate_dungeon(
             max_rooms=self.max_rooms,
             room_min_size=self.room_min_size,
@@ -124,4 +126,14 @@ class GameWorld:
             map_width=self.map_width,
             map_height=self.map_height,
             engine=self.engine,
+        )
+
+    def randSizes(self):
+        # define ranges for floor numbers
+        self.max_rooms += self.current_floor
+        self.room_min_size = random.randint(
+            self.room_min_size, self.room_min_size + self.current_floor
+        )
+        self.room_max_size = random.randint(
+            self.room_max_size, self.room_max_size + self.current_floor
         )
