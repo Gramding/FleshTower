@@ -208,7 +208,7 @@ def generate_dungeon(
             room_check += 1
             continue
         # set tiles of room innter as floor
-        dungeon.tiles[new_room.inner] = tile_types.floor
+        dungeon.tiles[new_room.inner] = tile_types.randFloor()
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
@@ -217,7 +217,7 @@ def generate_dungeon(
             # now tunnels are built
             # with negative index to get previos room
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
-                dungeon.tiles[x, y] = tile_types.floor
+                dungeon.tiles[x, y] = tile_types.randFloor()
             center_of_last_room = new_room.center
         if len(rooms) >= 8 and not boss and boss_count == 0:
             boss_count = 1
