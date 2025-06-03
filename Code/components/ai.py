@@ -141,3 +141,11 @@ class HostileCaster(BaseAI):
                     dest_x - self.entity.x + 1,
                     dest_y - self.entity.y + 1,
                 ).perform()
+
+
+class Vendor(BaseAI):
+    def __init__(self, entity):
+        super().__init__(entity)
+
+    def perform(self):
+        return WaitAction(self.entity).perform()

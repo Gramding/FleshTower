@@ -12,23 +12,6 @@ if TYPE_CHECKING:
 
     # import components.effects
 
-""" consumption_dict: Dict[str, ef.Effect] = {
-    "remains of Orc": ef.OrcEffect(),
-    "remains of Troll": ef.TrollEffect(),
-    "remains of Weak Mage": ef.Lvl5BossEffect(),
-    "Scroll of Lightning": ef.LightningEffect(),
-    "Health Potion": ef.HealthEffect(),
-    "Mana Potion": ef.ManaEffect(),
-    "Scroll of Fireball": ef.FireballEffect(),
-    "Scroll of Confusion": ef.ConfusionEffect(),
-    "Sword": ef.SwordEffect(),
-    "Chain Mail": ef.ChainMailEffect(),
-    "Leather Armor": ef.LeatherArmorEffect(),
-    "Dagger": ef.DaggerEffect(),
-    "Large Health Potion": ef.HealthEffect(),
-    "remains of Rat": ef.RatEffect(),
-} """
-
 
 class Action:
     def __init__(self, entity: Actor) -> None:
@@ -185,7 +168,9 @@ class MovementAction(ActionWithDirection):
 class BumpAction(ActionWithDirection):
     def perform(self) -> None:
         if self.target_actor:
-            return MeleeAction(self.entity, self.dx, self.dy).perform()
+            # if entity is a vendor meele action is disabled
+            if not self.target_actor.name == "Organ trader":
+                return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
             return MovementAction(self.entity, self.dx, self.dy).perform()
 

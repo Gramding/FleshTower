@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import copy
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
 import tcod
 import actions
@@ -55,6 +56,23 @@ CONFIRM_KEYS = {
 }
 
 ActionOrHandler = Union[Action, "BaseEventHandler"]
+
+
+def get_target_vendor(engine: Engine) -> any:
+    target = engine.game_map.get_actor_at_location(engine.player.x, engine.player.y - 1)
+    if not target:
+        target = engine.game_map.get_actor_at_location(
+            engine.player.x, engine.player.y + 1
+        )
+    if not target:
+        target = engine.game_map.get_actor_at_location(
+            engine.player.x + 1, engine.player.y
+        )
+    if not target:
+        target = engine.game_map.get_actor_at_location(
+            engine.player.x - 1, engine.player.y
+        )
+    return target
 
 
 class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
@@ -334,7 +352,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 6
+        width = len(self.TITLE) + 10
 
         console.draw_frame(
             x=x,
@@ -467,6 +485,85 @@ class SpellBookActivateHandler(SpellBookEventHandler):
         return spell.activate()
 
 
+class ShopHandler(AskUserEventHandler):
+    def __init__(self, engine, target: any):
+        self.target = target
+        super().__init__(engine)
+
+    def on_render(self, console):
+
+        super().on_render(console)
+        number_of_items_in_shop = len(self.target.inventory.items)
+        height = number_of_items_in_shop + 2
+
+        if height <= 3:
+            height = 3
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        width = len(self.TITLE) + 10
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        if number_of_items_in_shop > 0:
+            for i, item in enumerate(self.target.inventory.items):
+                spell_key = chr(ord("a") + i)
+
+                item_string = f"({spell_key}) {item.name}"
+
+                console.print(x + 1, y + i + 1, item_string)
+        else:
+            console.print(x + 1, y + 1, "(Empty)")
+
+    def ev_keydown(self, event):
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+
+        if 0 <= index <= 26:
+            try:
+                seleted_item = self.target.inventory.items[index]
+            except IndexError:
+                self.engine.message_log.add_message(
+                    "What? I don't have that!", color.invalid
+                )
+                return None
+            return self.on_item_selected(seleted_item)
+        return super().ev_keydown(event)
+
+
+class ShopActivateHandler(ShopHandler):
+    TITLE = "Select item to buy"
+
+    def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        if self.engine.player.currency >= item.price:
+            i_tem = copy.deepcopy(item)
+
+            i_tem.parent = self.engine.player.inventory
+            self.engine.player.inventory.items.append(i_tem)
+            self.target.inventory.items.remove(item)
+            self.engine.player.currency -= item.price
+        else:
+            self.engine.message_log.add_message(
+                f"You're too poor are you not? This {item.name} costs {item.price} organs"
+            )
+        return  # item.activate()
+
+
 class SelectIndexHandler(AskUserEventHandler):
     def __init__(self, engine):
         super().__init__(engine)
@@ -581,6 +678,9 @@ class MainGameEventHandler(EventHandler):
 
         if key == tcod.event.KeySym.p and self.engine.player.is_mage:
             return SpellBookActivateHandler(self.engine)
+        target = get_target_vendor(engine=self.engine)
+        if key == tcod.event.KeySym.t and target and "Organ" in target.name:
+            return ShopActivateHandler(engine=self.engine, target=target)
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]

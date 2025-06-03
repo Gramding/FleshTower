@@ -142,6 +142,7 @@ class Item(Entity):
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
         effect: Effect,
+        price: int,
     ):
         super().__init__(
             x=x,
@@ -152,6 +153,7 @@ class Item(Entity):
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
+        self.price = price
         self.effect = effect
         self.consumable = consumable
         if self.consumable:

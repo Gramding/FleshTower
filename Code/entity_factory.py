@@ -1,4 +1,4 @@
-from components.ai import HostileEnemy, HostileCaster
+from components.ai import HostileEnemy, HostileCaster, Vendor
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components import consumable, equippable
@@ -126,12 +126,27 @@ lvl5_boss = Actor(
     effect=Lvl5BossEffect(),
 )
 
+vendor = Actor(
+    char="s",
+    color=(179, 184, 55),
+    name="Organ trader",
+    ai_cls=Vendor,
+    equipment=Equipment(),
+    fighter=Fighter(hp=20, base_defense=0, base_power=4),
+    inventory=Inventory(capacity=5),
+    level=Level(xp_given=10),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=Lvl5BossEffect(),
+)
+
 health_potion = Item(
     char="!",
     color=(127, 0, 255),
     name="Health Potion",
     consumable=consumable.HealingConsumable(amount=4),
     effect=HealthEffect(),
+    price=10,
 )
 
 large_health_potion = Item(
@@ -140,6 +155,7 @@ large_health_potion = Item(
     name="Large Health Potion",
     consumable=consumable.HealingConsumable(amount=10),
     effect=HealthEffect(),
+    price=50,
 )
 
 mana_potion = Item(
@@ -148,6 +164,7 @@ mana_potion = Item(
     name="Mana Potion",
     consumable=consumable.ManaConsumable(amount=10),
     effect=ManaEffect(),
+    price=10,
 )
 
 lightning_scroll = Item(
@@ -156,6 +173,7 @@ lightning_scroll = Item(
     name="Scroll of Lightning",
     consumable=consumable.LightningDamageConsumable(damage=20, maximum_range=5),
     effect=LightningEffect(),
+    price=100,
 )
 
 confusion_scroll = Item(
@@ -164,6 +182,7 @@ confusion_scroll = Item(
     name="Scroll of Confusion",
     consumable=consumable.ConfusionConsumable(number_of_turns=10),
     effect=ConfusionEffect(),
+    price=100,
 )
 
 fireball_scroll = Item(
@@ -172,6 +191,7 @@ fireball_scroll = Item(
     name="Scroll of Fireball",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
     effect=FireballEffect(),
+    price=150,
 )
 
 dagger = Item(
@@ -180,6 +200,7 @@ dagger = Item(
     name="Dagger",
     equippable=equippable.Dagger(),
     effect=DaggerEffect(),
+    price=200,
 )
 
 sword = Item(
@@ -188,6 +209,7 @@ sword = Item(
     name="Sword",
     equippable=equippable.Sword(),
     effect=SwordEffect(),
+    price=250,
 )
 
 leather_armor = Item(
@@ -196,6 +218,7 @@ leather_armor = Item(
     name="Leather Armor",
     equippable=equippable.LeatherArmor(),
     effect=LeatherArmorEffect(),
+    price=200,
 )
 
 chain_mail = Item(
@@ -204,4 +227,5 @@ chain_mail = Item(
     name="Chain Mail",
     equippable=equippable.ChainMail(),
     effect=ChainMailEffect(),
+    price=300,
 )

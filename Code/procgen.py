@@ -40,7 +40,7 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.goblin, 60),
     ],
     2: [(entity_factory.zombie, 1)],
-    4: [(entity_factory.flesh_golem, 1)],
+    4: [(entity_factory.flesh_golem, 1), (entity_factory.vendor, 10)],
     3: [(entity_factory.troll, 15)],
     5: [(entity_factory.troll, 30)],
     7: [(entity_factory.troll, 60)],
@@ -83,6 +83,17 @@ def get_entities_at_random(
     )
 
     return chosen_entities
+
+
+def generate_shop_items(entity: Entity, floor_number: int):
+    if hasattr(entity, "inventory"):
+        if entity.inventory.capacity > 0:
+            items: List[Entity] = get_entities_at_random(item_chances, 5, floor_number)
+            for item in items:
+                l_hp = copy.deepcopy(item)
+
+                l_hp.parent = entity.inventory
+                entity.inventory.items.append(l_hp)
 
 
 class RectangularRoom:
@@ -145,6 +156,12 @@ def place_entities(
             if "Mana" in entity.name and not dungeon.engine.player.is_mage:
                 entity_factory.health_potion.spawn(dungeon, x, y)
                 continue
+            if "Organ" in entity.name and dungeon.vendor_spawned:
+                entity_factory.orc.spawn(dungeon, x, y)
+                continue
+            elif "Organ" in entity.name:
+                generate_shop_items(entity=entity, floor_number=floor_number)
+                dungeon.vendor_spawned = True
             entity.spawn(dungeon, x, y)
     if floor_number == 5 and boss:
         entity_factory.lvl5_boss.spawn(

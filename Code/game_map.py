@@ -18,6 +18,7 @@ class GameMap:
         self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()
     ):
         self.engine = engine
+        self.vendor_spawned = False
         self.width = width
         self.height = height
         self.entities = set(entities)
@@ -118,7 +119,7 @@ class GameWorld:
         from procgen import generate_dungeon
 
         self.current_floor += 1
-        self.randSizes()
+        # self.randSizes()
         self.engine.game_map = generate_dungeon(
             max_rooms=self.max_rooms,
             room_min_size=self.room_min_size,
