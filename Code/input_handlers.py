@@ -278,7 +278,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x,
             y=0,
             width=35,
-            height=12,
+            height=8,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -296,11 +296,6 @@ class LevelUpEventHandler(AskUserEventHandler):
             y=5,
             string=f"b) Strength (+1 attack, from {self.engine.player.fighter.power})",
         )
-        console.print(
-            x=x + 1,
-            y=6,
-            string=f"c) Agility (+1 defense, from {self.engine.player.fighter.defense})",
-        )
         if self.engine.player.is_mage:
             console.print(
                 x=x + 1,
@@ -313,15 +308,14 @@ class LevelUpEventHandler(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 0 <= index <= 3:
+        if 0 <= index <= 2:
             if index == 0:
                 player.level.increase_max_hp()
             elif index == 1:
                 player.level.increase_power()
-            elif index == 2:
-                player.level.increase_defense()
             elif index == 3 and player.is_mage:
                 player.level.increase_max_mana()
+
         else:
             self.engine.message_log.add_message("Invalide selection", color.invalid)
 
