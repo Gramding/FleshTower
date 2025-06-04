@@ -137,7 +137,7 @@ vendor = Actor(
     level=Level(xp_given=10),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=Lvl5BossEffect(),
+    effect=DefautlEffect(),
 )
 
 health_potion = Item(

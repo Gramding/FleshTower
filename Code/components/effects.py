@@ -20,18 +20,19 @@ class Effect:
 
         if first:
             engine.message_log.add_message(
-                f"You bury you're teeth in {corpse.name}",
+                f"You consume {corpse.name}",
                 color.corpse_consumption,
             )
             engine.game_map.entities.remove(corpse)
         else:
             engine.message_log.add_message(
-                f"You bury you're teeth in {corpse.name}, nothing happens",
+                f"You consume {corpse.name}, nothing happens",
                 color.corpse_consumption,
             )
             engine.game_map.entities.remove(corpse)
 
     def add_currency(self, engine: Engine, amount: int):
+        engine.message_log.add_message(f"You find {amount} organs")
         engine.player.currency += amount
 
 
