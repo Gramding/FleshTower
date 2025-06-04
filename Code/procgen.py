@@ -239,7 +239,7 @@ def generate_dungeon(
         if len(rooms) >= 6 and not boss and boss_count == 0:
             boss_count = 1
             boss = True
-        elif len(rooms) >= 8 and boss_count > 0:
+        elif boss_count > 0:
             boss = False
         place_entities(
             new_room, dungeon, engine.game_world.current_floor, boss, len(rooms)
