@@ -194,7 +194,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=8,
+            height=len(self.engine.player.fighter.stats) + 5,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -211,14 +211,53 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             y=y + 3,
             string=f"XP for next Level: {self.engine.player.level.xp_to_next_level}",
         )
+        # Tendon Mass
+        tm = self.engine.player.fighter.stats["TM"]
 
+        # Nerve Sync
+        ns = self.engine.player.fighter.stats["NS"]
+
+        # Flesh Integrity
+        fi = self.engine.player.fighter.stats["FI"]
+
+        # Cerebral Drift
+        cd = self.engine.player.fighter.stats["CD"]
+
+        # Perceptual Echo
+        pe = self.engine.player.fighter.stats["PE"]
+
+        # Visceral Influence
+        vi = self.engine.player.fighter.stats["VI"]
         console.print(
-            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
+            x=x + 1,
+            y=4,
+            string=f"Tendon Mass :          {tm}",
         )
         console.print(
-            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
+            x=x + 1,
+            y=5,
+            string=f"Nerve Sync :           {ns}",
         )
-        console.print(x=x + 1, y=y + 6, string=f"Organs: {self.engine.player.currency}")
+        console.print(
+            x=x + 1,
+            y=6,
+            string=f"Flesh Integrity :      {fi}",
+        )
+        console.print(
+            x=x + 1,
+            y=7,
+            string=f"Cerebral Drift :       {cd}",
+        )
+        console.print(
+            x=x + 1,
+            y=8,
+            string=f"Perceptual Echo :      {pe}",
+        )
+        console.print(
+            x=x + 1,
+            y=9,
+            string=f"Visceral Influence :   {vi}",
+        )
 
 
 class ConsumptionScreenEventHandler(AskUserEventHandler):
@@ -277,8 +316,8 @@ class LevelUpEventHandler(AskUserEventHandler):
         console.draw_frame(
             x=x,
             y=0,
-            width=35,
-            height=8,
+            width=40,
+            height=len(self.engine.player.fighter.stats) + 5,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -286,35 +325,74 @@ class LevelUpEventHandler(AskUserEventHandler):
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
         console.print(x=x + 1, y=2, string="Select the towers blessing")
+        tm = self.engine.player.fighter.stats["TM"]
+
+        # Nerve Sync
+        ns = self.engine.player.fighter.stats["NS"]
+
+        # Flesh Integrity
+        fi = self.engine.player.fighter.stats["FI"]
+
+        # Cerebral Drift
+        cd = self.engine.player.fighter.stats["CD"]
+
+        # Perceptual Echo
+        pe = self.engine.player.fighter.stats["PE"]
+
+        # Visceral Influence
+        vi = self.engine.player.fighter.stats["VI"]
         console.print(
             x=x + 1,
             y=4,
-            string=f"a) Constitution (+20 HP, from {self.engine.player.fighter.max_hp})",
+            string=f"a) Tendon Mass (current: {tm})",
         )
         console.print(
             x=x + 1,
             y=5,
-            string=f"b) Strength (+1 attack, from {self.engine.player.fighter.power})",
+            string=f"b) Nerve Sync (current: {ns})",
         )
-        if self.engine.player.is_mage:
-            console.print(
-                x=x + 1,
-                y=7,
-                string=f"d) Mana (+10 mana, from {self.engine.player.fighter.max_mana})",
-            )
+        console.print(
+            x=x + 1,
+            y=6,
+            string=f"c) Flesh Integrity (current: {fi})",
+        )
+        console.print(
+            x=x + 1,
+            y=7,
+            string=f"d) Cerebral Drift (current: {cd})",
+        )
+        console.print(
+            x=x + 1,
+            y=8,
+            string=f"e) Perceptual Echo (current: {pe})",
+        )
+        console.print(
+            x=x + 1,
+            y=9,
+            string=f"f) Visceral Influence (current: {vi})",
+        )
 
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.a
 
-        if 0 <= index <= 2:
+        if 0 <= index <= 5:
             if index == 0:
-                player.level.increase_max_hp()
+                player.fighter.stats["TM"] += 1
             elif index == 1:
-                player.level.increase_power()
-            elif index == 3 and player.is_mage:
-                player.level.increase_max_mana()
+                player.fighter.stats["NS"] += 1
+            elif index == 2:
+                player.fighter.stats["FI"] += 1
+            elif index == 3:
+                player.fighter.stats["CD"] += 1
+            elif index == 4:
+                player.fighter.stats["PE"] += 1
+            elif index == 5:
+                player.fighter.stats["VI"] += 1
+
+            self.engine.player.level.increase_level()
+            self.engine.player.fighter.derive_stats()
 
         else:
             self.engine.message_log.add_message("Invalide selection", color.invalid)

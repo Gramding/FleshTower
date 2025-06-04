@@ -7,6 +7,7 @@ from entity import Actor, Item
 from components.level import Level
 from components.spells import SpellBook
 from components.effects import *
+from typing import Dict
 
 player = Actor(
     char="@",
@@ -14,7 +15,12 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=1, base_power=3),
+    fighter=Fighter(
+        base_hp=30,
+        base_defense=1,
+        base_power=1,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=100),
     spellbook=SpellBook(10),
@@ -28,7 +34,12 @@ rat = Actor(
     name="Rat",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=3, base_defense=0, base_power=1),
+    fighter=Fighter(
+        base_hp=3,
+        base_defense=0,
+        base_power=1,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=5),
     spellbook=SpellBook(0),
@@ -42,7 +53,12 @@ goblin = Actor(
     name="Goblin",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=6, base_defense=0, base_power=2),
+    fighter=Fighter(
+        base_hp=6,
+        base_defense=0,
+        base_power=2,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=20),
     spellbook=SpellBook(0),
@@ -56,7 +72,12 @@ orc = Actor(
     name="Orc",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=10, base_defense=0, base_power=3),
+    fighter=Fighter(
+        base_hp=10,
+        base_defense=0,
+        base_power=3,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=35),
     spellbook=SpellBook(0),
@@ -69,7 +90,12 @@ troll = Actor(
     name="Troll",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=16, base_defense=1, base_power=4),
+    fighter=Fighter(
+        base_hp=16,
+        base_defense=1,
+        base_power=4,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
     spellbook=SpellBook(0),
@@ -83,7 +109,12 @@ zombie = Actor(
     name="Zombie",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=14, base_defense=3, base_power=2),
+    fighter=Fighter(
+        base_hp=14,
+        base_defense=3,
+        base_power=2,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
     spellbook=SpellBook(0),
@@ -100,7 +131,12 @@ flesh_golem = Actor(
     name="Flesh Golem",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=40, base_defense=4, base_power=5),
+    fighter=Fighter(
+        base_hp=40,
+        base_defense=4,
+        base_power=5,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=250),
     spellbook=SpellBook(0),
@@ -108,7 +144,7 @@ flesh_golem = Actor(
     # TODO special effect for consumption
     # should be positive effect at 5 consumed
     # effect player "gains" additional arm and does additional attack in meele range
-    # player looses mage and gains double hp
+    # player looses mage and gains double base_hp
     effect=DefautlEffect(),
 )
 
@@ -118,7 +154,12 @@ lvl5_boss = Actor(
     name="Weak Mage",
     ai_cls=HostileCaster,
     equipment=Equipment(),
-    fighter=Fighter(hp=20, base_defense=0, base_power=4),
+    fighter=Fighter(
+        base_hp=20,
+        base_defense=0,
+        base_power=4,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=2),
     level=Level(xp_given=1000),
     spellbook=SpellBook(0),
@@ -132,7 +173,12 @@ vendor = Actor(
     name="Organ trader",
     ai_cls=Vendor,
     equipment=Equipment(),
-    fighter=Fighter(hp=20, base_defense=0, base_power=4),
+    fighter=Fighter(
+        base_hp=20,
+        base_defense=0,
+        base_power=4,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
     inventory=Inventory(capacity=5),
     level=Level(xp_given=10),
     spellbook=SpellBook(0),

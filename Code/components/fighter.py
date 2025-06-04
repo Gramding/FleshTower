@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Dict
 import color
 from components.base_component import BaseComponent
 from render_order import RenderOrder
@@ -15,17 +15,41 @@ class Fighter(BaseComponent):
 
     def __init__(
         self,
-        hp: int,
+        base_hp: int,
         base_defense: int,
         base_power: int,
+        stats: Dict[str, int],
         # consumption: Optional[ConsumeCorpse],
     ):
-        self.max_hp = hp
+        self.stats = stats
+
+        # HP
+        self.base_hp = base_hp
+        self.max_hp = 0
+        self._hp = self.max_hp
+
+        # MANA
+        self.base_mana = 30
         self.mana = 0
         self.max_mana = 0
-        self._hp = hp
-        self.base_defense = base_defense
+
+        # POWER
         self.base_power = base_power
+        self.power = 0
+
+        # DEFENCE
+        self.base_defense = base_defense
+        self.damage_reduction_base = 5
+        self.damage_reduction = 0
+
+        # MAGIC
+        self.spell_damage_bonus = 0
+        self.spell_cost_reduction = 0
+
+        # SHOP DISCOUNT
+        self.price_discount = 0
+
+        self.derive_stats()
 
     @property
     def hp(self) -> int:
@@ -42,10 +66,6 @@ class Fighter(BaseComponent):
     @property
     def defense(self) -> int:
         return self.base_defense + self.defense_bonus
-
-    @property
-    def power(self) -> int:
-        return self.base_power + self.power_bonus
 
     @property
     def defense_bonus(self) -> int:
@@ -120,3 +140,34 @@ class Fighter(BaseComponent):
             self.mana -= spell.mana_cost
             return True
         return False
+
+    def get_modifier_value(self, value: int) -> int:
+        return int((value - 8) / 2)
+
+    def derive_stats(self):
+        # Tendous Mass
+        tm = self.get_modifier_value(self.stats["TM"])
+        self.power = tm + self.base_power
+
+        # Nerve Sync
+        ns = self.get_modifier_value(self.stats["NS"])
+        if self.damage_reduction + self.damage_reduction_base <= 50:
+            self.damage_reduction = self.damage_reduction_base * ns
+
+        # Flesh Integrity
+        fi = self.get_modifier_value(self.stats["FI"])
+        self.max_hp = self.base_hp + (fi * 4)
+        self._hp = self.max_hp
+
+        # Cerebral Drift
+        cd = self.get_modifier_value(self.stats["CD"])
+        self.spell_damage_bonus = cd
+
+        # Perceptual Echo
+        pe = self.get_modifier_value(self.stats["PE"])
+        self.mana = self.base_mana + pe
+
+        # Visceral Influence
+        vi = self.get_modifier_value(self.stats["VI"])
+        self.price_discount = vi
+        self.spell_cost_reduction = vi * 2
