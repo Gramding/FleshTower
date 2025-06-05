@@ -5,6 +5,7 @@ import color
 from components.base_component import BaseComponent
 from render_order import RenderOrder
 from components.spells import Spell
+import math
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -142,7 +143,7 @@ class Fighter(BaseComponent):
         return False
 
     def get_modifier_value(self, value: int) -> int:
-        return int((value - 8) / 2)
+        return math.ceil((value - 8) / 2)
 
     def derive_stats(self):
         # Tendous Mass
@@ -151,8 +152,13 @@ class Fighter(BaseComponent):
 
         # Nerve Sync
         ns = self.get_modifier_value(self.stats["NS"])
-        if self.damage_reduction + self.damage_reduction_base <= 50:
-            self.damage_reduction = self.damage_reduction_base * ns
+        if self.damage_reduction + (self.damage_reduction_base * (ns * 2)) <= 50:
+            if ns == 0:
+                self.damage_reduction = self.damage_reduction_base
+            else:
+                self.damage_reduction = self.damage_reduction_base * (ns * 2)
+        else:
+            self.damage_reduction = 50
 
         # Flesh Integrity
         fi = self.get_modifier_value(self.stats["FI"])

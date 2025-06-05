@@ -34,7 +34,8 @@ class Level(BaseComponent):
         return self.current_xp > self.xp_to_next_level
 
     def add_xp(self, xp: int) -> None:
-        if xp == 0 or self.level_up_base == 0:
+        self.parent.fighter.derive_stats()
+        if xp == 0:
             return
 
         self.current_xp += xp

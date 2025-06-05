@@ -31,7 +31,10 @@ def render_bar(
         )
 
     console.print(
-        x=1, y=45, string=f"HP:{current_value}/{maximum_value}", fg=color.bar_text
+        x=1,
+        y=45,
+        string=f"Vital Mass:{current_value}/{maximum_value}",
+        fg=color.bar_text,
     )
 
 
@@ -48,7 +51,10 @@ def render_mana_bar(
         )
 
     console.print(
-        x=1, y=47, string=f"Mana:{current_value}/{maximum_value}", fg=color.bar_text
+        x=1,
+        y=47,
+        string=f"Mutagen Reserves:{current_value}/{maximum_value}",
+        fg=color.bar_text,
     )
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, Tuple, TYPE_CHECKING, Dict
 import color
 import exceptions
-
+import random
 import components.effects as ef
 
 if TYPE_CHECKING:
@@ -128,20 +128,28 @@ class ActionWithDirection(Action):
 class MeleeAction(ActionWithDirection):
     def perform(self) -> None:
         target = self.target_actor
+        doged = False
+        damage = 0
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
-        damage = self.entity.fighter.power - target.fighter.defense
+        dmg_chance = random.randint(0, 100)
+        if dmg_chance >= self.entity.fighter.defense:
+            damage = self.entity.fighter.power
+        else:
+            doged = True
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
         if self.engine is self.engine.player:
             attack_color = color.player_atk
         else:
             attack_color = color.enemy_atk
-        if damage > 0:
+        if damage > 0 and not doged:
             self.engine.message_log.add_message(
                 f"{attack_desc} for {damage} HP.", attack_color
             )
             target.fighter.hp -= damage
+        elif doged:
+            self.engine.message_log.add_message(f"{attack_desc}, doged")
         else:
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.", attack_color

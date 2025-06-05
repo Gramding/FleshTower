@@ -3,6 +3,7 @@ import os
 import copy
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
 import tcod
+import tcod.constants
 import actions
 from actions import Action, BumpAction, WaitAction, PickupAction
 import color
@@ -179,7 +180,7 @@ class AskUserEventHandler(EventHandler):
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Stats"
 
-    def on_render(self, console):
+    def on_render(self, console: tcod.console.Console):
         super().on_render(console)
         if self.engine.player.x <= 30:
             x = 40
@@ -194,15 +195,20 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=len(self.engine.player.fighter.stats) + 5,
+            height=len(self.engine.player.fighter.stats) + 20,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
             title=self.TITLE,
         )
+        level = f"Level: {self.engine.player.level.current_level}"
+        console.print(x=x + 1, y=y + 1, string=level)
         console.print(
-            x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}"
+            x=(x + 1) + len(level) + 5,
+            y=y + 1,
+            string=f"Organs: {self.engine.player.currency}",
         )
+
         console.print(
             x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}"
         )
@@ -211,6 +217,26 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             y=y + 3,
             string=f"XP for next Level: {self.engine.player.level.xp_to_next_level}",
         )
+
+        console.draw_rect(
+            x=x + 1,
+            y=5,
+            width=width - 2,
+            height=1,
+            ch=ord("─"),
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+            bg_blend=libtcodpy.BKGND_MULTIPLY,
+        )
+        console.print(
+            x + 1,
+            5,
+            string="┤Vital Aberrations├",
+            alignment=libtcodpy.CENTER,
+            width=width - 2,
+            height=1,
+        )
+
         # Tendon Mass
         tm = self.engine.player.fighter.stats["TM"]
 
@@ -230,33 +256,72 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         vi = self.engine.player.fighter.stats["VI"]
         console.print(
             x=x + 1,
-            y=4,
-            string=f"Tendon Mass :          {tm}",
-        )
-        console.print(
-            x=x + 1,
-            y=5,
-            string=f"Nerve Sync :           {ns}",
-        )
-        console.print(
-            x=x + 1,
-            y=6,
-            string=f"Flesh Integrity :      {fi}",
-        )
-        console.print(
-            x=x + 1,
             y=7,
-            string=f"Cerebral Drift :       {cd}",
+            string=f"Tendon Mass            : {tm}",
         )
         console.print(
             x=x + 1,
             y=8,
-            string=f"Perceptual Echo :      {pe}",
+            string=f"Nerve Sync             : {ns}",
         )
         console.print(
             x=x + 1,
             y=9,
-            string=f"Visceral Influence :   {vi}",
+            string=f"Flesh Integrity        : {fi}",
+        )
+        console.print(
+            x=x + 1,
+            y=10,
+            string=f"Cerebral Drift         : {cd}",
+        )
+        console.print(
+            x=x + 1,
+            y=11,
+            string=f"Perceptual Echo        : {pe}",
+        )
+        console.print(
+            x=x + 1,
+            y=12,
+            string=f"Visceral Influence     : {vi}",
+        )
+
+        console.draw_rect(
+            x=x + 1,
+            y=14,
+            width=width - 2,
+            height=1,
+            ch=ord("─"),
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+            bg_blend=libtcodpy.BKGND_MULTIPLY,
+        )
+        console.print(
+            x + 1,
+            14,
+            string="┤Behavioral Deviations├",
+            alignment=libtcodpy.CENTER,
+            width=width - 2,
+            height=1,
+        )
+        console.print(
+            x=x + 1,
+            y=16,
+            string=f"Trauma Output          : {self.engine.player.fighter.power}",
+        )
+        console.print(
+            x=x + 1,
+            y=17,
+            string=f"Flesh Absorption       : {self.engine.player.fighter.damage_reduction}",
+        )
+        console.print(
+            x=x + 1,
+            y=18,
+            string=f"Cerebral Overcharge    : {self.engine.player.fighter.damage_reduction}",
+        )
+        console.print(
+            x=x + 1,
+            y=19,
+            string=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
         )
 
 
@@ -622,16 +687,23 @@ class ShopActivateHandler(ShopHandler):
     TITLE = "Select item to buy"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        # player price discount from Visceral Influence -> Flesh Bargain taken into acount
+        real_price = item.price - (
+            item.price * (self.engine.player.fighter.price_discount / 100)
+        )
         if self.engine.player.currency >= item.price:
             i_tem = copy.deepcopy(item)
 
             i_tem.parent = self.engine.player.inventory
             self.engine.player.inventory.items.append(i_tem)
             self.target.inventory.items.remove(item)
-            self.engine.player.currency -= item.price
+            self.engine.player.currency -= real_price
+            self.engine.message_log.add_message(
+                f"You buy {item.name} for {real_price} organs"
+            )
         else:
             self.engine.message_log.add_message(
-                f"You're too poor are you not? This {item.name} costs {item.price} organs"
+                f"You're too poor are you not? This {item.name} costs {real_price} organs"
             )
         return  # item.activate()
 

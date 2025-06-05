@@ -18,11 +18,11 @@ player = Actor(
     fighter=Fighter(
         base_hp=30,
         base_defense=1,
-        base_power=1,
+        base_power=2,
         stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
     ),
     inventory=Inventory(capacity=26),
-    level=Level(level_up_base=100),
+    level=Level(level_up_base=0),
     spellbook=SpellBook(10),
     logbook=LogBook(),
     effect=None,
@@ -190,7 +190,7 @@ health_potion = Item(
     char="!",
     color=(127, 0, 255),
     name="Health Potion",
-    consumable=consumable.HealingConsumable(amount=4),
+    consumable=consumable.HealingConsumable(amount=5),
     effect=HealthEffect(),
     price=10,
 )

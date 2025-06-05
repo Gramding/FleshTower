@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import color
 from components.spells import LightningSpell, FireballSpell, ConfusionSpell
 
@@ -10,12 +10,27 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
+name_dict = {
+    "TM": "Tendon Mass",
+    "NS": "Nerve Sync",
+    "FI": "Flesh Integrity",
+    "CD": "Cerebral Drift",
+    "PE": "Perceptual Echo",
+    "VI": "Viceral Influence",
+}
+
 
 class Effect:
     def __init__(self):
         pass
 
-    def activate(self, engine: Engine, corpse: Entity, first: bool):
+    def activate(
+        self,
+        engine: Engine,
+        corpse: Entity,
+        first: bool,
+        stat_to_improve: Optional[str] = "",
+    ):
         engine.player.logbook.write_to_book(entity_name=corpse.name)
 
         if first:
@@ -23,6 +38,10 @@ class Effect:
                 f"You consume {corpse.name}",
                 color.corpse_consumption,
             )
+            if stat_to_improve:
+                stat = name_dict[stat_to_improve]
+                engine.message_log.add_message(f"Your {stat} improves")
+                engine.player.fighter.derive_stats()
             engine.game_map.entities.remove(corpse)
         else:
             engine.message_log.add_message(
@@ -52,8 +71,8 @@ class OrcEffect(Effect):
     def activate(self, engine: Engine, corpse: Entity):
         # If player eats an orc health increses by one
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
-            engine.player.level.increase_max_hp(1, False)
+            super().activate(engine, corpse, True, "FI")
+            engine.player.fighter.stats["FI"] += 1
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
@@ -63,10 +82,10 @@ class TrollEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse):
+    def activate(self, engine: Engine, corpse):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1, False)
+            super().activate(engine, corpse, True, "TM")
+            engine.player.fighter.stats["TM"] += 1
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
@@ -163,10 +182,10 @@ class SwordEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse):
+    def activate(self, engine: Engine, corpse):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1, False)
+            super().activate(engine, corpse, True, "TM")
+            engine.player.fighter.stats["TM"] += 2
         else:
             super().activate(engine, corpse, False)
 
@@ -177,8 +196,8 @@ class DaggerEffect(Effect):
 
     def activate(self, engine, corpse):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
-            engine.player.level.increase_power(1, False)
+            super().activate(engine, corpse, True, "TM")
+            engine.player.fighter.stats["TM"] += 1
         else:
             super().activate(engine, corpse, False)
 
@@ -190,7 +209,7 @@ class LeatherArmorEffect(Effect):
     def activate(self, engine, corpse):
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_defense(1, False)
+            engine.player.fighter.stats["NS"] += 1
         else:
             super().activate(engine, corpse, False)
 
@@ -202,7 +221,7 @@ class ChainMailEffect(Effect):
     def activate(self, engine, corpse):
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
-            engine.player.level.increase_defense(1, False)
+            engine.player.fighter.stats["NS"] += 1
         else:
             super().activate(engine, corpse, False)
 
