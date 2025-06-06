@@ -90,8 +90,13 @@ class ConfusionSpell(Spell):
     def activate(self):
         if self.engine.player.fighter.cast_spell(self):
             self.get_target()
-            if self.target:
+            if self.target and hasattr(self.target.ai, "confused"):
                 self.target.ai = self.target.ai.confused
+            else:
+                self.engine.message_log.add_message("Target can't be confused")
+                # TODO this will be problematic and gain more mana than was spent
+                # we need to factor in the cost reduction
+                self.engine.player.fighter.mana += self.mana_cost
 
 
 class SpellBook:

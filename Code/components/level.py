@@ -34,7 +34,6 @@ class Level(BaseComponent):
         return self.current_xp > self.xp_to_next_level
 
     def add_xp(self, xp: int) -> None:
-        self.parent.fighter.derive_stats()
         if xp == 0:
             return
 
@@ -42,6 +41,7 @@ class Level(BaseComponent):
         self.engine.message_log.add_message(f"You gain {xp} XP")
 
         if self.requires_level_up:
+            self.parent.fighter.derive_stats()
             self.engine.message_log.add_message(
                 f"You gain a level to {self.current_level +1}"
             )

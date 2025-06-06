@@ -26,7 +26,7 @@ class Fighter(BaseComponent):
 
         # HP
         self.base_hp = base_hp
-        self.max_hp = 0
+        self.max_hp = base_hp
         self._hp = self.max_hp
 
         # MANA
@@ -50,7 +50,7 @@ class Fighter(BaseComponent):
         # SHOP DISCOUNT
         self.price_discount = 0
 
-        self.derive_stats()
+        self.derive_stats(req_hp_reset=True)
 
     @property
     def hp(self) -> int:
@@ -137,6 +137,7 @@ class Fighter(BaseComponent):
             return amount
 
     def cast_spell(self, spell: Spell) -> bool:
+        # TODO implement spell cost reduction stat
         if self.mana >= spell.mana_cost:
             self.mana -= spell.mana_cost
             return True
@@ -145,7 +146,7 @@ class Fighter(BaseComponent):
     def get_modifier_value(self, value: int) -> int:
         return math.ceil((value - 8) / 2)
 
-    def derive_stats(self):
+    def derive_stats(self, req_hp_reset: Optional[bool] = False):
         # Tendous Mass
         tm = self.get_modifier_value(self.stats["TM"])
         self.power = tm + self.base_power
@@ -163,7 +164,8 @@ class Fighter(BaseComponent):
         # Flesh Integrity
         fi = self.get_modifier_value(self.stats["FI"])
         self.max_hp = self.base_hp + (fi * 4)
-        self._hp = self.max_hp
+        if req_hp_reset:
+            self._hp = self.max_hp
 
         # Cerebral Drift
         cd = self.get_modifier_value(self.stats["CD"])
@@ -171,7 +173,9 @@ class Fighter(BaseComponent):
 
         # Perceptual Echo
         pe = self.get_modifier_value(self.stats["PE"])
-        self.mana = self.base_mana + pe
+        self.max_mana = self.max_mana + (pe * 4)
+        if req_hp_reset:
+            self.mana = self.base_mana + pe
 
         # Visceral Influence
         vi = self.get_modifier_value(self.stats["VI"])

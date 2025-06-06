@@ -188,7 +188,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x = 0
 
         y = 0
-
+        self.engine.player.fighter.derive_stats()
         width = len(self.TITLE) + 30
 
         console.draw_frame(
@@ -254,40 +254,83 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
         # Visceral Influence
         vi = self.engine.player.fighter.stats["VI"]
-        console.print(
-            x=x + 1,
-            y=7,
-            string=f"Tendon Mass            : {tm}",
-        )
+        # Descriptors
+        console.print(x=x + 24, y=7, string="Val  | Mod")
+        # STAT
         console.print(
             x=x + 1,
             y=8,
-            string=f"Nerve Sync             : {ns}",
+            string=f"Tendon Mass            : {tm} ",
         )
+        console.print(
+            x=x + 29,
+            y=8,
+            string=f"| {self.engine.player.fighter.get_modifier_value(tm)}",
+        )
+
+        # STAT
         console.print(
             x=x + 1,
             y=9,
-            string=f"Flesh Integrity        : {fi}",
+            string=f"Nerve Sync             : {ns} ",
         )
+        console.print(
+            x=x + 29,
+            y=9,
+            string=f"| {self.engine.player.fighter.get_modifier_value(ns)}",
+        )
+
+        # STAT
         console.print(
             x=x + 1,
             y=10,
-            string=f"Cerebral Drift         : {cd}",
+            string=f"Flesh Integrity        : {fi} ",
         )
+        console.print(
+            x=x + 29,
+            y=10,
+            string=f"| {self.engine.player.fighter.get_modifier_value(fi)}",
+        )
+
+        # STAT
         console.print(
             x=x + 1,
             y=11,
-            string=f"Perceptual Echo        : {pe}",
+            string=f"Cerebral Drift         : {cd} ",
         )
+        console.print(
+            x=x + 29,
+            y=11,
+            string=f"| {self.engine.player.fighter.get_modifier_value(cd)}",
+        )
+
+        # STAT
         console.print(
             x=x + 1,
             y=12,
-            string=f"Visceral Influence     : {vi}",
+            string=f"Perceptual Echo        : {pe} ",
+        )
+        console.print(
+            x=x + 29,
+            y=12,
+            string=f"| {self.engine.player.fighter.get_modifier_value(pe)}",
+        )
+
+        # STAT
+        console.print(
+            x=x + 1,
+            y=13,
+            string=f"Visceral Influence     : {vi} ",
+        )
+        console.print(
+            x=x + 29,
+            y=13,
+            string=f"| {self.engine.player.fighter.get_modifier_value(vi)}",
         )
 
         console.draw_rect(
             x=x + 1,
-            y=14,
+            y=15,
             width=width - 2,
             height=1,
             ch=ord("─"),
@@ -297,7 +340,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
         console.print(
             x + 1,
-            14,
+            15,
             string="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
@@ -305,22 +348,22 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
         console.print(
             x=x + 1,
-            y=16,
+            y=17,
             string=f"Trauma Output          : {self.engine.player.fighter.power}",
         )
         console.print(
             x=x + 1,
-            y=17,
+            y=18,
             string=f"Flesh Absorption       : {self.engine.player.fighter.damage_reduction}",
         )
         console.print(
             x=x + 1,
-            y=18,
+            y=19,
             string=f"Cerebral Overcharge    : {self.engine.player.fighter.damage_reduction}",
         )
         console.print(
             x=x + 1,
-            y=19,
+            y=20,
             string=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
         )
 
@@ -342,7 +385,6 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
             x = 0
 
         y = 0
-
         width = len(self.TITLE) + 12
 
         console.draw_frame(
@@ -377,7 +419,6 @@ class LevelUpEventHandler(AskUserEventHandler):
             x = 40
         else:
             x = 0
-
         console.draw_frame(
             x=x,
             y=0,
@@ -457,7 +498,7 @@ class LevelUpEventHandler(AskUserEventHandler):
                 player.fighter.stats["VI"] += 1
 
             self.engine.player.level.increase_level()
-            self.engine.player.fighter.derive_stats()
+            self.engine.player.fighter.derive_stats(True)
 
         else:
             self.engine.message_log.add_message("Invalide selection", color.invalid)
