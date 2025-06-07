@@ -280,7 +280,7 @@ gorebound = Item(
     char="@",
     color=(255, 0, 0),
     name="- Gorebound -                  The Gorebound is a abomination that feeds to grow.          They do not wear armor. They become it.",
-    effect=ConfusionEffect(),
+    effect=ConfusionEffect(),  # TODO Change effect to real one
     price=100,
 )
 
@@ -288,6 +288,6 @@ helixbound = Item(
     char="@",
     color=(0, 0, 255),
     name="- Helixbound -                  The Helixbound is a vessel of unstable genetic recursion—a caster whose power is drawn not from words or will, but from rewriting their own biology.",
-    effect=ConfusionEffect(),
+    effect=ConfusionEffect(),  # TODO Change effect to real one
     price=100,
 )
