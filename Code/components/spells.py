@@ -30,7 +30,7 @@ class Spell:
 
 class LightningSpell(Spell):
     def __init__(self, engine, name, mana_cost: int):
-        self.damage = 20
+        self.damage = 20 + self.engine.player.fighter.spell_damage_bonus
         self.range = 8
         super().__init__(engine, name, mana_cost)
 
@@ -54,7 +54,7 @@ class LightningSpell(Spell):
 
 class FireballSpell(Spell):
     def __init__(self, engine, name, mana_cost: int, radius: int):
-        self.damage = 12
+        self.damage = 12 + self.engine.player.fighter.spell_damage_bonus
         self.range = 8
         self.radius = radius
         super().__init__(engine, name, mana_cost)
