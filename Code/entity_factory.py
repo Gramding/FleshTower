@@ -190,7 +190,7 @@ health_potion = Item(
     char="!",
     color=(127, 0, 255),
     name="Health Potion",
-    consumable=consumable.HealingConsumable(amount=5),
+    consumable=consumable.HealingConsumable(amount=15),
     effect=HealthEffect(),
     price=10,
 )
@@ -199,7 +199,7 @@ large_health_potion = Item(
     char="!",
     color=(255, 0, 127),
     name="Large Health Potion",
-    consumable=consumable.HealingConsumable(amount=10),
+    consumable=consumable.HealingConsumable(amount=30),
     effect=HealthEffect(),
     price=50,
 )

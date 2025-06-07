@@ -160,8 +160,11 @@ class HealthEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
-        engine.player.fighter.heal(corpse.consumable.amount)
-        engine.message_log.add_message(f"You gain {corpse.consumable.amount} HP")
+        heal_amount = int(
+            engine.player.fighter.max_hp * (corpse.consumable.amount / 100)
+        )
+        engine.player.fighter.heal(heal_amount)
+        engine.message_log.add_message(f"You gain {heal_amount} HP")
         super().activate(engine, corpse, True)
 
 

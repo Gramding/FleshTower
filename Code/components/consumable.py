@@ -36,11 +36,14 @@ class Consumable(BaseComponent):
 
 class HealingConsumable(Consumable):
     def __init__(self, amount: int):
+        # amount in % of player health
         self.amount = amount
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        amount_recovered = consumer.fighter.heal(self.amount)
+        # percent based healing
+        heal_amount = int(self.engine.player.fighter.max_hp * (self.amount / 100))
+        amount_recovered = consumer.fighter.heal(heal_amount)
 
         if amount_recovered > 0:
             self.engine.message_log.add_message(
