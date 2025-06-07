@@ -224,11 +224,13 @@ def generate_dungeon(
             # continue (dont use this one and start anew)
             room_check += 1
             continue
-        # set tiles of room innter as floor
+            # set tiles of room innter as floor
         dungeon.tiles[new_room.inner] = tile_types.randFloor()
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
+            entity_factory.gorebound.spawn(dungeon, player.x - 2, player.y - 2)
+            entity_factory.helixbound.spawn(dungeon, player.x + 2, player.y - 2)
             # this ensures that the first room is safe
         else:
             # now tunnels are built

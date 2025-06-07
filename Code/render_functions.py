@@ -73,5 +73,9 @@ def render_names_at_mouse_location(
     names_at_mouse_location = get_names_at_location(
         x=mouse_x, y=mouse_y, game_map=engine.game_map
     )
-
-    console.print(x=mouse_x, y=mouse_y - 1, string=names_at_mouse_location)
+    if len(names_at_mouse_location) > 20:
+        names_at_mouse_location = engine.message_log.wrap(names_at_mouse_location, 30)
+        for i, line in enumerate(names_at_mouse_location):
+            console.print(x=0, y=0 + i, string=line)
+    else:
+        console.print(x=mouse_x, y=mouse_y - 1, string=names_at_mouse_location)
