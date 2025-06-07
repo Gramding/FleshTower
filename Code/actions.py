@@ -133,7 +133,7 @@ class MeleeAction(ActionWithDirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
         dmg_chance = random.randint(0, 100)
-        if dmg_chance >= self.entity.fighter.defense:
+        if dmg_chance >= target.fighter.damage_reduction:
             damage = self.entity.fighter.power
         else:
             doged = True

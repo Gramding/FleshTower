@@ -94,9 +94,11 @@ class ConfusionSpell(Spell):
                 self.target.ai = self.target.ai.confused
             else:
                 self.engine.message_log.add_message("Target can't be confused")
-                # TODO this will be problematic and gain more mana than was spent
                 # we need to factor in the cost reduction
-                self.engine.player.fighter.mana += self.mana_cost
+                self.engine.player.fighter.mana += self.mana_cost - (
+                    self.mana_cost
+                    * (self.engine.player.fighter.spell_cost_reduction / 100)
+                )
 
 
 class SpellBook:

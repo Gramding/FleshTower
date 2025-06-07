@@ -137,9 +137,11 @@ class Fighter(BaseComponent):
             return amount
 
     def cast_spell(self, spell: Spell) -> bool:
-        # TODO implement spell cost reduction stat
-        if self.mana >= spell.mana_cost:
-            self.mana -= spell.mana_cost
+        true_cost = spell.mana_cost - (
+            spell.mana_cost * (self.engine.player.fighter.spell_cost_reduction / 100)
+        )
+        if self.mana >= true_cost:
+            self.mana -= true_cost
             return True
         return False
 
