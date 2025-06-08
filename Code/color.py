@@ -23,6 +23,8 @@ bar_filled = (0x0, 0x60, 0x0)
 bar_empty = (0x40, 0x10, 0x10)
 
 mana_bar_filled = (0, 0, 255)
+stamina_bar_filled = (205, 197, 10)
+mass_bar_filled = (104, 0, 0)
 
 spell_learned = (78, 84, 191)
 

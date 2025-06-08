@@ -32,6 +32,14 @@ class Effect:
         stat_to_improve: Optional[str] = "",
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name)
+        if engine.player.is_fighter:
+            increase = random.randint(1, 3)
+            if engine.player.fighter.mass + increase <= engine.player.fighter.max_mass:
+                engine.player.fighter.mass += increase
+            else:
+                engine.player.fighter.mass = 0
+                engine.player.fighter.max_mass += 10
+                engine.player.fighter.mass_level += 1
 
         if first:
             engine.message_log.add_message(
@@ -96,15 +104,20 @@ class Lvl5BossEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
+        gorebound = ""
+        for entity in engine.game_map.entities:
+            if "Gore" in entity.name:
+                gorebound = entity
+        engine.game_map.entities.remove(gorebound)
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.is_mage = True
-            engine.player.fighter.mana = 30
-            engine.player.fighter.max_mana = 30
-            engine.player.fighter.max_hp = 20
+            engine.player.is_rouge = False
+            engine.player.fighter.base_hp = 20
             engine.player.fighter.hp = 20
+            engine.player.fighter.derive_stats()
             engine.message_log.add_message(
-                f"You feel the mana of the mage coursing through your blood. Your flesh weakens but your mind strengthens",
+                f"You feel the mutagen of the mage coursing through your blood. Your flesh weakens but your mind strengthens",
                 color.mage,
             )
         else:
@@ -239,3 +252,21 @@ class LogBook:
             self.book[entity_name] += 1
         else:
             self.book[entity_name] = 1
+
+
+class GoreboundEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine: Engine, corpse, stat_to_improve=""):
+        helixbound = ""
+        for entity in engine.game_map.entities:
+            if "Helix" in entity.name:
+                helixbound = entity
+        engine.game_map.entities.remove(helixbound)
+        engine.player.is_fighter = True
+        engine.player.is_rouge = False
+        engine.player.fighter.base_hp = 40
+        engine.player.fighter.hp = 40
+        engine.player.fighter.derive_stats(True)
+        return super().activate(engine, corpse, True, stat_to_improve)

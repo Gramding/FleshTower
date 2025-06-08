@@ -50,6 +50,16 @@ class Fighter(BaseComponent):
         # SHOP DISCOUNT
         self.price_discount = 0
 
+        # STAMINA
+        self.base_stamina = 30
+        self.max_stamina = 0
+        self.stamina = 0
+
+        # MASS
+        self.mass = 0
+        self.max_mass = 30
+        self.mass_level = 0
+
         self.derive_stats(req_hp_reset=True)
 
     @property
@@ -162,6 +172,9 @@ class Fighter(BaseComponent):
                 self.damage_reduction = self.damage_reduction_base * (ns * 2)
         else:
             self.damage_reduction = 50
+        self.max_stamina = self.base_stamina + (ns * 4)
+        if req_hp_reset:
+            self.stamina = self.max_stamina
 
         # Flesh Integrity
         fi = self.get_modifier_value(self.stats["FI"])
@@ -175,7 +188,7 @@ class Fighter(BaseComponent):
 
         # Perceptual Echo
         pe = self.get_modifier_value(self.stats["PE"])
-        self.max_mana = self.max_mana + (pe * 4)
+        self.max_mana = self.base_mana + (pe * 4)
         if req_hp_reset:
             self.mana = self.base_mana + pe
 
@@ -183,3 +196,7 @@ class Fighter(BaseComponent):
         vi = self.get_modifier_value(self.stats["VI"])
         self.price_discount = vi
         self.spell_cost_reduction = vi * 2
+
+        # Fighter Mass
+        self.max_hp += self.mass_level * 4
+        self.damage_reduction += self.mass_level

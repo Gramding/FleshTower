@@ -65,6 +65,20 @@ class Engine:
                 maximum_value=self.player.fighter.max_mana,
                 total_width=20,
             )
+        elif self.player.is_rouge:
+            render_functions.render_stamina_bar(
+                console=console,
+                current_value=self.player.fighter.stamina,
+                maximum_value=self.player.fighter.max_stamina,
+                total_width=20,
+            )
+        elif self.player.is_fighter:
+            render_functions.render_mass_bar(
+                console=console,
+                current_value=self.player.fighter.mass,
+                maximum_value=self.player.fighter.max_mass,
+                total_width=20,
+            )
 
     def save_as(self, filename: str) -> None:
         save_data = lzma.compress(pickle.dumps(self))

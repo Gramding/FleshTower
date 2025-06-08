@@ -119,7 +119,9 @@ class Actor(Entity):
         self.level.parent = self
         self.equipment: Equipment = equipment
         self.equipment.parent = self
+        self.is_rouge = True
         self.is_mage = False
+        self.is_fighter = False
         self.spellbook: SpellBook = spellbook
         self.effect = effect
         self.logbook: LogBook = logbook
