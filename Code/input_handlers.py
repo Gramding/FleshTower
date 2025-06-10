@@ -869,6 +869,21 @@ class MainGameEventHandler(EventHandler):
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
+            # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
+            if (
+                self.engine.player.is_rouge
+                and modifier
+                and self.engine.player.fighter.stamina >= 2
+            ):
+                dx = dx * 2
+                dy = dy * 2
+                self.engine.player.fighter.stamina -= 2
+            elif (
+                self.engine.player.fighter.stamina
+                < self.engine.player.fighter.max_stamina
+            ):
+                # if player is not sprinting they regain 1 stamina per movement
+                self.engine.player.fighter.stamina += 1
             action = BumpAction(player, dx, dy)
         elif key in WAIT_KEYS:
             action = WaitAction(player)
