@@ -134,11 +134,16 @@ class MeleeAction(ActionWithDirection):
             raise exceptions.Impossible("Nothing to attack.")
         dmg_chance = random.randint(0, 100)
         if dmg_chance >= target.fighter.damage_reduction:
-            damage = self.entity.fighter.power
+            if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+                damage = self.entity.fighter.power * 2
+            else:
+                damage = self.entity.fighter.power
         else:
             doged = True
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+        if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+            attack_desc += " critically"
         if self.engine is self.engine.player:
             attack_color = color.player_atk
         else:
