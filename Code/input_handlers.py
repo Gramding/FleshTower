@@ -35,14 +35,14 @@ MOVE_KEYS = {
     tcod.event.KeySym.KP_8: (0, -1),
     tcod.event.KeySym.KP_9: (1, -1),
     # Vi keys.
-    tcod.event.KeySym.h: (-1, 0),
-    tcod.event.KeySym.j: (0, 1),
-    tcod.event.KeySym.k: (0, -1),
-    tcod.event.KeySym.l: (1, 0),
-    tcod.event.KeySym.y: (-1, -1),
-    tcod.event.KeySym.u: (1, -1),
-    tcod.event.KeySym.b: (-1, 1),
-    tcod.event.KeySym.n: (1, 1),
+    # tcod.event.KeySym.H: (-1, 0),
+    # tcod.event.KeySym.J: (0, 1),
+    # tcod.event.KeySym.K: (0, -1),
+    # tcod.event.KeySym.L: (1, 0),
+    # tcod.event.KeySym.Y: (-1, -1),
+    # tcod.event.KeySym.U: (1, -1),
+    # tcod.event.KeySym.B: (-1, 1),
+    # tcod.event.KeySym.N: (1, 1),
 }
 
 WAIT_KEYS = {
@@ -481,7 +481,7 @@ class LevelUpEventHandler(AskUserEventHandler):
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        index = key - tcod.event.KeySym.A
 
         if 0 <= index <= 5:
             if index == 0:
@@ -560,7 +560,7 @@ class InventoryEventHandler(AskUserEventHandler):
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        index = key - tcod.event.KeySym.A
 
         if 0 <= index <= 26:
             try:
@@ -642,7 +642,7 @@ class SpellBookEventHandler(AskUserEventHandler):
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        index = key - tcod.event.KeySym.A
 
         if 0 <= index <= 26:
             try:
@@ -710,7 +710,7 @@ class ShopHandler(AskUserEventHandler):
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        index = key - tcod.event.KeySym.A
 
         if 0 <= index <= 26:
             try:
@@ -853,18 +853,18 @@ class MainGameEventHandler(EventHandler):
         ):
             return actions.TakeStairsAction(player)
 
-        if key == tcod.event.KeySym.c and modifier & (
+        if key == tcod.event.KeySym.C and modifier & (
             tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
         ):
             return actions.ConsumeCorpseAction(player)
 
-        if key == tcod.event.KeySym.l:
+        if key == tcod.event.KeySym.L:
             return ConsumptionScreenEventHandler(self.engine)
 
-        if key == tcod.event.KeySym.p and self.engine.player.is_mage:
+        if key == tcod.event.KeySym.P and self.engine.player.is_mage:
             return SpellBookActivateHandler(self.engine)
         target = get_target_vendor(engine=self.engine)
-        if key == tcod.event.KeySym.t and target and "Organ" in target.name:
+        if key == tcod.event.KeySym.T and target and "Organ" in target.name:
             return ShopActivateHandler(engine=self.engine, target=target)
 
         if key in MOVE_KEYS:
@@ -890,15 +890,15 @@ class MainGameEventHandler(EventHandler):
 
         elif key == tcod.event.KeySym.ESCAPE:
             raise SystemExit()
-        elif key == tcod.event.KeySym.v:
+        elif key == tcod.event.KeySym.V:
             return HistoryViewer(self.engine)
-        elif key == tcod.event.KeySym.g:
+        elif key == tcod.event.KeySym.G:
             action = PickupAction(player)
-        elif key == tcod.event.KeySym.i:
+        elif key == tcod.event.KeySym.I:
             return InventoryActivateHandler(self.engine)
-        elif key == tcod.event.KeySym.d:
+        elif key == tcod.event.KeySym.D:
             return InventoryDropHandler(self.engine)
-        elif key == tcod.event.KeySym.c:
+        elif key == tcod.event.KeySym.C:
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)

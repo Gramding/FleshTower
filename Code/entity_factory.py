@@ -279,7 +279,7 @@ chain_mail = Item(
 gorebound = Item(
     char="@",
     color=(255, 0, 0),
-    name="- Gorebound -                  The Gorebound is a abomination that feeds to grow.          They do not wear armor. They become it.",
+    name="- Gorebound -                  The Gorebound is an abomination that feeds to grow.          They do not wear armor. They become it.",
     effect=GoreboundEffect(),
     price=100,
 )

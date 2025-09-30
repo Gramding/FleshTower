@@ -87,9 +87,9 @@ class MainMenu(input_handlers.BaseEventHandler):
             )
 
     def ev_keydown(self, event):
-        if event.sym in (tcod.event.KeySym.q, tcod.event.KeySym.ESCAPE):
+        if event.sym in (tcod.event.KeySym.Q, tcod.event.KeySym.ESCAPE):
             raise SystemExit()
-        elif event.sym == tcod.event.KeySym.c:
+        elif event.sym == tcod.event.KeySym.C:
             try:
                 return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
             except FileNotFoundError:
@@ -99,5 +99,5 @@ class MainMenu(input_handlers.BaseEventHandler):
             except Exception as exc:
                 traceback.print_exc()
                 return input_handlers.PopupMessage(self, f"Failed to load: \n{exc}")
-        elif event.sym == tcod.event.KeySym.n:
+        elif event.sym == tcod.event.KeySym.N:
             return input_handlers.MainGameEventHandler(new_game())
