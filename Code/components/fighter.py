@@ -200,3 +200,4 @@ class Fighter(BaseComponent):
         # Fighter Mass
         self.max_hp += self.mass_level * 4
         self.damage_reduction += self.mass_level
+

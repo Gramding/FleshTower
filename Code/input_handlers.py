@@ -202,20 +202,24 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             title=self.TITLE,
         )
         level = f"Level: {self.engine.player.level.current_level}"
-        console.print(x=x + 1, y=y + 1, string=level)
+        console.print(x=x + 1, y=y + 1, text=level)
         console.print(
             x=(x + 1) + len(level) + 5,
             y=y + 1,
-            string=f"Organs: {self.engine.player.currency}",
+            text=f"Organs: {self.engine.player.currency}",
         )
+        
 
         console.print(
-            x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}"
+            x=(x + 1) + len(level) + 5, y=y + 2, text=f"Class: {self.engine.player.class_name}"
+        )
+        console.print(
+            x=x + 1, y=y + 2, text=f"XP: {self.engine.player.level.current_xp}"
         )
         console.print(
             x=x + 1,
             y=y + 3,
-            string=f"XP for next Level: {self.engine.player.level.xp_to_next_level}",
+            text=f"XP for next Level: {self.engine.player.level.xp_to_next_level}",
         )
 
         console.draw_rect(
@@ -255,77 +259,77 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         # Visceral Influence
         vi = self.engine.player.fighter.stats["VI"]
         # Descriptors
-        console.print(x=x + 24, y=7, string="Val  | Mod")
+        console.print(x=x + 24, y=7, text="Val  | Mod")
         # STAT
         console.print(
             x=x + 1,
             y=8,
-            string=f"Tendon Mass            : {tm} ",
+            text=f"Tendon Mass            : {tm} ",
         )
         console.print(
             x=x + 29,
             y=8,
-            string=f"| {self.engine.player.fighter.get_modifier_value(tm)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(tm)}",
         )
 
         # STAT
         console.print(
             x=x + 1,
             y=9,
-            string=f"Nerve Sync             : {ns} ",
+            text=f"Nerve Sync             : {ns} ",
         )
         console.print(
             x=x + 29,
             y=9,
-            string=f"| {self.engine.player.fighter.get_modifier_value(ns)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(ns)}",
         )
 
         # STAT
         console.print(
             x=x + 1,
             y=10,
-            string=f"Flesh Integrity        : {fi} ",
+            text=f"Flesh Integrity        : {fi} ",
         )
         console.print(
             x=x + 29,
             y=10,
-            string=f"| {self.engine.player.fighter.get_modifier_value(fi)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(fi)}",
         )
 
         # STAT
         console.print(
             x=x + 1,
             y=11,
-            string=f"Cerebral Drift         : {cd} ",
+            text=f"Cerebral Drift         : {cd} ",
         )
         console.print(
             x=x + 29,
             y=11,
-            string=f"| {self.engine.player.fighter.get_modifier_value(cd)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(cd)}",
         )
 
         # STAT
         console.print(
             x=x + 1,
             y=12,
-            string=f"Perceptual Echo        : {pe} ",
+            text=f"Perceptual Echo        : {pe} ",
         )
         console.print(
             x=x + 29,
             y=12,
-            string=f"| {self.engine.player.fighter.get_modifier_value(pe)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(pe)}",
         )
 
         # STAT
         console.print(
             x=x + 1,
             y=13,
-            string=f"Visceral Influence     : {vi} ",
+            text=f"Visceral Influence     : {vi} ",
         )
         console.print(
             x=x + 29,
             y=13,
-            string=f"| {self.engine.player.fighter.get_modifier_value(vi)}",
+            text=f"| {self.engine.player.fighter.get_modifier_value(vi)}",
         )
 
         console.draw_rect(
@@ -349,22 +353,22 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         console.print(
             x=x + 1,
             y=17,
-            string=f"Trauma Output          : {self.engine.player.fighter.power}",
+            text=f"Trauma Output          : {self.engine.player.fighter.power}",
         )
         console.print(
             x=x + 1,
             y=18,
-            string=f"Flesh Absorption       : {self.engine.player.fighter.damage_reduction}",
+            text=f"Flesh Absorption       : {self.engine.player.fighter.damage_reduction}",
         )
         console.print(
             x=x + 1,
             y=19,
-            string=f"Cerebral Overcharge    : {self.engine.player.fighter.damage_reduction}",
+            text=f"Cerebral Overcharge    : {self.engine.player.fighter.damage_reduction}",
         )
         console.print(
             x=x + 1,
             y=20,
-            string=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
+            text=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
         )
 
 

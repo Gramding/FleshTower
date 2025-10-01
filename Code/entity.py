@@ -127,9 +127,18 @@ class Actor(Entity):
         self.logbook: LogBook = logbook
         self.currency = 0
 
+
     @property
     def is_alive(self) -> bool:
         return bool(self.ai)
+    @property
+    def class_name(self) -> None:
+        if self.is_fighter:
+            return  "Gorebound"
+        elif self.is_mage:
+            return  "Helixbound"
+        elif self.is_rouge:
+            return  "Whisperbound"
 
 
 class Item(Entity):
