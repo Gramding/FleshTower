@@ -138,6 +138,7 @@ class MeleeAction(ActionWithDirection):
                 damage = self.entity.fighter.power * 2
             else:
                 damage = self.entity.fighter.power
+            self.typal_damage()
         else:
             doged = True
 
@@ -159,6 +160,18 @@ class MeleeAction(ActionWithDirection):
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.", attack_color
             )
+
+    def typal_damage(self)-> None:
+        #this function is supposed to represent damages to the class
+        #specific functions ie. fighter takes mass damage
+        if self.engine.player.is_fighter:
+            damage_to_mass_probability = random.randint(0,100)
+            if damage_to_mass_probability <= (20 - self.engine.player.fighter.mass_level):
+                mass_damage = random.randint(1,2)
+                self.engine.message_log.add_message(f"You're mass is damaged by {mass_damage}")
+                self.engine.player.fighter.mass -= mass_damage
+                if self.engine.player.fighter.mass < 0:
+                    self.engine.player.fighter.mass = 0
 
 
 class MovementAction(ActionWithDirection):
