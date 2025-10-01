@@ -132,9 +132,9 @@ class Actor(Entity):
     def is_alive(self) -> bool:
         return bool(self.ai)
     @property
-    def class_name(self) -> None:
+    def class_name(self) -> str:
         if self.is_fighter:
-            return  "Gorebound"
+            return f"Gorebound {self.fighter.mass_level}"
         elif self.is_mage:
             return  "Helixbound"
         elif self.is_rouge:

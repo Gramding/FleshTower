@@ -209,7 +209,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             text=f"Organs: {self.engine.player.currency}",
         )
         
-
+        #display class name in stat screen
         console.print(
             x=(x + 1) + len(level) + 5, y=y + 2, text=f"Class: {self.engine.player.class_name}"
         )
