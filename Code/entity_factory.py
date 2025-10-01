@@ -291,3 +291,12 @@ helixbound = Item(
     effect=Lvl5BossEffect(),
     price=100,
 )
+
+wierd_ring = Item(
+    char="o",
+    color=(139, 69, 19),
+    name="Wierd Ring",
+    equippable=equippable.WierdRing(),
+    effect=DefautlEffect(),
+    price=300,
+)
