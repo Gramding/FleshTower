@@ -96,7 +96,7 @@ class Fighter(BaseComponent):
     def stat_bonus(self) -> int:
         # TODO Write stat bonus for items this should increas the Stats of character like str and so on
         if self.parent.equipment:
-            pass
+            das = self.parent.equipment.stat_bonus
             # for i in self.parent.equipment.stat_bonus
 
     def die(self) -> None:

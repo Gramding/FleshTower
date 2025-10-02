@@ -13,22 +13,23 @@ class Equipment(BaseComponent):
     parent: Actor
 
     def __init__(
-            self, 
-            weapon: Optional[Item] = None,
-            ring0: Optional[Item] = None, 
-            ring1: Optional[Item] = None,
-            ring2: Optional[Item] = None,
-            ring3: Optional[Item] = None,
-            ring4: Optional[Item] = None,
-            ring5: Optional[Item] = None,
-            ring6: Optional[Item] = None,
-            ring7: Optional[Item] = None,
-            ring8: Optional[Item] = None,
-            ring9: Optional[Item] = None,
-            armor: Optional[Item] = None):
+        self,
+        weapon: Optional[Item] = None,
+        ring0: Optional[Item] = None,
+        ring1: Optional[Item] = None,
+        ring2: Optional[Item] = None,
+        ring3: Optional[Item] = None,
+        ring4: Optional[Item] = None,
+        ring5: Optional[Item] = None,
+        ring6: Optional[Item] = None,
+        ring7: Optional[Item] = None,
+        ring8: Optional[Item] = None,
+        ring9: Optional[Item] = None,
+        armor: Optional[Item] = None,
+    ):
         self.weapon = weapon
         self.armor = armor
-        #this is ok for now but needs to be changed somehow TODO
+        # this is ok for now but needs to be changed somehow TODO
         self.ring0 = ring0
         self.ring1 = ring1
         self.ring2 = ring2
@@ -39,7 +40,6 @@ class Equipment(BaseComponent):
         self.ring7 = ring7
         self.ring8 = ring8
         self.ring9 = ring9
-  
 
     @property
     def defence_bonus(self) -> int:
@@ -63,17 +63,28 @@ class Equipment(BaseComponent):
             bonus += self.armor.equippable.power_bonus
 
         return bonus
-    
-    @property
-    def stat_bonus(self) -> int:
-        bonus = 0
+
+    def stat_bonus(self, action_type):
+        for i in self.__dict__:
+            if "_" not in i and "parent" not in i:
+                slot = getattr(self, i)
+                if slot and slot.equippable:
+                    if slot.equippable is not None:
+                        for i in slot.equippable.stat_bonus:
+                            if action_type == "+":
+                                self.engine.player.fighter.stats[
+                                    i
+                                ] += slot.equippable.stat_bonus[i]
+                            else:
+                                self.engine.player.fighter.stats[
+                                    i
+                                ] -= slot.equippable.stat_bonus[i]
 
     def item_is_equipped(self, item: Item) -> bool:
-        #new logic allows for dynamic check if any slot is currently equipped
+        # new logic allows for dynamic check if any slot is currently equipped
         for i in self.__dict__:
-            if "_" not in i and getattr(self,i) == item:
-                return getattr(self,i) == item
-                
+            if "_" not in i and getattr(self, i) == item:
+                return getattr(self, i) == item
 
         return False
 
@@ -90,12 +101,14 @@ class Equipment(BaseComponent):
             self.unequip_from_slot(slot, add_message)
 
         setattr(self, slot, item)
+        self.stat_bonus("+")
 
         if add_message:
             self.equip_message(item.name)
 
     def unequip_from_slot(self, slot: str, add_message: bool) -> None:
         current_item = getattr(self, slot)
+        self.stat_bonus("-")
 
         if add_message:
             self.unequip_message(current_item.name)
@@ -108,23 +121,26 @@ class Equipment(BaseComponent):
             and equippable_item.equippable.equipment_type == EquipmentType.WEAPON
         ):
             slot = "weapon"
-        elif(
+        elif (
             equippable_item.equippable
             and equippable_item.equippable.equipment_type == EquipmentType.ARMOR
         ):
             slot = "armor"
-        elif(
+        elif (
             equippable_item.equippable
             and equippable_item.equippable.equipment_type == EquipmentType.RING
         ):
-            #logic allows for the equipping of up to 10 rings
-            #should work
+            # logic allows for the equipping of up to 10 rings
+            # should work
             for i in range(9):
                 slot_name = f"ring{i}"
-                if getattr(self,slot_name) == equippable_item or  getattr(self,slot_name) == None :
+                if (
+                    getattr(self, slot_name) == equippable_item
+                    or getattr(self, slot_name) == None
+                ):
                     slot = slot_name
                     break
-            #slot = "ring1"
+            # slot = "ring1"
 
         if getattr(self, slot) == equippable_item:
             self.unequip_from_slot(slot, add_message)

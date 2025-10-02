@@ -61,5 +61,5 @@ class WierdRing(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 5, "PE": 0, "VI": 0},
+            stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 1, "PE": 0, "VI": 0},
         )
