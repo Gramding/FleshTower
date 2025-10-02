@@ -208,10 +208,12 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             y=y + 1,
             text=f"Organs: {self.engine.player.currency}",
         )
-        
-        #display class name in stat screen
+
+        # display class name in stat screen
         console.print(
-            x=(x + 1) + len(level) + 5, y=y + 2, text=f"Class: {self.engine.player.class_name}"
+            x=(x + 1) + len(level) + 5,
+            y=y + 2,
+            text=f"Class: {self.engine.player.class_name}",
         )
         console.print(
             x=x + 1, y=y + 2, text=f"XP: {self.engine.player.level.current_xp}"

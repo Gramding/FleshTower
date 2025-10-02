@@ -12,7 +12,9 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     if not game_map.in_bounds(x, y) or not game_map.visible[int(x), int(y)]:
         return ""
     names = ", ".join(
-        entity.name for entity in game_map.entities if entity.x == int(x) and entity.y == int(y)
+        entity.name
+        for entity in game_map.entities
+        if entity.x == int(x) and entity.y == int(y)
     )
 
     return names.capitalize()
@@ -120,4 +122,6 @@ def render_names_at_mouse_location(
         for i, line in enumerate(names_at_mouse_location):
             console.print(x=0, y=0 + i, string=line)
     else:
-        console.print(x=int(mouse_x), y=int(mouse_y) - 1, string=names_at_mouse_location)
+        console.print(
+            x=int(mouse_x), y=int(mouse_y) - 1, string=names_at_mouse_location
+        )

@@ -127,18 +127,18 @@ class Actor(Entity):
         self.logbook: LogBook = logbook
         self.currency = 0
 
-
     @property
     def is_alive(self) -> bool:
         return bool(self.ai)
+
     @property
     def class_name(self) -> str:
         if self.is_fighter:
             return f"Gorebound {self.fighter.mass_level}"
         elif self.is_mage:
-            return  "Helixbound"
+            return "Helixbound"
         elif self.is_rouge:
-            return  "Whisperbound"
+            return "Whisperbound"
 
 
 class Item(Entity):

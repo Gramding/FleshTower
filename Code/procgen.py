@@ -24,7 +24,7 @@ max_monsters_by_floor = [
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
-        #TODO change spawn rate of ring back to reasonable percentage
+        # TODO change spawn rate of ring back to reasonable percentage
         (entity_factory.wierd_ring, 100),
         (entity_factory.health_potion, 35),
         (entity_factory.mana_potion, 35),

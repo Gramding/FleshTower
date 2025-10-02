@@ -44,10 +44,18 @@ class ChainMail(Equippable):
     def __init__(self):
         super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=3)
 
+
 class Ring(Equippable):
     def __init__(self):
-        super().__init__(equipment_type= EquipmentType.RING, stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0})
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
+        )
+
 
 class WierdRing(Ring):
     def __init__(self):
-        super().__init__(equipment_type= EquipmentType.RING, stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 5, "PE": 0, "VI": 0})
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 5, "PE": 0, "VI": 0},
+        )
