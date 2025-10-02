@@ -46,10 +46,14 @@ class ChainMail(Equippable):
 
 
 class Ring(Equippable):
-    def __init__(self):
+    def __init__(
+        self,
+        equipment_type,
+        stat_bonus: dict = {"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
+    ):
         super().__init__(
-            equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
+            equipment_type=equipment_type,
+            stat_bonus=stat_bonus,
         )
 
 

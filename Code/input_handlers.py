@@ -878,7 +878,7 @@ class MainGameEventHandler(EventHandler):
             # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
             if (
                 self.engine.player.is_rouge
-                and modifier
+                and tcod.event.Modifier.LSHIFT in modifier
                 and self.engine.player.fighter.stamina >= 2
             ):
                 dx = dx * 2
