@@ -277,10 +277,11 @@ class FleshGolemEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse, first, stat_to_improve=""):
-
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.fighter.bonus_attack_count += 1
+            engine.player.is_mage = False
+            engine.player.fighter.base_hp *= 2
         else:
             super().activate(engine, corpse, False)
         return super().activate(engine, corpse, first, stat_to_improve)

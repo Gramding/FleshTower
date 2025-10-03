@@ -71,7 +71,10 @@ class Equipment(BaseComponent):
                 if slot and slot.equippable:
                     if slot.equippable is not None:
                         for i in slot.equippable.stat_bonus:
-                            if action_type == "+":
+                            if (
+                                action_type == "+"
+                                and slot.equippable.is_applied == False
+                            ):
                                 self.engine.player.fighter.stats[
                                     i
                                 ] += slot.equippable.stat_bonus[i]
@@ -79,6 +82,11 @@ class Equipment(BaseComponent):
                                 self.engine.player.fighter.stats[
                                     i
                                 ] -= slot.equippable.stat_bonus[i]
+
+                        if action_type == "+" and slot.equippable.is_applied == False:
+                            slot.equippable.is_applied = True
+                        else:
+                            slot.equippable.is_applied = False
 
     def item_is_equipped(self, item: Item) -> bool:
         # new logic allows for dynamic check if any slot is currently equipped

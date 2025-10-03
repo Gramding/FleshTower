@@ -97,13 +97,6 @@ class Fighter(BaseComponent):
         else:
             return 0
 
-    @property
-    def stat_bonus(self) -> int:
-        # TODO Write stat bonus for items this should increas the Stats of character like str and so on
-        if self.parent.equipment:
-            das = self.parent.equipment.stat_bonus
-            # for i in self.parent.equipment.stat_bonus
-
     def die(self) -> None:
         if self.engine.player is self.parent:
             death_message = "Your flesh becomes part of the tower"

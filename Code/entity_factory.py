@@ -141,9 +141,6 @@ flesh_golem = Actor(
     level=Level(xp_given=250),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    # TODO special effect for consumption
-    # effect player "gains" additional arm and does additional attack in meele range
-    # player looses mage and gains double base_hp
     effect=FleshGolemEffect(),
 )
 
