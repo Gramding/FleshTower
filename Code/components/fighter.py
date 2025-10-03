@@ -38,6 +38,11 @@ class Fighter(BaseComponent):
         self.base_power = base_power
         self.power = 0
 
+        # ATTACKS
+        self.base_attack_count = 1
+        self.bonus_attack_count = 0
+        self.attack_count = 0
+
         # DEFENCE
         self.base_defense = base_defense
         self.damage_reduction_base = 5
@@ -207,3 +212,6 @@ class Fighter(BaseComponent):
         # Fighter Mass
         self.max_hp += self.mass_level * 4
         self.damage_reduction += self.mass_level
+
+        # Attack Count
+        self.attack_count = self.base_attack_count + self.bonus_attack_count

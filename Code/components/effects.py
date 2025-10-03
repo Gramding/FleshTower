@@ -270,3 +270,17 @@ class GoreboundEffect(Effect):
         engine.player.fighter.hp = 40
         engine.player.fighter.derive_stats(True)
         return super().activate(engine, corpse, True, stat_to_improve)
+
+
+class FleshGolemEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first, stat_to_improve=""):
+
+        if corpse.name not in engine.player.logbook.book:
+            super().activate(engine, corpse, True)
+            engine.player.fighter.bonus_attack_count += 1
+        else:
+            super().activate(engine, corpse, False)
+        return super().activate(engine, corpse, first, stat_to_improve)

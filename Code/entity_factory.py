@@ -142,10 +142,9 @@ flesh_golem = Actor(
     spellbook=SpellBook(0),
     logbook=LogBook(),
     # TODO special effect for consumption
-    # should be positive effect at 5 consumed
     # effect player "gains" additional arm and does additional attack in meele range
     # player looses mage and gains double base_hp
-    effect=DefautlEffect(),
+    effect=FleshGolemEffect(),
 )
 
 lvl5_boss = Actor(

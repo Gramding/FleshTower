@@ -132,34 +132,35 @@ class MeleeAction(ActionWithDirection):
         damage = 0
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
-        dmg_chance = random.randint(0, 100)
-        if dmg_chance >= target.fighter.damage_reduction:
-            if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                damage = self.entity.fighter.power * 2
+        for i in range(self.entity.fighter.attack_count):
+            dmg_chance = random.randint(0, 100)
+            if dmg_chance >= target.fighter.damage_reduction:
+                if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+                    damage = self.entity.fighter.power * 2
+                else:
+                    damage = self.entity.fighter.power
+                self.typal_damage()
             else:
-                damage = self.entity.fighter.power
-            self.typal_damage()
-        else:
-            doged = True
+                doged = True
 
-        attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
-        if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-            attack_desc += " critically"
-        if self.engine is self.engine.player:
-            attack_color = color.player_atk
-        else:
-            attack_color = color.enemy_atk
-        if damage > 0 and not doged:
-            self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} HP.", attack_color
-            )
-            target.fighter.hp -= damage
-        elif doged:
-            self.engine.message_log.add_message(f"{attack_desc}, doged")
-        else:
-            self.engine.message_log.add_message(
-                f"{attack_desc} but does no damage.", attack_color
-            )
+            attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+            if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+                attack_desc += " critically"
+            if self.engine is self.engine.player:
+                attack_color = color.player_atk
+            else:
+                attack_color = color.enemy_atk
+            if damage > 0 and not doged:
+                self.engine.message_log.add_message(
+                    f"{attack_desc} for {damage} HP.", attack_color
+                )
+                target.fighter.hp -= damage
+            elif doged:
+                self.engine.message_log.add_message(f"{attack_desc}, doged")
+            else:
+                self.engine.message_log.add_message(
+                    f"{attack_desc} but does no damage.", attack_color
+                )
 
     def typal_damage(self) -> None:
         # this function is supposed to represent damages to the class
