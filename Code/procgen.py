@@ -25,7 +25,17 @@ max_monsters_by_floor = [
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
         # TODO change spawn rate of ring back to reasonable percentage
-        (entity_factory.wierd_ring, 100),
+        (entity_factory.wierd_ring, 1),
+        (entity_factory.ossuary_loop, 1),
+        (entity_factory.veinbinder, 1),
+        (entity_factory.weeping_knuckle, 1),
+        (entity_factory.phage_circlet, 1),
+        (entity_factory.stitchband, 1),
+        (entity_factory.maws_embrace, 1),
+        (entity_factory.carrion_loop, 1),
+        (entity_factory.throbbing_halo, 1),
+        (entity_factory.tumors_promise, 1),
+        (entity_factory.knotted_viscera_band, 1),
         (entity_factory.health_potion, 35),
         (entity_factory.mana_potion, 35),
         (entity_factory.large_health_potion, 5),

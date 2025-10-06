@@ -63,7 +63,7 @@ class Effect:
         engine.player.currency += amount
 
 
-class DefautlEffect(Effect):
+class DefaultEffect(Effect):
     def __init__(self):
         super().__init__()
 

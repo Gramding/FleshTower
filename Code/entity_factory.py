@@ -44,7 +44,7 @@ rat = Actor(
     level=Level(xp_given=5),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=DefautlEffect(),
+    effect=DefaultEffect(),
 )
 
 goblin = Actor(
@@ -63,7 +63,7 @@ goblin = Actor(
     level=Level(xp_given=20),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=DefautlEffect(),
+    effect=DefaultEffect(),
 )
 
 orc = Actor(
@@ -122,7 +122,7 @@ zombie = Actor(
     # TODO Special effect for consumption
     # should in this case be a negative one
     # at 25 or so consumed, player turns undead
-    effect=DefautlEffect(),
+    effect=DefaultEffect(),
 )
 
 flesh_golem = Actor(
@@ -179,7 +179,7 @@ vendor = Actor(
     level=Level(xp_given=10),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=DefautlEffect(),
+    effect=DefaultEffect(),
 )
 
 health_potion = Item(
@@ -293,6 +293,98 @@ wierd_ring = Item(
     color=(139, 69, 19),
     name="Wierd Ring",
     equippable=equippable.WierdRing(),
-    effect=DefautlEffect(),
+    effect=DefaultEffect(),
     price=300,
 )
+
+ossuary_loop = Item(
+    char="o",
+    color=(139, 69, 19),
+    name="Ossuary Loop",
+    equippable=equippable.OssuaryLoop(),
+    effect=DefaultEffect(),
+    price=300,
+)
+
+veinbinder = Item(
+    char="o",
+    color=(178, 34, 34),
+    name="Veinbinder",
+    equippable=equippable.Veinbinder(),
+    effect=DefaultEffect(),
+    price=350,
+)
+
+weeping_knuckle = Item(
+    char="o",
+    color=(105, 105, 105),
+    name="Ring of the Weeping Knuckle",
+    equippable=equippable.WeepingKnuckle(),
+    effect=DefaultEffect(),
+    price=280,
+)
+
+phage_circlet = Item(
+    char="o",
+    color=(165, 42, 42),
+    name="Phage Circlet",
+    equippable=equippable.PhageCirclet(),
+    effect=DefaultEffect(),
+    price=400,
+)
+
+stitchband = Item(
+    char="o",
+    color=(205, 92, 92),
+    name="Stitchband",
+    equippable=equippable.Stitchband(),
+    effect=DefaultEffect(),
+    price=320,
+)
+
+maws_embrace = Item(
+    char="o",
+    color=(139, 0, 0),
+    name="The Maw’s Embrace",
+    equippable=equippable.MawsEmbrace(),
+    effect=DefaultEffect(),
+    price=450,
+)
+
+carrion_loop = Item(
+    char="o",
+    color=(112, 128, 144),
+    name="Carrion Loop",
+    equippable=equippable.CarrionLoop(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+throbbing_halo = Item(
+    char="o",
+    color=(178, 0, 0),
+    name="The Throbbing Halo",
+    equippable=equippable.ThrobbingHalo(),
+    effect=DefaultEffect(),
+    price=380,
+)
+
+tumors_promise = Item(
+    char="o",
+    color=(222, 184, 135),
+    name="Tumor’s Promise",
+    equippable=equippable.TumorsPromise(),
+    effect=DefaultEffect(),
+    price=500,
+)
+
+knotted_viscera_band = Item(
+    char="o",
+    color=(139, 69, 19),
+    name="Knotted Viscera Band",
+    equippable=equippable.KnottedVisceraBand(),
+    effect=DefaultEffect(),
+    price=420,
+)
+
+

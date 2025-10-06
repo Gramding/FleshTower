@@ -64,3 +64,82 @@ class WierdRing(Ring):
             equipment_type=EquipmentType.RING,
             stat_bonus={"TM": 0, "NS": 0, "FI": 0, "CD": 1, "PE": 0, "VI": 0},
         )
+
+class OssuaryLoop(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class Veinbinder(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 2, "FI": -1, "CD": 0, "PE": 0, "VI": 1},
+        )
+
+
+class WeepingKnuckle(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 0, "FI": 1, "CD": 0, "PE": 2, "VI": 0},
+        )
+
+
+class PhageCirclet(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 0, "FI": -1, "CD": 2, "PE": 0, "VI": 1},
+        )
+
+
+class Stitchband(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 1, "NS": 1, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class MawsEmbrace(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 2, "NS": 0, "FI": 0, "CD": 0, "PE": -1, "VI": 1},
+        )
+
+
+class CarrionLoop(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 0, "FI": 2, "CD": 0, "PE": 1, "VI": 0},
+        )
+
+
+class ThrobbingHalo(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 0, "NS": 1, "FI": 0, "CD": 1, "PE": 2, "VI": 0},
+        )
+
+
+class TumorsPromise(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 1, "NS": 0, "FI": 2, "CD": 0, "PE": 0, "VI": -1},
+        )
+
+
+class KnottedVisceraBand(Ring):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.RING,
+            stat_bonus={"TM": 1, "NS": 0, "FI": 1, "CD": 1, "PE": 0, "VI": 0},
+        )
