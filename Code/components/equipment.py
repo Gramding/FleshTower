@@ -64,12 +64,12 @@ class Equipment(BaseComponent):
 
         return bonus
 
-    def stat_bonus(self, action_type):
+    def stat_bonus(self, action_type, slot_give):
         for equip in self.__dict__:
             if "_" not in equip and "parent" not in equip:
                 slot = getattr(self, equip)
                 if slot and slot.equippable:
-                    if slot.equippable is not None:
+                    if slot.equippable is not None and equip == slot_give:
                         for i in slot.equippable.stat_bonus:
                             if (
                                 action_type == "+"
@@ -78,14 +78,17 @@ class Equipment(BaseComponent):
                                 self.engine.player.fighter.bonus_stats[
                                     i
                                 ] += slot.equippable.stat_bonus[i]
-                            else:
+                            elif (
+                                action_type == "-"
+                                and slot.equippable.is_applied == True
+                            ):
                                 self.engine.player.fighter.bonus_stats[
                                     i
                                 ] -= slot.equippable.stat_bonus[i]
 
                         if action_type == "+" and slot.equippable.is_applied == False:
                             slot.equippable.is_applied = True
-                        else:
+                        elif action_type == "-" and slot.equippable.is_applied == True:
                             slot.equippable.is_applied = False
         # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
@@ -111,18 +114,19 @@ class Equipment(BaseComponent):
             self.unequip_from_slot(slot, add_message)
 
         setattr(self, slot, item)
-        self.stat_bonus("+")
+        self.stat_bonus("+", slot)
 
         if add_message:
             self.equip_message(item.name)
 
     def unequip_from_slot(self, slot: str, add_message: bool) -> None:
         current_item = getattr(self, slot)
-        self.stat_bonus("-")
 
         if add_message:
             self.unequip_message(current_item.name)
-
+        # stats need to be done before item is removed.
+        # to remove stats stats need to be known :D
+        self.stat_bonus("-", slot)
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
