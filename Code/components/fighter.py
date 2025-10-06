@@ -22,7 +22,9 @@ class Fighter(BaseComponent):
         stats: Dict[str, int],
         # consumption: Optional[ConsumeCorpse],
     ):
-        self.stats = stats
+        self.stats = {}
+        self.base_stats = stats
+        self.bonus_stats = {"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0}
 
         # HP
         self.base_hp = base_hp
@@ -164,6 +166,10 @@ class Fighter(BaseComponent):
         return math.ceil((value - 8) / 2)
 
     def derive_stats(self, req_hp_reset: Optional[bool] = False):
+        # Apply stat bonuses
+        for stat in self.base_stats:
+            self.stats[stat] = self.base_stats[stat] + self.bonus_stats[stat]
+
         # Tendous Mass
         tm = self.get_modifier_value(self.stats["TM"])
         self.power = tm + self.base_power

@@ -75,11 +75,11 @@ class Equipment(BaseComponent):
                                 action_type == "+"
                                 and slot.equippable.is_applied == False
                             ):
-                                self.engine.player.fighter.stats[
+                                self.engine.player.fighter.bonus_stats[
                                     i
                                 ] += slot.equippable.stat_bonus[i]
                             else:
-                                self.engine.player.fighter.stats[
+                                self.engine.player.fighter.bonus_stats[
                                     i
                                 ] -= slot.equippable.stat_bonus[i]
 
@@ -87,7 +87,7 @@ class Equipment(BaseComponent):
                             slot.equippable.is_applied = True
                         else:
                             slot.equippable.is_applied = False
-        #forgot to derive stats, now effects get correctly applied
+        # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
 
     def item_is_equipped(self, item: Item) -> bool:
