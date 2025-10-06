@@ -65,9 +65,9 @@ class Equipment(BaseComponent):
         return bonus
 
     def stat_bonus(self, action_type):
-        for i in self.__dict__:
-            if "_" not in i and "parent" not in i:
-                slot = getattr(self, i)
+        for equip in self.__dict__:
+            if "_" not in equip and "parent" not in equip:
+                slot = getattr(self, equip)
                 if slot and slot.equippable:
                     if slot.equippable is not None:
                         for i in slot.equippable.stat_bonus:
@@ -87,6 +87,8 @@ class Equipment(BaseComponent):
                             slot.equippable.is_applied = True
                         else:
                             slot.equippable.is_applied = False
+        #forgot to derive stats, now effects get correctly applied
+        self.engine.player.fighter.derive_stats()
 
     def item_is_equipped(self, item: Item) -> bool:
         # new logic allows for dynamic check if any slot is currently equipped

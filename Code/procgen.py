@@ -26,7 +26,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
         # TODO change spawn rate of ring back to reasonable percentage
         (entity_factory.wierd_ring, 1),
-        (entity_factory.ossuary_loop, 1),
+        (entity_factory.ossuary_loop, 10000),
         (entity_factory.veinbinder, 1),
         (entity_factory.weeping_knuckle, 1),
         (entity_factory.phage_circlet, 1),
@@ -50,13 +50,47 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.orc, 10),
         (entity_factory.rat, 60),
         (entity_factory.goblin, 60),
+        (entity_factory.flayed_thrall, 8),
+        (entity_factory.sinew_crawler, 6),
     ],
-    2: [(entity_factory.zombie, 1)],
-    4: [(entity_factory.flesh_golem, 1), (entity_factory.vendor, 10)],
-    3: [(entity_factory.troll, 15)],
-    5: [(entity_factory.troll, 30)],
-    7: [(entity_factory.troll, 60)],
+    2: [
+        (entity_factory.zombie, 1),
+        (entity_factory.eye_screamer, 4),
+        (entity_factory.gnashing_swarm, 5),
+    ],
+    3: [
+        (entity_factory.troll, 15),
+        (entity_factory.howling_cyst, 5),
+        (entity_factory.gnashing_swarm, 8),
+    ],
+    4: [
+        (entity_factory.flesh_golem, 1),
+        (entity_factory.vendor, 10),
+        (entity_factory.howling_cyst, 6),
+        (entity_factory.eye_screamer, 5),
+    ],
+    5: [
+        (entity_factory.troll, 30),
+        (entity_factory.vein_reaper, 10),
+        (entity_factory.tumor_host, 8),
+        (entity_factory.viscera_hound, 12),
+    ],
+    6: [
+        (entity_factory.vein_reaper, 15),
+        (entity_factory.tumor_host, 10),
+        (entity_factory.viscera_hound, 15),
+    ],
+    7: [
+        (entity_factory.troll, 60),
+        (entity_factory.stitched_abomination, 10),
+        (entity_factory.marrow_drinker, 12),
+    ],
+    8: [
+        (entity_factory.stitched_abomination, 15),
+        (entity_factory.marrow_drinker, 18),
+    ],
 }
+
 
 
 def get_max_value_for_floor(

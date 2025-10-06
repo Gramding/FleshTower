@@ -182,6 +182,206 @@ vendor = Actor(
     effect=DefaultEffect(),
 )
 
+flayed_thrall = Actor(
+    char="t",
+    color=(178, 34, 34),
+    name="Flayed Thrall",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=10,
+        base_defense=0,
+        base_power=3,
+        stats={"TM": 10, "NS": 7, "FI": 6, "CD": 6, "PE": 5, "VI": 4},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=30),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+sinew_crawler = Actor(
+    char="s",
+    color=(139, 0, 0),
+    name="Sinew Crawler",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=8,
+        base_defense=1,
+        base_power=4,
+        stats={"TM": 9, "NS": 10, "FI": 7, "CD": 6, "PE": 6, "VI": 3},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=25),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+howling_cyst = Actor(
+    char="c",
+    color=(255, 69, 0),
+    name="Howling Cyst",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=12,
+        base_defense=0,
+        base_power=2,
+        stats={"TM": 7, "NS": 5, "FI": 10, "CD": 9, "PE": 8, "VI": 6},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=40),
+    spellbook=SpellBook(1),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+stitched_abomination = Actor(
+    char="A",
+    color=(105, 105, 105),
+    name="Stitched Abomination",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=20,
+        base_defense=2,
+        base_power=5,
+        stats={"TM": 12, "NS": 6, "FI": 11, "CD": 5, "PE": 4, "VI": 3},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=60),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+vein_reaper = Actor(
+    char="v",
+    color=(220, 20, 60),
+    name="Vein Reaper",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=14,
+        base_defense=1,
+        base_power=6,
+        stats={"TM": 11, "NS": 9, "FI": 9, "CD": 7, "PE": 6, "VI": 5},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=50),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+tumor_host = Actor(
+    char="h",
+    color=(186, 85, 211),
+    name="Tumor Host",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=16,
+        base_defense=0,
+        base_power=3,
+        stats={"TM": 8, "NS": 5, "FI": 12, "CD": 10, "PE": 7, "VI": 4},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=55),
+    spellbook=SpellBook(1),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+marrow_drinker = Actor(
+    char="m",
+    color=(205, 133, 63),
+    name="Marrow Drinker",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=18,
+        base_defense=1,
+        base_power=7,
+        stats={"TM": 13, "NS": 8, "FI": 10, "CD": 6, "PE": 5, "VI": 4},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=65),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+eye_screamer = Actor(
+    char="e",
+    color=(173, 216, 230),
+    name="Eye Screamer",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=9,
+        base_defense=0,
+        base_power=2,
+        stats={"TM": 6, "NS": 7, "FI": 7, "CD": 9, "PE": 11, "VI": 8},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=30),
+    spellbook=SpellBook(1),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+gnashing_swarm = Actor(
+    char="n",
+    color=(255, 215, 0),
+    name="Gnashing Swarm",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=12,
+        base_defense=0,
+        base_power=4,
+        stats={"TM": 8, "NS": 11, "FI": 7, "CD": 5, "PE": 6, "VI": 4},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=35),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
+viscera_hound = Actor(
+    char="H",
+    color=(139, 0, 0),
+    name="Viscera Hound",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=15,
+        base_defense=1,
+        base_power=5,
+        stats={"TM": 12, "NS": 9, "FI": 9, "CD": 4, "PE": 6, "VI": 3},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=45),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+
 health_potion = Item(
     char="!",
     color=(127, 0, 255),
@@ -386,5 +586,4 @@ knotted_viscera_band = Item(
     effect=DefaultEffect(),
     price=420,
 )
-
 

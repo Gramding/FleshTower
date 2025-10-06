@@ -373,6 +373,18 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             text=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
         )
 
+    def ev_keydown(self, event):
+        key = event.sym
+        mod = event.mod
+        if key == tcod.event.KeySym.E and mod == tcod.event.Modifier.LCTRL:
+            for i in self.engine.player.equipment.__dict__:
+                if "_" not in i and "parent" not in i:
+                    slot = getattr(self.engine.player.equipment,i)
+                    if slot:
+                        self.engine.player.equipment.unequip_from_slot(i,True)
+
+        return super().ev_keydown(event)
+
 
 class ConsumptionScreenEventHandler(AskUserEventHandler):
     TITLE = "Things Consumed"

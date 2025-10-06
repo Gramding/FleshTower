@@ -57,7 +57,6 @@ class Ring(Equippable):
             stat_bonus=stat_bonus,
         )
 
-
 class WierdRing(Ring):
     def __init__(self):
         super().__init__(
@@ -77,7 +76,7 @@ class Veinbinder(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 0, "NS": 2, "FI": -1, "CD": 0, "PE": 0, "VI": 1},
+            stat_bonus={"TM": 0, "NS": 2, "FI": 1, "CD": 0, "PE": 0, "VI": 1},
         )
 
 
@@ -93,7 +92,7 @@ class PhageCirclet(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 0, "NS": 0, "FI": -1, "CD": 2, "PE": 0, "VI": 1},
+            stat_bonus={"TM": 0, "NS": 0, "FI": 1, "CD": 2, "PE": 0, "VI": 1},
         )
 
 
@@ -109,7 +108,7 @@ class MawsEmbrace(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 2, "NS": 0, "FI": 0, "CD": 0, "PE": -1, "VI": 1},
+            stat_bonus={"TM": 2, "NS": 0, "FI": 0, "CD": 0, "PE": 1, "VI": 1},
         )
 
 
@@ -133,7 +132,7 @@ class TumorsPromise(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 1, "NS": 0, "FI": 2, "CD": 0, "PE": 0, "VI": -1},
+            stat_bonus={"TM": 1, "NS": 0, "FI": 2, "CD": 0, "PE": 0, "VI": 1},
         )
 
 
