@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict
+from typing import TYPE_CHECKING, Optional, Dict, List, Tuple
+import random
 import color
+import copy
 from components.base_component import BaseComponent
 from render_order import RenderOrder
 from components.spells import Spell
 import math
+from entity import Entity
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -116,6 +119,14 @@ class Fighter(BaseComponent):
 
         self.engine.message_log.add_message(death_message, death_message_color)
         self.engine.player.level.add_xp(self.parent.level.xp_given)
+        
+        #20% chance to drop an item on death
+        if random.randint(0,100) < 20:
+            item = random.choice(self.parent.inventory.items)
+            clone = copy.deepcopy(item)
+            clone.place(x=self.parent.x,y=self.parent.y,gamemap=self.engine.game_map)
+            self.engine.message_log.add_message(f"{self.parent.name.replace("remains of ", "")} dropped {clone.name}")
+            
 
     def heal(self, amount: int) -> int:
         # check if at full HP

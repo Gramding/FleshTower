@@ -361,7 +361,7 @@ def place_entities(
             if "Organ" in entity.name and dungeon.vendor_spawned:
                 entity_factory.orc.spawn(dungeon, x, y)
                 continue
-            elif "Organ" in entity.name:
+            else:
                 generate_shop_items(entity=entity, floor_number=floor_number)
                 dungeon.vendor_spawned = True
             entity.spawn(dungeon, x, y)
