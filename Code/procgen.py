@@ -13,20 +13,36 @@ if TYPE_CHECKING:
 
 max_items_by_floor = [
     (1, 1),
-    (4, 2),
+    (2, 2),
+    (3, 2),
+    (4, 3),
+    (5, 3),
+    (6, 4),
+    (7, 4),
+    (8, 5),
 ]
 
 max_monsters_by_floor = [
     (1, 2),
+    (2, 2),
+    (3, 3),
     (4, 3),
+    (5, 4),
     (6, 5),
+    (7, 5),
+    (8, 6),
 ]
 
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
-        # TODO change spawn rate of ring back to reasonable percentage
+        # Common early loot
+        (entity_factory.health_potion, 35),
+        (entity_factory.mana_potion, 35),
+        (entity_factory.large_health_potion, 5),
+
+        # Rare ring spawns (early appearance, very rare)
         (entity_factory.wierd_ring, 1),
-        (entity_factory.ossuary_loop, 10000),
+        (entity_factory.ossuary_loop, 1),
         (entity_factory.veinbinder, 1),
         (entity_factory.weeping_knuckle, 1),
         (entity_factory.phage_circlet, 1),
@@ -36,13 +52,47 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.throbbing_halo, 1),
         (entity_factory.tumors_promise, 1),
         (entity_factory.knotted_viscera_band, 1),
-        (entity_factory.health_potion, 35),
-        (entity_factory.mana_potion, 35),
-        (entity_factory.large_health_potion, 5),
+
+        # Early weapons (basic melee gear)
+        (entity_factory.neural_razor, 5),
+        (entity_factory.sinewcleaver, 5),
+        (entity_factory.spine_talon, 4),
     ],
-    2: [(entity_factory.confusion_scroll, 10)],
-    4: [(entity_factory.lightning_scroll, 25), (entity_factory.sword, 5)],
-    6: [(entity_factory.fireball_scroll, 25), (entity_factory.chain_mail, 15)],
+
+    2: [
+        # Utility scrolls and early upgrades
+        (entity_factory.confusion_scroll, 10),
+        (entity_factory.gristle_hook, 4),
+        (entity_factory.viscera_blade, 3),
+    ],
+
+    4: [
+        # Mid-tier loot and solid weapons
+        (entity_factory.lightning_scroll, 25),
+        (entity_factory.sword, 5),
+        (entity_factory.phage_fang, 3),
+        (entity_factory.knotted_mace, 3),
+    ],
+
+    5: [
+        # Rare mid-high items start appearing
+        (entity_factory.marrow_saw, 2),
+        (entity_factory.bonegrinder_maul, 2),
+    ],
+
+    6: [
+        # High-tier gear and armor
+        (entity_factory.fireball_scroll, 25),
+        (entity_factory.chain_mail, 15),
+        (entity_factory.thrall_reaver, 1),
+    ],
+
+    8: [
+        # Deep floor ultra-rare drops (endgame)
+        (entity_factory.thrall_reaver, 2),
+        (entity_factory.marrow_saw, 1),
+        (entity_factory.knotted_mace, 1),
+    ],
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {

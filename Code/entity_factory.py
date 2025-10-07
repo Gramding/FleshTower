@@ -454,6 +454,97 @@ sword = Item(
     price=250,
 )
 
+bonegrinder_maul = Item(
+    char="Ω",
+    color=(139, 69, 19),
+    name="Bonegrinder Maul",
+    equippable=equippable.BonegrinderMaul(),
+    effect=DefaultEffect(),
+    price=300,
+)
+
+sinewcleaver = Item(
+    char="╦",
+    color=(165, 42, 42),
+    name="Sinewcleaver",
+    equippable=equippable.Sinewcleaver(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+neural_razor = Item(
+    char="†",
+    color=(178, 34, 34),
+    name="Neural Razor",
+    equippable=equippable.NeuralRazor(),
+    effect=DefaultEffect(),
+    price=200,
+)
+
+spine_talon = Item(
+    char="»",
+    color=(205, 92, 92),
+    name="Spine Talon",
+    equippable=equippable.SpineTalon(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+marrow_saw = Item(
+    char="≡",
+    color=(128, 0, 0),
+    name="Marrow Saw",
+    equippable=equippable.MarrowSaw(),
+    effect=DefaultEffect(),
+    price=400,
+)
+
+viscera_blade = Item(
+    char="∫",
+    color=(139, 0, 0),
+    name="Viscera Blade",
+    equippable=equippable.VisceraBlade(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+gristle_hook = Item(
+    char="ʓ",
+    color=(153, 50, 204),
+    name="Gristle Hook",
+    equippable=equippable.GristleHook(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+phage_fang = Item(
+    char="λ",
+    color=(255, 69, 0),
+    name="Phage Fang",
+    equippable=equippable.PhageFang(),
+    effect=DefaultEffect(),
+    price=280,
+)
+
+knotted_mace = Item(
+    char="◉",
+    color=(139, 69, 19),
+    name="Knotted Mace",
+    equippable=equippable.KnottedMace(),
+    effect=DefaultEffect(),
+    price=320,
+)
+
+thrall_reaver = Item(
+    char="⚔",
+    color=(178, 0, 0),
+    name="Thrall Reaver",
+    equippable=equippable.ThrallReaver(),
+    effect=DefaultEffect(),
+    price=450,
+)
+
+
 leather_armor = Item(
     char="[",
     color=(139, 69, 19),

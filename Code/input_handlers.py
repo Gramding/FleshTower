@@ -503,17 +503,17 @@ class LevelUpEventHandler(AskUserEventHandler):
 
         if 0 <= index <= 5:
             if index == 0:
-                player.fighter.stats["TM"] += 1
+                player.fighter.bonus_stats["TM"] += 1
             elif index == 1:
-                player.fighter.stats["NS"] += 1
+                player.fighter.bonus_stats["NS"] += 1
             elif index == 2:
-                player.fighter.stats["FI"] += 1
+                player.fighter.bonus_stats["FI"] += 1
             elif index == 3:
-                player.fighter.stats["CD"] += 1
+                player.fighter.bonus_stats["CD"] += 1
             elif index == 4:
-                player.fighter.stats["PE"] += 1
+                player.fighter.bonus_stats["PE"] += 1
             elif index == 5:
-                player.fighter.stats["VI"] += 1
+                player.fighter.bonus_stats["VI"] += 1
 
             self.engine.player.level.increase_level()
             self.engine.player.fighter.derive_stats(True)

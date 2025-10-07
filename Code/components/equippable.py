@@ -35,6 +35,95 @@ class Sword(Equippable):
     def __init__(self):
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=4)
 
+class BonegrinderMaul(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=4,
+            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class Sinewcleaver(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=3,
+            stat_bonus={"TM": 1, "NS": 2, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class NeuralRazor(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=2,
+            stat_bonus={"TM": 0, "NS": 3, "FI": 0, "CD": 1, "PE": 0, "VI": 0},
+        )
+
+
+class SpineTalon(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=3,
+            stat_bonus={"TM": 1, "NS": 1, "FI": 0, "CD": 0, "PE": 1, "VI": 0},
+        )
+
+
+class MarrowSaw(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=6,
+            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class VisceraBlade(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=4,
+            stat_bonus={"TM": 1, "NS": 1, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class GristleHook(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=3,
+            stat_bonus={"TM": 0, "NS": 2, "FI": 0, "CD": 0, "PE": 1, "VI": 0},
+        )
+
+
+class PhageFang(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=4,
+            stat_bonus={"TM": 1, "NS": 0, "FI": 0, "CD": 2, "PE": 0, "VI": 0},
+        )
+
+
+class KnottedMace(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=5,
+            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
+        )
+
+
+class ThrallReaver(Equippable):
+    def __init__(self):
+        super().__init__(
+            equipment_type=EquipmentType.WEAPON,
+            power_bonus=7,
+            stat_bonus={"TM": 3, "NS": 0, "FI": 2, "CD": 0, "PE": 1, "VI": 0},
+        )
+
 
 class LeatherArmor(Equippable):
     def __init__(self):
