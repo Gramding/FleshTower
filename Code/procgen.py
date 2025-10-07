@@ -40,23 +40,44 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.mana_potion, 35),
         (entity_factory.large_health_potion, 5),
 
-        # Rare ring spawns (early appearance, very rare)
+        # Rare early rings
         (entity_factory.wierd_ring, 1),
         (entity_factory.ossuary_loop, 1),
         (entity_factory.veinbinder, 1),
-        (entity_factory.weeping_knuckle, 1),
-        (entity_factory.phage_circlet, 1),
-        (entity_factory.stitchband, 1),
-        (entity_factory.maws_embrace, 1),
-        (entity_factory.carrion_loop, 1),
-        (entity_factory.throbbing_halo, 1),
-        (entity_factory.tumors_promise, 1),
-        (entity_factory.knotted_viscera_band, 1),
 
         # Early weapons (basic melee gear)
         (entity_factory.neural_razor, 5),
         (entity_factory.sinewcleaver, 5),
         (entity_factory.spine_talon, 4),
+
+        # Early headgear
+        (entity_factory.crimson_skullcap, 2),
+        (entity_factory.boneplate_hood, 2),
+        (entity_factory.sinewcap, 2),
+
+        # Early eyes
+        (entity_factory.blindeye_lenses, 2),
+        (entity_factory.hemogaze_lens, 2),
+
+        # Early necklace
+        (entity_factory.throatlace, 1),
+        (entity_factory.humeral_chain, 1),
+
+        # Early cloak
+        (entity_factory.shredded_shroud, 2),
+        (entity_factory.skinfold_mantle, 2),
+
+        # Early wrist
+        (entity_factory.gristle_bracer, 2),
+        (entity_factory.bone_cuffs, 2),
+
+        # Early belt
+        (entity_factory.guts_belt, 2),
+        (entity_factory.rib_binder, 2),
+
+        # Early legs
+        (entity_factory.shredded_greaves, 2),
+        (entity_factory.bone_spliced_trousers, 2),
     ],
 
     2: [
@@ -64,6 +85,14 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.confusion_scroll, 10),
         (entity_factory.gristle_hook, 4),
         (entity_factory.viscera_blade, 3),
+
+        # Slightly stronger gear starts appearing
+        (entity_factory.ooze_crowned_cap, 1),
+        (entity_factory.veinwoven_circlet, 1),
+        (entity_factory.tumor_amulet, 1),
+        (entity_factory.cystic_cape, 1),
+        (entity_factory.throbbing_band, 1),
+        (entity_factory.tendon_girdle, 1),
     ],
 
     4: [
@@ -72,12 +101,68 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.sword, 5),
         (entity_factory.phage_fang, 3),
         (entity_factory.knotted_mace, 3),
+
+        # Mid-tier headgear
+        (entity_factory.flayed_helm, 2),
+        (entity_factory.pulsing_cranium, 2),
+
+        # Mid-tier eyes
+        (entity_factory.third_orb, 1),
+        (entity_factory.eye_of_the_wyrm, 1),
+
+        # Mid-tier necklace
+        (entity_factory.sinew_choker, 1),
+        (entity_factory.veinloop_necklace, 1),
+
+        # Mid-tier cloak
+        (entity_factory.vein_mantle, 2),
+        (entity_factory.tendril_cloak, 1),
+
+        # Mid-tier wrist
+        (entity_factory.tumorous_wristguard, 1),
+        (entity_factory.veinlace_wristband, 1),
+
+        # Mid-tier belt
+        (entity_factory.visceral_cinch, 1),
+        (entity_factory.fleshbinder, 1),
+
+        # Mid-tier legs
+        (entity_factory.vein_wrapped_leggings, 2),
+        (entity_factory.tendon_laced_pants, 1),
     ],
 
     5: [
         # Rare mid-high items start appearing
         (entity_factory.marrow_saw, 2),
         (entity_factory.bonegrinder_maul, 2),
+
+        # High-tier headgear
+        (entity_factory.tumor_crowned_helm, 1),
+        (entity_factory.marrow_visage, 1),
+
+        # High-tier eyes
+        (entity_factory.corrupted_iris, 1),
+        (entity_factory.pustular_eyeband, 1),
+
+        # High-tier necklace
+        (entity_factory.ossified_torque, 1),
+        (entity_factory.rib_bound_medallion, 1),
+
+        # High-tier cloak
+        (entity_factory.marrow_veil, 1),
+        (entity_factory.flesh_tattered_robe, 1),
+
+        # High-tier wrist
+        (entity_factory.marrow_cuff, 1),
+        (entity_factory.pustule_bracelet, 1),
+
+        # High-tier belt
+        (entity_factory.tumor_laced_strap, 1),
+        (entity_factory.bone_clasp_belt, 1),
+
+        # High-tier legs
+        (entity_factory.marrow_stitched_legwraps, 1),
+        (entity_factory.tumorous_legplates, 1),
     ],
 
     6: [
@@ -85,6 +170,15 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.fireball_scroll, 25),
         (entity_factory.chain_mail, 15),
         (entity_factory.thrall_reaver, 1),
+
+        # Very rare items
+        (entity_factory.pulsing_cranium, 1),
+        (entity_factory.bloodstare_monocle, 1),
+        (entity_factory.carotid_chain, 1),
+        (entity_factory.oozing_pall, 1),
+        (entity_factory.ossified_armlet, 1),
+        (entity_factory.marrowstrap, 1),
+        (entity_factory.pulsing_calfwraps, 1),
     ],
 
     8: [
@@ -92,8 +186,18 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.thrall_reaver, 2),
         (entity_factory.marrow_saw, 1),
         (entity_factory.knotted_mace, 1),
+
+        # Legendary items
+        (entity_factory.tumor_crowned_helm, 1),
+        (entity_factory.eye_of_the_wyrm, 1),
+        (entity_factory.ossified_torque, 1),
+        (entity_factory.tendril_cloak, 1),
+        (entity_factory.veinlace_wristband, 1),
+        (entity_factory.bone_clasp_belt, 1),
+        (entity_factory.tumorous_legplates, 1),
     ],
 }
+
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [

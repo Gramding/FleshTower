@@ -554,6 +554,637 @@ leather_armor = Item(
     price=200,
 )
 
+crimson_skullcap = Item(
+    char="Ω",
+    color=(139, 0, 0),
+    name="Crimson Skullcap",
+    equippable=equippable.CrimsonSkullcap(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+flayed_helm = Item(
+    char="†",
+    color=(165, 42, 42),
+    name="Flayed Helm",
+    equippable=equippable.FlayedHelm(),
+    effect=DefaultEffect(),
+    price=300,
+)
+
+ooze_crowned_cap = Item(
+    char="≈",
+    color=(178, 34, 34),
+    name="Ooze-Crowned Cap",
+    equippable=equippable.OozeCrownedCap(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+boneplate_hood = Item(
+    char="∑",
+    color=(139, 69, 19),
+    name="Boneplate Hood",
+    equippable=equippable.BoneplateHood(),
+    effect=DefaultEffect(),
+    price=200,
+)
+
+pulsing_cranium = Item(
+    char="¤",
+    color=(255, 0, 0),
+    name="Pulsing Cranium",
+    equippable=equippable.PulsingCranium(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+veinwoven_circlet = Item(
+    char="⊗",
+    color=(153, 50, 204),
+    name="Veinwoven Circlet",
+    equippable=equippable.VeinwovenCirclet(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+tumor_crowned_helm = Item(
+    char="☠",
+    color=(178, 0, 34),
+    name="Tumor-Crowned Helm",
+    equippable=equippable.TumorCrownedHelm(),
+    effect=DefaultEffect(),
+    price=280,
+)
+
+shredded_faceguard = Item(
+    char="⌂",
+    color=(205, 92, 92),
+    name="Shredded Faceguard",
+    equippable=equippable.ShreddedFaceguard(),
+    effect=DefaultEffect(),
+    price=210,
+)
+
+sinewcap = Item(
+    char="∂",
+    color=(139, 69, 19),
+    name="Sinewcap",
+    equippable=equippable.Sinewcap(),
+    effect=DefaultEffect(),
+    price=200,
+)
+
+marrow_visage = Item(
+    char="∇",
+    color=(128, 0, 0),
+    name="Marrow Visage",
+    equippable=equippable.MarrowVisage(),
+    effect=DefaultEffect(),
+    price=270,
+)
+
+blindeye_lenses = Item(
+    char="●",
+    color=(178, 34, 34),
+    name="Blindeye Lenses",
+    equippable=equippable.BlindeyeLenses(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+third_orb = Item(
+    char="◎",
+    color=(139, 0, 0),
+    name="Third Orb",
+    equippable=equippable.ThirdOrb(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+gore_sight_goggles = Item(
+    char="◉",
+    color=(165, 42, 42),
+    name="Gore-Sight Goggles",
+    equippable=equippable.GoreSightGoggles(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+hemogaze_lens = Item(
+    char="◌",
+    color=(205, 92, 92),
+    name="Hemogaze Lens",
+    equippable=equippable.HemogazeLens(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+ocular_tumor = Item(
+    char="◎",
+    color=(178, 0, 0),
+    name="Ocular Tumor",
+    equippable=equippable.OcularTumor(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+veinbound_spectacles = Item(
+    char="◐",
+    color=(153, 50, 204),
+    name="Veinbound Spectacles",
+    equippable=equippable.VeinboundSpectacles(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+corrupted_iris = Item(
+    char="◑",
+    color=(178, 34, 34),
+    name="Corrupted Iris",
+    equippable=equippable.CorruptedIris(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+eye_of_the_wyrm = Item(
+    char="◍",
+    color=(128, 0, 0),
+    name="Eye of the Wyrm",
+    equippable=equippable.EyeOfTheWyrm(),
+    effect=DefaultEffect(),
+    price=280,
+)
+
+pustular_eyeband = Item(
+    char="◔",
+    color=(205, 92, 92),
+    name="Pustular Eyeband",
+    equippable=equippable.PustularEyeband(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+bloodstare_monocle = Item(
+    char="◎",
+    color=(139, 0, 0),
+    name="Bloodstare Monocle",
+    equippable=equippable.BloodstareMonocle(),
+    effect=DefaultEffect(),
+    price=270,
+)
+
+throatlace = Item(
+    char="≈",
+    color=(139, 0, 0),
+    name="Throatlace",
+    equippable=equippable.Throatlace(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+humeral_chain = Item(
+    char="∞",
+    color=(178, 34, 34),
+    name="Humeral Chain",
+    equippable=equippable.HumeralChain(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+tumor_amulet = Item(
+    char="⊕",
+    color=(128, 0, 0),
+    name="Tumor Amulet",
+    equippable=equippable.TumorAmulet(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+heartstring_pendant = Item(
+    char="◈",
+    color=(205, 92, 92),
+    name="Heartstring Pendant",
+    equippable=equippable.HeartstringPendant(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+sinew_choker = Item(
+    char="⨀",
+    color=(139, 69, 19),
+    name="Sinew Choker",
+    equippable=equippable.SinewChoker(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+pulsing_collar = Item(
+    char="⨁",
+    color=(153, 50, 204),
+    name="Pulsing Collar",
+    equippable=equippable.PulsingCollar(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+ossified_torque = Item(
+    char="⨂",
+    color=(178, 0, 34),
+    name="Ossified Torque",
+    equippable=equippable.OssifiedTorque(),
+    effect=DefaultEffect(),
+    price=270,
+)
+
+veinloop_necklace = Item(
+    char="⊗",
+    color=(139, 0, 0),
+    name="Veinloop Necklace",
+    equippable=equippable.VeinloopNecklace(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+rib_bound_medallion = Item(
+    char="⊙",
+    color=(178, 34, 34),
+    name="Rib-Bound Medallion",
+    equippable=equippable.RibBoundMedallion(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+carotid_chain = Item(
+    char="⦿",
+    color=(128, 0, 0),
+    name="Carotid Chain",
+    equippable=equippable.CarotidChain(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+shredded_shroud = Item(
+    char="≈",
+    color=(139, 0, 0),
+    name="Shredded Shroud",
+    equippable=equippable.ShreddedShroud(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+vein_mantle = Item(
+    char="∑",
+    color=(178, 34, 34),
+    name="Vein-Mantle",
+    equippable=equippable.VeinMantle(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+cystic_cape = Item(
+    char="⊕",
+    color=(128, 0, 0),
+    name="Cystic Cape",
+    equippable=equippable.CysticCape(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+rotting_wing = Item(
+    char="◈",
+    color=(205, 92, 92),
+    name="Rotting Wing",
+    equippable=equippable.RottingWing(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+skinfold_mantle = Item(
+    char="⨀",
+    color=(139, 69, 19),
+    name="Skinfold Mantle",
+    equippable=equippable.SkinfoldMantle(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+ichorous_drape = Item(
+    char="⨁",
+    color=(153, 50, 204),
+    name="Ichorous Drape",
+    equippable=equippable.IchorousDrape(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+tendril_cloak = Item(
+    char="⊗",
+    color=(178, 0, 34),
+    name="Tendril Cloak",
+    equippable=equippable.TendrilCloak(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+marrow_veil = Item(
+    char="◍",
+    color=(139, 0, 0),
+    name="Marrow Veil",
+    equippable=equippable.MarrowVeil(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+flesh_tattered_robe = Item(
+    char="∇",
+    color=(178, 34, 34),
+    name="Flesh-Tattered Robe",
+    equippable=equippable.FleshTatteredRobe(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+oozing_pall = Item(
+    char="∂",
+    color=(128, 0, 0),
+    name="Oozing Pall",
+    equippable=equippable.OozingPall(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+gristle_bracer = Item(
+    char="╬",
+    color=(139, 69, 19),
+    name="Gristle Bracer",
+    equippable=equippable.GristleBracer(),
+    effect=DefaultEffect(),
+    price=200,
+)
+
+bone_cuffs = Item(
+    char="╩",
+    color=(178, 34, 34),
+    name="Bone Cuffs",
+    equippable=equippable.BoneCuffs(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+throbbing_band = Item(
+    char="╠",
+    color=(139, 0, 0),
+    name="Throbbing Band",
+    equippable=equippable.ThrobbingBand(),
+    effect=DefaultEffect(),
+    price=210,
+)
+
+sinew_wrap = Item(
+    char="╬",
+    color=(205, 92, 92),
+    name="Sinew Wrap",
+    equippable=equippable.SinewWrap(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+tumorous_wristguard = Item(
+    char="╣",
+    color=(128, 0, 0),
+    name="Tumorous Wristguard",
+    equippable=equippable.TumorousWristguard(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+marrow_cuff = Item(
+    char="╚",
+    color=(153, 50, 204),
+    name="Marrow Cuff",
+    equippable=equippable.MarrowCuff(),
+    effect=DefaultEffect(),
+    price=210,
+)
+
+veinlace_wristband = Item(
+    char="╔",
+    color=(178, 0, 34),
+    name="Veinlace Wristband",
+    equippable=equippable.VeinlaceWristband(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+pustule_bracelet = Item(
+    char="╩",
+    color=(139, 0, 0),
+    name="Pustule Bracelet",
+    equippable=equippable.PustuleBracelet(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+ossified_armlet = Item(
+    char="╦",
+    color=(178, 34, 34),
+    name="Ossified Armlet",
+    equippable=equippable.OssifiedArmlet(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+bloodring = Item(
+    char="╠",
+    color=(128, 0, 0),
+    name="Bloodring",
+    equippable=equippable.Bloodring(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+guts_belt = Item(
+    char="≡",
+    color=(139, 0, 0),
+    name="Guts-Belt",
+    equippable=equippable.GutsBelt(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+rib_binder = Item(
+    char="≋",
+    color=(178, 34, 34),
+    name="Rib-Binder",
+    equippable=equippable.RibBinder(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+visceral_cinch = Item(
+    char="≌",
+    color=(128, 0, 0),
+    name="Visceral Cinch",
+    equippable=equippable.VisceralCinch(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+tendon_girdle = Item(
+    char="≡",
+    color=(205, 92, 92),
+    name="Tendon Girdle",
+    equippable=equippable.TendonGirdle(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+fleshbinder = Item(
+    char="≋",
+    color=(139, 69, 19),
+    name="Fleshbinder",
+    equippable=equippable.Fleshbinder(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+veinloop_sash = Item(
+    char="≌",
+    color=(153, 50, 204),
+    name="Veinloop Sash",
+    equippable=equippable.VeinloopSash(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+tumor_laced_strap = Item(
+    char="≡",
+    color=(178, 0, 34),
+    name="Tumor-Laced Strap",
+    equippable=equippable.TumorLacedStrap(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+bone_clasp_belt = Item(
+    char="≋",
+    color=(139, 0, 0),
+    name="Bone-Clasp Belt",
+    equippable=equippable.BoneClaspBelt(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+marrowstrap = Item(
+    char="≌",
+    color=(178, 34, 34),
+    name="Marrowstrap",
+    equippable=equippable.Marrowstrap(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+sinewbelt = Item(
+    char="≡",
+    color=(128, 0, 0),
+    name="Sinewbelt",
+    equippable=equippable.Sinewbelt(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+shredded_greaves = Item(
+    char="╬",
+    color=(139, 69, 19),
+    name="Shredded Greaves",
+    equippable=equippable.ShreddedGreaves(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+vein_wrapped_leggings = Item(
+    char="╩",
+    color=(178, 34, 34),
+    name="Vein-Wrapped Leggings",
+    equippable=equippable.VeinWrappedLeggings(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+bone_spliced_trousers = Item(
+    char="╠",
+    color=(128, 0, 0),
+    name="Bone-Spliced Trousers",
+    equippable=equippable.BoneSplicedTrousers(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+tendon_laced_pants = Item(
+    char="╬",
+    color=(205, 92, 92),
+    name="Tendon-Laced Pants",
+    equippable=equippable.TendonLacedPants(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+marrow_stitched_legwraps = Item(
+    char="╣",
+    color=(139, 0, 0),
+    name="Marrow-Stitched Legwraps",
+    equippable=equippable.MarrowStitchedLegwraps(),
+    effect=DefaultEffect(),
+    price=250,
+)
+
+fleshbound_breeches = Item(
+    char="╚",
+    color=(153, 50, 204),
+    name="Fleshbound Breeches",
+    equippable=equippable.FleshboundBreeches(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+sinewweave_leggings = Item(
+    char="╔",
+    color=(178, 0, 34),
+    name="Sinewweave Leggings",
+    equippable=equippable.SinewweaveLeggings(),
+    effect=DefaultEffect(),
+    price=230,
+)
+
+tumorous_legplates = Item(
+    char="╩",
+    color=(139, 0, 0),
+    name="Tumorous Legplates",
+    equippable=equippable.TumorousLegplates(),
+    effect=DefaultEffect(),
+    price=260,
+)
+
+pulsing_calfwraps = Item(
+    char="╦",
+    color=(178, 34, 34),
+    name="Pulsing Calfwraps",
+    equippable=equippable.PulsingCalfwraps(),
+    effect=DefaultEffect(),
+    price=240,
+)
+
+skin_wrapped_legguards = Item(
+    char="╠",
+    color=(128, 0, 0),
+    name="Skin-Wrapped Legguards",
+    equippable=equippable.SkinWrappedLegguards(),
+    effect=DefaultEffect(),
+    price=220,
+)
+
+
 chain_mail = Item(
     char="[",
     color=(139, 69, 19),

@@ -26,10 +26,16 @@ class Equipment(BaseComponent):
         ring8: Optional[Item] = None,
         ring9: Optional[Item] = None,
         armor: Optional[Item] = None,
+        head: Optional[Item] = None,
+        eyes: Optional[Item] = None,
+        necklace: Optional[Item] = None,
+        cloak: Optional[Item] = None,
+        wrist: Optional[Item] = None,
+        belt: Optional[Item] = None,
+        legs: Optional[Item] = None,
     ):
         self.weapon = weapon
         self.armor = armor
-        # this is ok for now but needs to be changed somehow TODO
         self.ring0 = ring0
         self.ring1 = ring1
         self.ring2 = ring2
@@ -40,6 +46,13 @@ class Equipment(BaseComponent):
         self.ring7 = ring7
         self.ring8 = ring8
         self.ring9 = ring9
+        self.head = head
+        self.eyes = eyes
+        self.necklace = necklace
+        self.cloak = cloak
+        self.wrist = wrist
+        self.belt = belt
+        self.legs = legs
 
     @property
     def defence_bonus(self) -> int:
@@ -154,7 +167,21 @@ class Equipment(BaseComponent):
                 ):
                     slot = slot_name
                     break
-            # slot = "ring1"
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.HEAD:
+            slot = "head"
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.EYES:
+            slot = 'eyes'
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.NECKLACE:
+            slot = 'necklace'
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.CLOAK:
+            slot = 'cloak'
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.WRIST:
+            slot = 'wrist'
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.BELT:
+            slot = 'belt'
+        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.LEGS:
+            slot = 'legs'
+        
 
         if getattr(self, slot) == equippable_item:
             self.unequip_from_slot(slot, add_message)
