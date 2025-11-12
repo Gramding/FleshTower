@@ -776,6 +776,12 @@ class SelectIndexHandler(AskUserEventHandler):
     def on_render(self, console):
         super().on_render(console)
         x, y = self.engine.mouse_location
+        x = int(x)
+        y = int(y)
+        if x >= 80:
+            x = 0
+        if y >=50:
+            y=0
         console.rgb["bg"][x, y] = color.white
         console.rgb["fg"][x, y] = color.black
 

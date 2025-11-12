@@ -19,11 +19,14 @@ background_image = tcod.image.load("Res/main_menu.png")[:, :, :3]
 
 
 def new_game() -> Engine:
-    map_width = 80
-    map_height = 43
+    map_width = 200
+    map_height = 100
 
-    room_max_size = 10
-    room_min_size = 6
+    viewport_width = 80#80
+    viewport_height = 50#43
+
+    room_max_size = 20
+    room_min_size = 12
     max_rooms = 50
 
     player = copy.deepcopy(entity_factory.player)
@@ -37,6 +40,8 @@ def new_game() -> Engine:
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
+        viewport_height = viewport_height,
+        viewport_width = viewport_width
     )
     engine.game_world.generate_floor()
     engine.update_fov()

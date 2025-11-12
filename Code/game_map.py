@@ -75,9 +75,17 @@ class GameMap:
 
     def render(self, console: Console) -> None:
         # this renders the entire map
-        console.rgb[0 : self.width, 0 : self.height] = np.select(
-            condlist=[self.visible, self.explored],
-            choicelist=[self.tiles["light"], self.tiles["dark"]],
+        o_x, o_y, e_x, e_y = self.get_viewport()
+        s_x = slice(o_x, e_x+1)
+        s_y = slice(o_y,e_y+1)
+        viewport_tiles    = self.tiles[s_x,s_y]#[o_x:e_x+1,o_y:e_y + 1]
+        viewport_visible  = self.visible[s_x,s_y]
+        viewport_explored = self.explored[s_x,s_y]
+
+
+        console.rgb[0:self.engine.game_world.viewport_width, 0:self.engine.game_world.viewport_height] = np.select(
+            condlist=[viewport_explored],
+            choicelist=[viewport_tiles["dark"]],
             default=tile_types.SHROUD,
         )
         entities_sorted_for_rendering = sorted(
@@ -86,8 +94,40 @@ class GameMap:
         for entity in entities_sorted_for_rendering:
             if self.visible[entity.x, entity.y]:
                 console.print(
-                    x=entity.x, y=entity.y, string=entity.char, fg=entity.color
+                    x=entity.x-o_x, y=entity.y-o_y, string=entity.char, fg=entity.color
                 )
+
+    def get_viewport(self):
+        x = self.engine.player.x
+        y = self.engine.player.y
+        width = self.engine.game_world.viewport_width
+        height = self.engine.game_world.viewport_height
+        half_width = int(width / 2)
+        half_height = int(height / 2)
+        origin_x = x - half_width
+        origin_y = y - half_height
+        #print(f'player: ({x}, {y}), modifier: {half_width}, {half_height}, origin: ({origin_x}, {origin_y})')
+        if origin_x < 0:
+            origin_x = 0
+        if origin_y < 0:
+            origin_y = 0
+
+
+        end_x = origin_x + width
+        end_y = origin_y + height
+        #print(f'End: ({end_x},{end_y})')
+        if end_x > self.width:
+            x_diff = end_x - self.width
+            origin_x -= x_diff
+            end_x    -= x_diff
+
+        if end_y > self.height:
+            y_diff = end_y - self.height
+            origin_y -= y_diff
+            end_y    -= y_diff
+        return ((origin_x, origin_y, end_x-1, end_y-1))
+
+
 
 
 class GameWorld:
@@ -100,10 +140,15 @@ class GameWorld:
         room_min_size: int,
         room_max_size: int,
         current_floor: int = 0,
+        viewport_width: Optional[int] = 0,
+        viewport_height: Optional[int] = 0,
         # TODO implement cant move up if boss is alive
         boss_alive: Optional[bool] = False,
     ):
         self.engine = engine
+
+        self.viewport_width = viewport_width
+        self.viewport_height = viewport_height
 
         self.map_width = map_width
         self.map_height = map_height
