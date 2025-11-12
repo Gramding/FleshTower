@@ -416,12 +416,35 @@ def generate_dungeon(
         # creates the rect room
         new_room = RectangularRoom(x, y, room_width, room_height)
         # check if current room intersects with other room already generated
+        room_type = random.choice(["rect", "circle"])
+
+        if len(rooms) == 0:
+            room_type = "rect"
+
         if any(new_room.intersects(other_room) for other_room in rooms):
             # continue (dont use this one and start anew)
             room_check += 1
             continue
             # set tiles of room innter as floor
-        dungeon.tiles[new_room.inner] = tile_types.randFloor()
+
+        if room_type == 'rect':
+            dungeon.tiles[new_room.inner] = tile_types.randFloor()
+        else:
+            slice_x, slice_y = new_room.inner
+            cx, cy = new_room.center
+            r = random.randint(5,20)
+
+            for x in range(slice_x.start, slice_x.stop):
+                for y in range(slice_y.start, slice_y.stop):
+                    dx = x - cx
+                    dy = y - cy
+                    if dx*dx + dy*dy <= r*r:
+                        # make this tile floor
+                        if x >= engine.game_world.map_height:
+                            x = engine.game_world.map_height - 1
+                        if y >= engine.game_world.map_width:
+                            y = engine.game_world.map_width - 1
+                        dungeon.tiles[y, x] = tile_types.randFloor()
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
