@@ -168,12 +168,9 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     ],
 
     6: [
-        # High-tier gear and armor
         (entity_factory.fireball_scroll, 25),
         (entity_factory.chain_mail, 15),
         (entity_factory.thrall_reaver, 1),
-
-        # Very rare items
         (entity_factory.pulsing_cranium, 1),
         (entity_factory.bloodstare_monocle, 1),
         (entity_factory.carotid_chain, 1),
@@ -184,12 +181,9 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     ],
 
     8: [
-        # Deep floor ultra-rare drops (endgame)
         (entity_factory.thrall_reaver, 2),
         (entity_factory.marrow_saw, 1),
         (entity_factory.knotted_mace, 1),
-
-        # Legendary items
         (entity_factory.tumor_crowned_helm, 1),
         (entity_factory.eye_of_the_wyrm, 1),
         (entity_factory.ossified_torque, 1),
@@ -290,7 +284,7 @@ def get_entities_at_random(
 def generate_shop_items(entity: Entity, floor_number: int):
     if hasattr(entity, "inventory"):
         if entity.inventory.capacity > 0:
-            items: List[Entity] = get_entities_at_random(item_chances, 5, floor_number)
+            items: List[Entity] = get_entities_at_random(item_chances, entity.inventory.capacity, floor_number)
             for item in items:
                 l_hp = copy.deepcopy(item)
 
