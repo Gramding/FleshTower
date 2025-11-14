@@ -1,11 +1,15 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
+
+from numpy import shape
+from components.perlin import build_map
 from game_map import GameMap
 import tile_types
 import tcod
 import copy
 import entity_factory
 import random
+
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -395,6 +399,13 @@ def generate_dungeon(
     map_height: int,  # height of map
     engine: Engine,
 ) -> GameMap:
+
+
+ 
+
+    map = build_map(shape=(map_height,map_width))
+    
+
     # create new dungeon
     player = engine.player
     dungeon = GameMap(engine, map_width, map_height, entities=[player])
@@ -406,6 +417,17 @@ def generate_dungeon(
     room_check = 0
     boss = False
     boss_count = 0
+
+    avg = 0
+    for x in range(map_height):
+        for y in range(map_width):
+            # print(map[x,y])
+            avg += map[x,y]
+            if map[x][y] < 0.006:
+                dungeon.tiles[y-1,x-1] = tile_types.randFloor()
+    print(avg/20000)
+
+
     for r in range(max_rooms):
         # randomly generate the size of the room
         room_width = random.randint(room_min_size, room_max_size)
