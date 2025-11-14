@@ -254,7 +254,8 @@ def get_max_value_for_floor(
         else:
             current_value = value
 
-        return current_value
+    return current_value
+
 
 
 def get_entities_at_random(
