@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict, List, Tuple
+from typing import TYPE_CHECKING, Optional, Dict
 import random
 import color
 import copy
@@ -8,7 +8,6 @@ from components.base_component import BaseComponent
 from render_order import RenderOrder
 from components.spells import Spell
 import math
-from entity import Entity
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -36,7 +35,7 @@ class Fighter(BaseComponent):
 
         # MANA
         self.base_mana = 30
-        self.mana = 0
+        self.mana = int(0)
         self.max_mana = 0
 
         # POWER
@@ -153,9 +152,9 @@ class Fighter(BaseComponent):
         if new_mana > self.max_mana:
             new_mana = self.max_mana
         amount_recovered = new_mana - self.mana
-        self.mana = new_mana
+        self.mana = int(new_mana)
 
-        return amount_recovered
+        return int(amount_recovered)
 
     def take_damage(self, amount: int, ignore_defence: Optional[bool] = False) -> int:
         if not ignore_defence:

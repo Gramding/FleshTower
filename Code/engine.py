@@ -61,7 +61,7 @@ class Engine:
         if self.player.is_mage:
             render_functions.render_mana_bar(
                 console=console,
-                current_value=self.player.fighter.mana,
+                current_value=int(self.player.fighter.mana),
                 maximum_value=self.player.fighter.max_mana,
                 total_width=20,
             )

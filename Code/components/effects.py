@@ -28,7 +28,7 @@ class Effect:
         self,
         engine: Engine,
         corpse: Entity,
-        first: bool,
+        first: bool = False,
         stat_to_improve: Optional[str] = "",
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name)
@@ -103,9 +103,12 @@ class Lvl5BossEffect(Effect):
         super().__init__()
 
     def activate(self, engine, corpse, first = False, stat_to_improve = ""):
+        gorebound = ''
         for entity in engine.game_map.entities:
             if "Gore" in entity.name:
-                engine.game_map.entities.remove(entity)
+                gorebound = entity
+        if gorebound != '':
+            engine.game_map.entities.remove(gorebound)
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.is_mage = True
@@ -274,7 +277,7 @@ class FleshGolemEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first, stat_to_improve=""):
+    def activate(self, engine, corpse, first = False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.fighter.bonus_attack_count += 1

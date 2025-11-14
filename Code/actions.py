@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, TYPE_CHECKING, Dict
+from typing import Optional, Tuple, TYPE_CHECKING
 import color
 import exceptions
 import random
-import components.effects as ef
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -210,12 +209,13 @@ class BumpAction(ActionWithDirection):
 
 class ConsumeCorpseAction(Action):
     def perform(self):
+        
         for corpse in self.engine.game_map.entities:
             if (
                 corpse.x == self.entity.x
                 and corpse.y == self.entity.y
                 and corpse != self.entity
-            ):
+            ): 
                 corpse.effect.activate(self.engine, corpse)
                 return
         raise exceptions.Impossible("No corpse here")

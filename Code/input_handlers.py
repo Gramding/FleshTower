@@ -592,7 +592,7 @@ class InventoryEventHandler(AskUserEventHandler):
         return super().ev_keydown(event)
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class InventoryActivateHandler(InventoryEventHandler):
@@ -616,6 +616,8 @@ class InventoryDropHandler(InventoryEventHandler):
 
 
 class SpellBookEventHandler(AskUserEventHandler):
+    TITLE = "Select spell to use"
+
     def __init__(self, engine):
         super().__init__(engine)
 
@@ -675,7 +677,6 @@ class SpellBookEventHandler(AskUserEventHandler):
 
 
 class SpellBookActivateHandler(SpellBookEventHandler):
-    TITLE = "Select spell to use"
 
     def on_spell_selected(self, spell: Spell) -> Optional[ActionOrHandler]:
         return spell.activate()
@@ -726,7 +727,6 @@ class ShopHandler(AskUserEventHandler):
             console.print(x + 1, y + 1, "(Empty)")
 
     def ev_keydown(self, event):
-        player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.A
 
@@ -750,6 +750,7 @@ class ShopActivateHandler(ShopHandler):
         real_price = item.price - (
             item.price * (self.engine.player.fighter.price_discount / 100)
         )
+        real_price = int(real_price)
         if self.engine.player.currency >= item.price:
             i_tem = copy.deepcopy(item)
 
@@ -960,7 +961,7 @@ class HistoryViewer(EventHandler):
         self.log_lenght = len(engine.message_log.messages)
         self.cursor = self.log_lenght - 1
 
-    def on_render(self, console: tcod.console) -> None:
+    def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
         log_console = tcod.console.Console(console.width - 6, console.height - 6)
         log_console.print_box(

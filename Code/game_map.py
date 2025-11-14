@@ -79,7 +79,7 @@ class GameMap:
         s_x = slice(o_x, e_x+1)
         s_y = slice(o_y,e_y+1)
         viewport_tiles    = self.tiles[s_x,s_y]#[o_x:e_x+1,o_y:e_y + 1]
-        viewport_visible  = self.visible[s_x,s_y]
+        # viewport_visible  = self.visible[s_x,s_y]
         viewport_explored = self.explored[s_x,s_y]
 
 
@@ -140,10 +140,10 @@ class GameWorld:
         room_min_size: int,
         room_max_size: int,
         current_floor: int = 0,
-        viewport_width: Optional[int] = 0,
-        viewport_height: Optional[int] = 0,
+        viewport_width: int = 0,
+        viewport_height: int = 0,
         # TODO implement cant move up if boss is alive
-        boss_alive: Optional[bool] = False,
+        # boss_alive: Optional[bool] = False,
     ):
         self.engine = engine
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union, List, Dict
+from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 from render_order import RenderOrder
 
@@ -28,6 +28,7 @@ class Entity:
 
     def __init__(
         self,
+        effect: Effect,
         parent: Optional[GameMap] = None,
         x: int = 0,
         y: int = 0,
@@ -43,6 +44,7 @@ class Entity:
         self.char = (
             char  # this is the character that represents the entity (player = @)
         )
+        self.effect = effect
         self.color = color  # color of entity
         self.name = name  # name of entity
         self.blocks_movement = blocks_movement  # blocks or does not block movement
@@ -106,6 +108,7 @@ class Actor(Entity):
             char=char,
             color=color,
             name=name,
+            effect=effect,
             blocks_movement=True,
             render_order=RenderOrder.ACTOR,
         )
@@ -139,6 +142,7 @@ class Actor(Entity):
             return "Helixbound"
         elif self.is_rouge:
             return "Whisperbound"
+        return ""
 
 
 class Item(Entity):
@@ -161,6 +165,7 @@ class Item(Entity):
             char=char,
             color=color,
             name=name,
+            effect=effect,
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
