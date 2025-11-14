@@ -104,11 +104,9 @@ class Lvl5BossEffect(Effect):
         super().__init__()
 
     def activate(self, engine: Engine, corpse):
-        gorebound = ""
         for entity in engine.game_map.entities:
             if "Gore" in entity.name:
-                gorebound = entity
-        engine.game_map.entities.remove(gorebound)
+                engine.game_map.entities.remove(entity)
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
             engine.player.is_mage = True
@@ -263,12 +261,13 @@ class GoreboundEffect(Effect):
         for entity in engine.game_map.entities:
             if "Helix" in entity.name:
                 helixbound = entity
-        engine.game_map.entities.remove(helixbound)
-        engine.player.is_fighter = True
-        engine.player.is_rouge = False
-        engine.player.fighter.base_hp = 40
-        engine.player.fighter.hp = 40
-        engine.player.fighter.derive_stats(True)
+        if helixbound:
+            engine.game_map.entities.remove(helixbound)
+            engine.player.is_fighter = True
+            engine.player.is_rouge = False
+            engine.player.fighter.base_hp = 40
+            engine.player.fighter.hp = 40
+            engine.player.fighter.derive_stats(True)
         return super().activate(engine, corpse, True, stat_to_improve)
 
 
