@@ -401,7 +401,7 @@ def generate_dungeon(
     # this is a runnning list of all the rooms generated
     rooms: List[RectangularRoom] = []
     center_of_last_room = (0, 0)
-    is_last_room = False
+    # is_last_room = False
     # iterate from 0 to max_rooms
     room_check = 0
     boss = False

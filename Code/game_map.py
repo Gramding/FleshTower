@@ -85,9 +85,9 @@ class GameMap:
 
         console.rgb[0:self.engine.game_world.viewport_width, 0:self.engine.game_world.viewport_height] = np.select(
             condlist=[viewport_explored],
-            choicelist=[viewport_tiles["dark"]],
+            choicelist=[viewport_tiles["light"]],
             default=tile_types.SHROUD,
-        )
+        ) 
         entities_sorted_for_rendering = sorted(
             self.entities, key=lambda x: x.render_order.value
         )
