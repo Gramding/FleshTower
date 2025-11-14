@@ -135,17 +135,19 @@ class MeleeAction(ActionWithDirection):
         for i in range(self.entity.fighter.attack_count):
             dmg_chance = random.randint(0, 100)
             if dmg_chance >= target.fighter.damage_reduction:
-                if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                    damage = self.entity.fighter.power * 2
-                else:
-                    damage = self.entity.fighter.power
+                # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+                    # crit damage on movement was OP. so changed
+                    # damage = self.entity.fighter.power * 2
+                    # damage = self.entity.fighter.power
+                # else:
+                damage = self.entity.fighter.power
                 self.typal_damage()
             else:
                 doged = True
 
             attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
-            if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                attack_desc += " critically"
+            # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
+                # attack_desc += " critically"
             if self.engine is self.engine.player:
                 attack_color = color.player_atk
             else:
