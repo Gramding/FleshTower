@@ -68,7 +68,6 @@ def randFloor() -> np.ndarray:
 
 
 def randWall() -> np.ndarray:
-    dark_i = random.randint(70, 80)
     wall = new_tile(
         walkable=False,
         transparent=False,

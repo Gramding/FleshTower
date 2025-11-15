@@ -17,5 +17,6 @@ def build_map(shape):
                          repeaty=chords[1],
                          base=seed
                          )
+            world[x][y] = world[x][y]**2
 
     return world

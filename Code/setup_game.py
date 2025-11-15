@@ -4,7 +4,6 @@ import copy
 import lzma
 import pickle
 import traceback
-from typing import Optional
 
 from tcod import libtcodpy
 import tcod
