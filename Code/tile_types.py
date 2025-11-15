@@ -69,11 +69,10 @@ def randFloor() -> np.ndarray:
 
 def randWall() -> np.ndarray:
     dark_i = random.randint(70, 80)
-    light_i = random.randint(0, 10)
     wall = new_tile(
         walkable=False,
         transparent=False,
-        dark=(ord(" "), (255, 255, 255), (50, 92, dark_i)),
-        light=(ord(" "), (255, 255, 255), (92, 26, light_i)),
+        dark=(ord(" "), (255, 255, 255), (50, 92, 255)),
+        light=(ord(" "), (255, 255, 255), (92, 0, 0)),
     )
     return wall

@@ -418,14 +418,10 @@ def generate_dungeon(
     boss = False
     boss_count = 0
 
-    avg = 0
     for x in range(map_height):
         for y in range(map_width):
-            # print(map[x,y])
-            avg += map[x,y]
             if map[x][y] < 0.006:
                 dungeon.tiles[y-1,x-1] = tile_types.randFloor()
-    print(avg/20000)
 
 
     for r in range(max_rooms):
