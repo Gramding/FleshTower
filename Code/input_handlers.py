@@ -683,6 +683,8 @@ class SpellBookActivateHandler(SpellBookEventHandler):
 
 
 class ShopHandler(AskUserEventHandler):
+
+    TITLE = "Select item to buy"
     def __init__(self, engine, target: any):
         self.target = target
         super().__init__(engine)
@@ -743,7 +745,6 @@ class ShopHandler(AskUserEventHandler):
 
 
 class ShopActivateHandler(ShopHandler):
-    TITLE = "Select item to buy"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
         # player price discount from Visceral Influence -> Flesh Bargain taken into acount
