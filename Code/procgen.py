@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
 
-from numpy import shape
 from components.perlin import build_map
 from game_map import GameMap
 import tile_types
