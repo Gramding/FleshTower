@@ -139,7 +139,7 @@ class GameWorld:
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
-        current_floor: int = 0,
+        current_floor: int = -1,
         viewport_width: int = 0,
         viewport_height: int = 0,
         # TODO implement cant move up if boss is alive
@@ -162,17 +162,24 @@ class GameWorld:
 
     def generate_floor(self) -> None:
         from procgen import generate_dungeon
+        from procgen import generate_class_select
 
         self.current_floor += 1
         # self.randSizes()
-        self.engine.game_map = generate_dungeon(
-            max_rooms=self.max_rooms,
-            room_min_size=self.room_min_size,
-            room_max_size=self.room_max_size,
-            map_width=self.map_width,
-            map_height=self.map_height,
-            engine=self.engine,
-        )
+        if self.current_floor == 0:
+            self.engine.game_map = generate_class_select( map_width= self.map_width,
+                                                          map_height= self.map_height,
+                                                         engine=self.engine
+                                                         )
+        else:
+            self.engine.game_map = generate_dungeon(
+                max_rooms=self.max_rooms,
+                room_min_size=self.room_min_size,
+                room_max_size=self.room_max_size,
+                map_width=self.map_width,
+                map_height=self.map_height,
+                engine=self.engine,
+            )
 
     def randSizes(self):
         # define ranges for floor numbers

@@ -466,10 +466,6 @@ def generate_dungeon(
         # this checks for first room if so player is placed in it
         if len(rooms) == 0:
             player.place(*new_room.center, dungeon)
-            if engine.game_world.current_floor == 1:
-                entity_factory.gorebound.spawn(dungeon, player.x - 2, player.y - 2)
-                entity_factory.helixbound.spawn(dungeon, player.x + 2, player.y - 2)
-            # this ensures that the first room is safe
         else:
             # now tunnels are built
             # with negative index to get previos room
@@ -489,3 +485,32 @@ def generate_dungeon(
         # room is build sucessfully and appended
         rooms.append(new_room)
     return dungeon
+
+
+
+def generate_class_select(  engine:Engine,
+                            map_width: int,  # width of map
+                            map_height: int,  # height of map
+)->GameMap:
+    room_width = 10
+    room_height = 10
+    # create new dungeon
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
+    # randomly get the position of the room
+    x = random.randint(0, dungeon.width - room_width - 1)
+    y = random.randint(0, dungeon.height - room_height - 1)
+    # creates the rect room
+    new_room = RectangularRoom(x, y, room_width, room_height)
+
+    dungeon.tiles[new_room.inner] = tile_types.randFloor()
+
+    player.place(*new_room.center, dungeon)
+    
+    entity_factory.gorebound.spawn(dungeon, player.x - 2, player.y - 2)
+    entity_factory.helixbound.spawn(dungeon, player.x + 2, player.y - 2)
+    dungeon.tiles[new_room.center] = tile_types.stairs_up
+    
+    dungeon.upstairs_location = new_room.center
+    return dungeon
+
