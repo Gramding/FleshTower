@@ -35,62 +35,51 @@ max_monsters_by_floor = [
     (7, 5),
     (8, 6),
 ]
-#TODO Check why if one item is generated only this item gets chosen afterwards
-#if sinewcleaver is generated only sinewcleaver is getting generated
-#this is wrong and needs fixing
+# TODO Check why if one item is generated only this item gets chosen afterwards
+# if sinewcleaver is generated only sinewcleaver is getting generated
+# this is wrong and needs fixing
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
         # Common early loot
         (entity_factory.health_potion, 35),
         (entity_factory.mana_potion, 35),
         (entity_factory.large_health_potion, 5),
-
         # Rare early rings
         (entity_factory.wierd_ring, 1),
         (entity_factory.ossuary_loop, 1),
         (entity_factory.veinbinder, 1),
-
         # Early weapons (basic melee gear)
         (entity_factory.neural_razor, 5),
         (entity_factory.sinewcleaver, 5),
         (entity_factory.spine_talon, 4),
-
         # Early headgear
         (entity_factory.crimson_skullcap, 2),
         (entity_factory.boneplate_hood, 2),
         (entity_factory.sinewcap, 2),
-
         # Early eyes
         (entity_factory.blindeye_lenses, 2),
         (entity_factory.hemogaze_lens, 2),
-
         # Early necklace
         (entity_factory.throatlace, 1),
         (entity_factory.humeral_chain, 1),
-
         # Early cloak
         (entity_factory.shredded_shroud, 2),
         (entity_factory.skinfold_mantle, 2),
-
         # Early wrist
         (entity_factory.gristle_bracer, 2),
         (entity_factory.bone_cuffs, 2),
-
         # Early belt
         (entity_factory.guts_belt, 2),
         (entity_factory.rib_binder, 2),
-
         # Early legs
         (entity_factory.shredded_greaves, 2),
         (entity_factory.bone_spliced_trousers, 2),
     ],
-
     2: [
         # Utility scrolls and early upgrades
         (entity_factory.confusion_scroll, 10),
         (entity_factory.gristle_hook, 4),
         (entity_factory.viscera_blade, 3),
-
         # Slightly stronger gear starts appearing
         (entity_factory.ooze_crowned_cap, 1),
         (entity_factory.veinwoven_circlet, 1),
@@ -99,77 +88,60 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.throbbing_band, 1),
         (entity_factory.tendon_girdle, 1),
     ],
-
     4: [
         # Mid-tier loot and solid weapons
         (entity_factory.lightning_scroll, 25),
         (entity_factory.sword, 5),
         (entity_factory.phage_fang, 3),
         (entity_factory.knotted_mace, 3),
-
         # Mid-tier headgear
         (entity_factory.flayed_helm, 2),
         (entity_factory.pulsing_cranium, 2),
-
         # Mid-tier eyes
         (entity_factory.third_orb, 1),
         (entity_factory.eye_of_the_wyrm, 1),
-
         # Mid-tier necklace
         (entity_factory.sinew_choker, 1),
         (entity_factory.veinloop_necklace, 1),
-
         # Mid-tier cloak
         (entity_factory.vein_mantle, 2),
         (entity_factory.tendril_cloak, 1),
-
         # Mid-tier wrist
         (entity_factory.tumorous_wristguard, 1),
         (entity_factory.veinlace_wristband, 1),
-
         # Mid-tier belt
         (entity_factory.visceral_cinch, 1),
         (entity_factory.fleshbinder, 1),
-
         # Mid-tier legs
         (entity_factory.vein_wrapped_leggings, 2),
         (entity_factory.tendon_laced_pants, 1),
     ],
-
     5: [
         # Rare mid-high items start appearing
         (entity_factory.marrow_saw, 2),
         (entity_factory.bonegrinder_maul, 2),
-
         # High-tier headgear
         (entity_factory.tumor_crowned_helm, 1),
         (entity_factory.marrow_visage, 1),
-
         # High-tier eyes
         (entity_factory.corrupted_iris, 1),
         (entity_factory.pustular_eyeband, 1),
-
         # High-tier necklace
         (entity_factory.ossified_torque, 1),
         (entity_factory.rib_bound_medallion, 1),
-
         # High-tier cloak
         (entity_factory.marrow_veil, 1),
         (entity_factory.flesh_tattered_robe, 1),
-
         # High-tier wrist
         (entity_factory.marrow_cuff, 1),
         (entity_factory.pustule_bracelet, 1),
-
         # High-tier belt
         (entity_factory.tumor_laced_strap, 1),
         (entity_factory.bone_clasp_belt, 1),
-
         # High-tier legs
         (entity_factory.marrow_stitched_legwraps, 1),
         (entity_factory.tumorous_legplates, 1),
     ],
-
     6: [
         (entity_factory.fireball_scroll, 25),
         (entity_factory.chain_mail, 15),
@@ -182,7 +154,6 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.marrowstrap, 1),
         (entity_factory.pulsing_calfwraps, 1),
     ],
-
     8: [
         (entity_factory.thrall_reaver, 2),
         (entity_factory.marrow_saw, 1),
@@ -245,7 +216,6 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
 }
 
 
-
 def get_max_value_for_floor(
     max_value_by_floor: List[Tuple[int, int]], floor: int
 ) -> int:
@@ -258,7 +228,6 @@ def get_max_value_for_floor(
             current_value = value
 
     return current_value
-
 
 
 def get_entities_at_random(
@@ -288,7 +257,9 @@ def get_entities_at_random(
 def generate_shop_items(entity: Entity, floor_number: int):
     if hasattr(entity, "inventory"):
         if entity.inventory.capacity > 0:
-            items: List[Entity] = get_entities_at_random(item_chances, entity.inventory.capacity, floor_number)
+            items: List[Entity] = get_entities_at_random(
+                item_chances, entity.inventory.capacity, floor_number
+            )
             for item in items:
                 l_hp = copy.deepcopy(item)
 
@@ -399,11 +370,7 @@ def generate_dungeon(
     engine: Engine,
 ) -> GameMap:
 
-
- 
-
-    map = build_map(shape=(map_height,map_width))
-    
+    map = build_map(shape=(map_height, map_width))
 
     # create new dungeon
     player = engine.player
@@ -420,8 +387,7 @@ def generate_dungeon(
     for x in range(map_height):
         for y in range(map_width):
             if map[x][y] < 0.006:
-                dungeon.tiles[y-1,x-1] = tile_types.randFloor()
-
+                dungeon.tiles[y - 1, x - 1] = tile_types.randFloor()
 
     for r in range(max_rooms):
         # randomly generate the size of the room
@@ -445,18 +411,18 @@ def generate_dungeon(
             continue
             # set tiles of room innter as floor
 
-        if room_type == 'rect':
+        if room_type == "rect":
             dungeon.tiles[new_room.inner] = tile_types.randFloor()
         else:
             slice_x, slice_y = new_room.inner
             cx, cy = new_room.center
-            r = random.randint(5,20)
+            r = random.randint(5, 20)
 
             for x in range(slice_x.start, slice_x.stop):
                 for y in range(slice_y.start, slice_y.stop):
                     dx = x - cx
                     dy = y - cy
-                    if dx*dx + dy*dy <= r*r:
+                    if dx * dx + dy * dy <= r * r:
                         # make this tile floor
                         if x >= engine.game_world.map_height:
                             x = engine.game_world.map_height - 1
@@ -487,11 +453,11 @@ def generate_dungeon(
     return dungeon
 
 
-
-def generate_class_select(  engine:Engine,
-                            map_width: int,  # width of map
-                            map_height: int,  # height of map
-)->GameMap:
+def generate_class_select(
+    engine: Engine,
+    map_width: int,  # width of map
+    map_height: int,  # height of map
+) -> GameMap:
     room_width = 10
     room_height = 10
     # create new dungeon
@@ -506,11 +472,10 @@ def generate_class_select(  engine:Engine,
     dungeon.tiles[new_room.inner] = tile_types.randFloor()
 
     player.place(*new_room.center, dungeon)
-    
+
     entity_factory.gorebound.spawn(dungeon, player.x - 2, player.y - 2)
     entity_factory.helixbound.spawn(dungeon, player.x + 2, player.y - 2)
     dungeon.tiles[new_room.center] = tile_types.stairs_up
-    
+
     dungeon.upstairs_location = new_room.center
     return dungeon
-
