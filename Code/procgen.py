@@ -476,6 +476,8 @@ def generate_class_select(
     entity_factory.gorebound.spawn(dungeon, player.x - 2, player.y - 2)
     entity_factory.helixbound.spawn(dungeon, player.x + 2, player.y - 2)
     dungeon.tiles[new_room.center] = tile_types.stairs_up
-
+    engine.message_log.add_message(
+        "Choose you're class by consuming a the remains before you. Or don't and stay a rouge"
+    )
     dungeon.upstairs_location = new_room.center
     return dungeon
