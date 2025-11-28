@@ -71,6 +71,8 @@ class Fighter(BaseComponent):
 
         self.derive_stats(req_hp_reset=True)
 
+        # TODO Add modifiers like when going up the staris the player gains an affixe or sth.
+
     @property
     def hp(self) -> int:
         return self._hp
@@ -118,15 +120,16 @@ class Fighter(BaseComponent):
 
         self.engine.message_log.add_message(death_message, death_message_color)
         self.engine.player.level.add_xp(self.parent.level.xp_given)
-        
-        #20% chance to drop an item on death
+
+        # 20% chance to drop an item on death
         # drop item on death
-        if random.randint(0,100) < 20 and len(self.parent.inventory.items)>0:
+        if random.randint(0, 100) < 20 and len(self.parent.inventory.items) > 0:
             item = random.choice(self.parent.inventory.items)
             clone = copy.deepcopy(item)
-            clone.place(x=self.parent.x,y=self.parent.y,gamemap=self.engine.game_map)
-            self.engine.message_log.add_message(f"{self.parent.name.replace("remains of ", "")} dropped {clone.name}")
-            
+            clone.place(x=self.parent.x, y=self.parent.y, gamemap=self.engine.game_map)
+            self.engine.message_log.add_message(
+                f"{self.parent.name.replace('remains of ', '')} dropped {clone.name}"
+            )
 
     def heal(self, amount: int) -> int:
         # check if at full HP
