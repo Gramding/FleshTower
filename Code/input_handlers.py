@@ -3,7 +3,6 @@ import os
 import copy
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
 import tcod
-import tcod.constants
 import actions
 from actions import Action, BumpAction, WaitAction, PickupAction
 import color
@@ -34,15 +33,6 @@ MOVE_KEYS = {
     tcod.event.KeySym.KP_7: (-1, -1),
     tcod.event.KeySym.KP_8: (0, -1),
     tcod.event.KeySym.KP_9: (1, -1),
-    # Vi keys.
-    # tcod.event.KeySym.H: (-1, 0),
-    # tcod.event.KeySym.J: (0, 1),
-    # tcod.event.KeySym.K: (0, -1),
-    # tcod.event.KeySym.L: (1, 0),
-    # tcod.event.KeySym.Y: (-1, -1),
-    # tcod.event.KeySym.U: (1, -1),
-    # tcod.event.KeySym.B: (-1, 1),
-    # tcod.event.KeySym.N: (1, 1),
 }
 
 WAIT_KEYS = {
@@ -81,7 +71,6 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         """Handle an event and return the next active event handler."""
         state = self.dispatch(event)
         if isinstance(state, BaseEventHandler):
-
             return state
         assert not isinstance(state, Action), f"{self!r} can not handle actions."
         return self
@@ -157,7 +146,6 @@ class EventHandler(BaseEventHandler):
 
 
 class AskUserEventHandler(EventHandler):
-
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
         if event.sym in {  # Ignore modifier keys.
             tcod.event.KeySym.LSHIFT,
@@ -379,9 +367,9 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         if key == tcod.event.KeySym.E and mod == tcod.event.Modifier.LCTRL:
             for i in self.engine.player.equipment.__dict__:
                 if "_" not in i and "parent" not in i:
-                    slot = getattr(self.engine.player.equipment,i)
+                    slot = getattr(self.engine.player.equipment, i)
                     if slot:
-                        self.engine.player.equipment.unequip_from_slot(i,True)
+                        self.engine.player.equipment.unequip_from_slot(i, True)
 
         return super().ev_keydown(event)
 
@@ -416,7 +404,6 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
         )
         if number_of_consumption_attr > 0:
-
             for i, name in enumerate(self.engine.player.logbook.book):
                 print = name.replace("remains of ", "").capitalize()
                 console.print(
@@ -677,14 +664,13 @@ class SpellBookEventHandler(AskUserEventHandler):
 
 
 class SpellBookActivateHandler(SpellBookEventHandler):
-
     def on_spell_selected(self, spell: Spell) -> Optional[ActionOrHandler]:
         return spell.activate()
 
 
 class ShopHandler(AskUserEventHandler):
-
     TITLE = "Select item to buy"
+
     def __init__(self, engine, target: any):
         self.target = target
         super().__init__(engine)
@@ -745,7 +731,6 @@ class ShopHandler(AskUserEventHandler):
 
 
 class ShopActivateHandler(ShopHandler):
-
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
         # player price discount from Visceral Influence -> Flesh Bargain taken into acount
         real_price = item.price - (
@@ -782,8 +767,8 @@ class SelectIndexHandler(AskUserEventHandler):
         y = int(y)
         if x >= 80:
             x = 0
-        if y >=50:
-            y=0
+        if y >= 50:
+            y = 0
         console.rgb["bg"][x, y] = color.white
         console.rgb["fg"][x, y] = color.black
 
