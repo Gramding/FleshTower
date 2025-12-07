@@ -360,6 +360,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             y=20,
             text=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
         )
+        console.print(
+            x=x + 1,
+            y=21,
+            text=f"Attack Count           : {self.engine.player.fighter.attack_count}",
+        )
 
     def ev_keydown(self, event):
         key = event.sym
