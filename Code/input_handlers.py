@@ -138,8 +138,8 @@ class EventHandler(BaseEventHandler):
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
-        if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
-            self.engine.mouse_location = event.tile.x, event.tile.y
+        if self.engine.game_map.in_bounds(int(event.tile.x), int(event.tile.y)):
+            self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
 
     def on_render(self, console: tcod.Console) -> None:
         self.engine.render(console)
@@ -225,7 +225,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         console.print(
             x + 1,
             5,
-            string="┤Vital Aberrations├",
+            text="┤Vital Aberrations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
             height=1,
@@ -335,7 +335,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         console.print(
             x + 1,
             15,
-            string="┤Behavioral Deviations├",
+            text="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
             height=1,
