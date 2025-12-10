@@ -893,7 +893,8 @@ class MainGameEventHandler(EventHandler):
             ):
                 dx = dx * 2
                 dy = dy * 2
-                self.engine.player.fighter.stamina -= 2
+                #stamina is now handlede by the bump action
+                #self.engine.player.fighter.stamina -= 2
             elif (
                 self.engine.player.fighter.stamina
                 < self.engine.player.fighter.max_stamina

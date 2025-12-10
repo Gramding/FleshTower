@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
 
-from components.perlin import build_map
+from components.perlin import build_map, build_map_new
 from game_map import GameMap
 import tile_types
 import tcod
@@ -370,7 +370,7 @@ def generate_dungeon(
     engine: Engine,
 ) -> GameMap:
 
-    map = build_map(shape=(map_height, map_width))
+    map = build_map_new(shape=(map_height, map_width))
 
     # create new dungeon
     player = engine.player
@@ -386,7 +386,7 @@ def generate_dungeon(
 
     for x in range(map_height):
         for y in range(map_width):
-            if map[x][y] < 0.006:
+            if map[x][y] < 20:
                 dungeon.tiles[y - 1, x - 1] = tile_types.randFloor()
 
     for r in range(max_rooms):

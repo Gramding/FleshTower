@@ -202,8 +202,15 @@ class BumpAction(ActionWithDirection):
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":
+                if '2' in str(self.dx) or '2' in str(self.dy) and self.entity.fighter.stamina >=10:
+                    self.entity.fighter.stamina -= 10
+                else:
+                    self.dx = self.dx / 2
+                    self.dy = self.dy / 2
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
+            if '2' in str(self.dx) or '2' in str(self.dy):
+                    self.entity.fighter.stamina -= 2
             return MovementAction(self.entity, self.dx, self.dy).perform()
 
 
