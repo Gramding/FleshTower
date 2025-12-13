@@ -2,8 +2,6 @@ from engine import Engine
 import color
 
 import random
-import color
-from typing import TYPE_CHECKING
 
 
 class Spell:
@@ -29,8 +27,8 @@ class Spell:
 
 
 class LightningSpell(Spell):
-    def __init__(self, engine, name, mana_cost: int):
-        self.damage = 20 + self.engine.player.fighter.spell_damage_bonus
+    def __init__(self, engine, name, mana_cost: int, damage: int):
+        self.damage = damage + engine.player.fighter.spell_damage_bonus
         self.range = 8
         super().__init__(engine, name, mana_cost)
 

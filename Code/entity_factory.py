@@ -7,7 +7,6 @@ from entity import Actor, Item
 from components.level import Level
 from components.spells import SpellBook
 from components.effects import *
-from typing import Dict
 
 player = Actor(
     char="@",
@@ -1308,4 +1307,3 @@ knotted_viscera_band = Item(
     effect=DefaultEffect(),
     price=420,
 )
-
