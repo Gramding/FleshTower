@@ -893,8 +893,8 @@ class MainGameEventHandler(EventHandler):
             ):
                 dx = dx * 2
                 dy = dy * 2
-                #stamina is now handlede by the bump action
-                #self.engine.player.fighter.stamina -= 2
+                # stamina is now handlede by the bump action
+                # self.engine.player.fighter.stamina -= 2
             elif (
                 self.engine.player.fighter.stamina
                 < self.engine.player.fighter.max_stamina
@@ -991,3 +991,6 @@ class HistoryViewer(EventHandler):
 class CunsumptionEventHandler(EventHandler):
     def __init__(self, engine):
         super().__init__(engine)
+
+
+# TODO create a equip screen with details on the worn items
