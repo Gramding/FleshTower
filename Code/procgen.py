@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
 
-from components.perlin import build_map, build_map_new
+from components.perlin import build_map_new
 from game_map import GameMap
 import tile_types
 import tcod
