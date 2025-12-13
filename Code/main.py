@@ -55,7 +55,6 @@ def main() -> None:
                             traceback.format_exc(), color.error
                         )
         except exceptions.QuitWithoutSaving:
-
             raise
         except SystemExit:  # Save and quit.
             save_game(handler, "savegame.sav")

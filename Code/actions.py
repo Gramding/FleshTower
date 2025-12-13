@@ -135,9 +135,9 @@ class MeleeAction(ActionWithDirection):
             dmg_chance = random.randint(0, 100)
             if dmg_chance >= target.fighter.damage_reduction:
                 # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                    # crit damage on movement was OP. so changed
-                    # damage = self.entity.fighter.power * 2
-                    # damage = self.entity.fighter.power
+                # crit damage on movement was OP. so changed
+                # damage = self.entity.fighter.power * 2
+                # damage = self.entity.fighter.power
                 # else:
                 damage = self.entity.fighter.power
                 self.typal_damage()
@@ -146,7 +146,7 @@ class MeleeAction(ActionWithDirection):
 
             attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
             # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                # attack_desc += " critically"
+            # attack_desc += " critically"
             if self.engine is self.engine.player:
                 attack_color = color.player_atk
             else:
@@ -169,7 +169,7 @@ class MeleeAction(ActionWithDirection):
         if self.engine.player.is_fighter:
             damage_to_mass_probability = random.randint(0, 100)
             if damage_to_mass_probability <= (
-                20 - self.engine.player.fighter.mass_level
+                10 - self.engine.player.fighter.mass_level
             ):
                 mass_damage = random.randint(1, 2)
                 self.engine.message_log.add_message(
@@ -181,7 +181,6 @@ class MeleeAction(ActionWithDirection):
 
 
 class MovementAction(ActionWithDirection):
-
     def perform(self):
         dest_x, dest_y = self.dest_xy
 
@@ -202,27 +201,32 @@ class BumpAction(ActionWithDirection):
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":
-                if '2' in str(self.dx) or '2' in str(self.dy) and self.entity.fighter.stamina >=10:
-                    self.entity.fighter.stamina -= 10
-                else:
-                    self.dx = self.dx / 2
-                    self.dy = self.dy / 2
+                if self.entity.is_rouge:
+                    MovementCehck(dx=self.dx, dy=self.dy, entity=self.entity)
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
-            if '2' in str(self.dx) or '2' in str(self.dy):
-                    self.entity.fighter.stamina -= 2
+            if "2" in str(self.dx) or "2" in str(self.dy):
+                self.entity.fighter.stamina -= 2
             return MovementAction(self.entity, self.dx, self.dy).perform()
+
+
+# Function to check whether the stamina action of the Rouge is permitted
+def MovementCehck(dx, dy, entity):
+    if "2" in str(dx) or "2" in str(dy) and entity.fighter.stamina >= 10:
+        entity.fighter.stamina -= 10
+    else:
+        return dx / 2, dy / 2
 
 
 class ConsumeCorpseAction(Action):
     def perform(self):
-        
+
         for corpse in self.engine.game_map.entities:
             if (
                 corpse.x == self.entity.x
                 and corpse.y == self.entity.y
                 and corpse != self.entity
-            ): 
+            ):
                 corpse.effect.activate(self.engine, corpse)
                 return
         raise exceptions.Impossible("No corpse here")

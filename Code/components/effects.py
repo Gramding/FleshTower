@@ -33,7 +33,8 @@ class Effect:
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name)
         if engine.player.is_fighter:
-            increase = random.randint(1, 3)
+            increase = random.randint(1, 15)  # Rebalance the amount of mass gained
+            # increas player mass level
             if engine.player.fighter.mass + increase <= engine.player.fighter.max_mass:
                 engine.player.fighter.mass += increase
             else:
