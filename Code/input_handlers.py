@@ -251,10 +251,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         # Descriptors
         console.print(x=x + 24, y=7, text="Val  | Mod")
         # STAT
+        text = "Strength"
         console.print(
             x=x + 1,
             y=8,
-            text=f"Tendon Mass            : {tm} ",
+            text=f"{text:<23}: {tm} ",
         )
         console.print(
             x=x + 29,
@@ -263,10 +264,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         # STAT
+        text = "Dexterity"
         console.print(
             x=x + 1,
             y=9,
-            text=f"Nerve Sync             : {ns} ",
+            text=f"{text:<23}: {ns} ",
         )
         console.print(
             x=x + 29,
@@ -275,10 +277,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         # STAT
+        text = "Constitution"
         console.print(
             x=x + 1,
             y=10,
-            text=f"Flesh Integrity        : {fi} ",
+            text=f"{text:<23}: {fi} ",
         )
         console.print(
             x=x + 29,
@@ -287,10 +290,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         # STAT
+        text = "Intelligence"
         console.print(
             x=x + 1,
             y=11,
-            text=f"Cerebral Drift         : {cd} ",
+            text=f"{text:<23}: {cd} ",
         )
         console.print(
             x=x + 29,
@@ -299,10 +303,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         # STAT
+        text = "Wisdom"
         console.print(
             x=x + 1,
             y=12,
-            text=f"Perceptual Echo        : {pe} ",
+            text=f"{text:<23}: {pe} ",
         )
         console.print(
             x=x + 29,
@@ -311,10 +316,11 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         # STAT
+        text = "Charisma"
         console.print(
             x=x + 1,
             y=13,
-            text=f"Visceral Influence     : {vi} ",
+            text=f"{text:<23}: {vi} ",
         )
         console.print(
             x=x + 29,
@@ -340,30 +346,35 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             width=width - 2,
             height=1,
         )
+        text = "Meele Damage"
         console.print(
             x=x + 1,
             y=17,
-            text=f"Trauma Output          : {self.engine.player.fighter.power}",
+            text=f"{text:<20}: {self.engine.player.fighter.power}",
         )
+        text = "Damage Reduction"
         console.print(
             x=x + 1,
             y=18,
-            text=f"Flesh Absorption       : {self.engine.player.fighter.damage_reduction}",
+            text=f"{text:<20}: {self.engine.player.fighter.damage_reduction}",
         )
+        text = "Spell Damage"
         console.print(
             x=x + 1,
             y=19,
-            text=f"Cerebral Overcharge    : {self.engine.player.fighter.damage_reduction}",
+            text=f"{text:<20}: {self.engine.player.fighter.spell_damage_bonus}",
         )
+        text = "Price Discount"
         console.print(
             x=x + 1,
             y=20,
-            text=f"Flesh Bargain          : {self.engine.player.fighter.price_discount}",
+            text=f"{text:<20}: {self.engine.player.fighter.price_discount}",
         )
+        text = "Attack Count"
         console.print(
             x=x + 1,
             y=21,
-            text=f"Attack Count           : {self.engine.player.fighter.attack_count}",
+            text=f"{text:<20}: {self.engine.player.fighter.attack_count}",
         )
 
     def ev_keydown(self, event):
@@ -957,8 +968,13 @@ class HistoryViewer(EventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
         log_console = tcod.console.Console(console.width - 6, console.height - 6)
-        log_console.print_box(
-            0, 0, log_console.width, 1, "|Message history|", alignment=libtcodpy.CENTER
+        log_console.print(
+            x=0,
+            y=0,
+            width=log_console.width,
+            height=1,
+            text="|Message history|",
+            alignment=libtcodpy.CENTER,
         )
 
         self.engine.message_log.render_messages(

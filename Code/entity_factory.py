@@ -24,7 +24,7 @@ player = Actor(
     level=Level(level_up_base=0),
     spellbook=SpellBook(10),
     logbook=LogBook(),
-    effect=None,
+    effect=DefaultEffect(),
 )
 
 rat = Actor(

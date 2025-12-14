@@ -84,24 +84,18 @@ class Equipment(BaseComponent):
                 if slot and slot.equippable:
                     if slot.equippable is not None and equip == slot_give:
                         for i in slot.equippable.stat_bonus:
-                            if (
-                                action_type == "+"
-                                and slot.equippable.is_applied == False
-                            ):
-                                self.engine.player.fighter.bonus_stats[
-                                    i
-                                ] += slot.equippable.stat_bonus[i]
-                            elif (
-                                action_type == "-"
-                                and slot.equippable.is_applied == True
-                            ):
-                                self.engine.player.fighter.bonus_stats[
-                                    i
-                                ] -= slot.equippable.stat_bonus[i]
+                            if action_type == "+" and not slot.equippable.is_applied:
+                                self.engine.player.fighter.bonus_stats[i] += (
+                                    slot.equippable.stat_bonus[i]
+                                )
+                            elif action_type == "-" and slot.equippable.is_applied:
+                                self.engine.player.fighter.bonus_stats[i] -= (
+                                    slot.equippable.stat_bonus[i]
+                                )
 
-                        if action_type == "+" and slot.equippable.is_applied == False:
+                        if action_type == "+" and not slot.equippable.is_applied:
                             slot.equippable.is_applied = True
-                        elif action_type == "-" and slot.equippable.is_applied == True:
+                        elif action_type == "-" and slot.equippable.is_applied:
                             slot.equippable.is_applied = False
         # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
@@ -143,6 +137,7 @@ class Equipment(BaseComponent):
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
+        slot = ""
         if (
             equippable_item.equippable
             and equippable_item.equippable.equipment_type == EquipmentType.WEAPON
@@ -163,25 +158,45 @@ class Equipment(BaseComponent):
                 slot_name = f"ring{i}"
                 if (
                     getattr(self, slot_name) == equippable_item
-                    or getattr(self, slot_name) == None
+                    or getattr(self, slot_name) is None
                 ):
                     slot = slot_name
                     break
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.HEAD:
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.HEAD
+        ):
             slot = "head"
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.EYES:
-            slot = 'eyes'
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.NECKLACE:
-            slot = 'necklace'
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.CLOAK:
-            slot = 'cloak'
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.WRIST:
-            slot = 'wrist'
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.BELT:
-            slot = 'belt'
-        elif equippable_item.equippable and equippable_item.equippable.equipment_type == EquipmentType.LEGS:
-            slot = 'legs'
-        
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.EYES
+        ):
+            slot = "eyes"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.NECKLACE
+        ):
+            slot = "necklace"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.CLOAK
+        ):
+            slot = "cloak"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.WRIST
+        ):
+            slot = "wrist"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.BELT
+        ):
+            slot = "belt"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.LEGS
+        ):
+            slot = "legs"
 
         if getattr(self, slot) == equippable_item:
             self.unequip_from_slot(slot, add_message)
