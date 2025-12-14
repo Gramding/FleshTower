@@ -999,12 +999,7 @@ class EquipmentScreen(AskUserEventHandler):
 
     def on_render(self, console):
         super().on_render(console)
-
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
+        x = 0
         y = 0
         width = len(self.TITLE) + 40
 
@@ -1024,30 +1019,14 @@ class EquipmentScreen(AskUserEventHandler):
             if "_" not in equip and "parent" not in equip:
                 slot = getattr(self.engine.player.equipment, equip)
                 console.print(x=x + 1, y=y, string=f"{equip.capitalize():<11}:")
-                # TODO  rewrite so that an entire line is built and only one write is performed per line
                 if slot:
+                    line = slot.name
                     x_save = x
-                    x += 13
-                    console.print(
-                        x=x,
-                        y=y,
-                        string=f"{slot.name}",
-                    )
                     if slot.equippable.defense_bonus != 0:
-                        x += len(slot.name) + 1
-                        console.print(
-                            x=x,
-                            y=y,
-                            string=f"Defense: {slot.equippable.defense_bonus}",
-                        )
+                        line = line + f" Defense: {slot.equippable.defense_bonus}"
                     if slot.equippable.power_bonus != 0:
-                        x += len(slot.name) + 1
-                        console.print(
-                            x=x,
-                            y=y,
-                            string=f"Attack: {slot.equippable.power_bonus}",
-                        )
-                    x = x_save
+                        line = line + f" Attack: {slot.equippable.power_bonus}"
+                    console.print(x=x + 13, y=y, string=line)
                     x += 13
                     for bonus in slot.equippable.stat_bonus:
                         console.print(
