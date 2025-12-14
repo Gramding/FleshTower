@@ -919,7 +919,8 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)
-
+        elif key == tcod.event.KeySym.E:
+            return EquipmentScreen(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -993,4 +994,69 @@ class CunsumptionEventHandler(EventHandler):
         super().__init__(engine)
 
 
-# TODO create a equip screen with details on the worn items
+class EquipmentScreen(AskUserEventHandler):
+    TITLE = "Equipments"
+
+    def on_render(self, console):
+        super().on_render(console)
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        width = len(self.TITLE) + 40
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=40,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        for equip in self.engine.player.equipment.__dict__:
+            if "_" not in equip and "parent" not in equip:
+                slot = getattr(self.engine.player.equipment, equip)
+                console.print(x=x + 1, y=y, string=f"{equip.capitalize():<11}:")
+                # TODO  rewrite so that an entire line is built and only one write is performed per line
+                if slot:
+                    x_save = x
+                    x += 13
+                    console.print(
+                        x=x,
+                        y=y,
+                        string=f"{slot.name}",
+                    )
+                    if slot.equippable.defense_bonus != 0:
+                        x += len(slot.name) + 1
+                        console.print(
+                            x=x,
+                            y=y,
+                            string=f"Defense: {slot.equippable.defense_bonus}",
+                        )
+                    if slot.equippable.power_bonus != 0:
+                        x += len(slot.name) + 1
+                        console.print(
+                            x=x,
+                            y=y,
+                            string=f"Attack: {slot.equippable.power_bonus}",
+                        )
+                    x = x_save
+                    x += 13
+                    for bonus in slot.equippable.stat_bonus:
+                        console.print(
+                            x=x,
+                            y=y + 1,
+                            string=f"{bonus}:{slot.equippable.stat_bonus[bonus]}",
+                        )
+                        x += 5
+
+                    x = x_save
+
+                y += 2

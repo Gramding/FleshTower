@@ -123,7 +123,7 @@ class Fighter(BaseComponent):
 
         # 20% chance to drop an item on death
         # drop item on death
-        if random.randint(0, 100) < 20 and len(self.parent.inventory.items) > 0:
+        if random.randint(0, 100) < 11110 and len(self.parent.inventory.items) > 0:
             item = random.choice(self.parent.inventory.items)
             clone = copy.deepcopy(item)
             clone.place(x=self.parent.x, y=self.parent.y, gamemap=self.engine.game_map)
