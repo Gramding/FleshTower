@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional
+from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional, cast
 
+from Documents.Git.FleshTower.Code.entity import Actor
 from components.perlin import build_map_new
 from game_map import GameMap
 import tile_types
@@ -254,17 +255,19 @@ def get_entities_at_random(
     return chosen_entities
 
 
+# Rewrote so that entity is cast to actor to appease the linter
 def generate_shop_items(entity: Entity, floor_number: int):
     if hasattr(entity, "inventory"):
-        if entity.inventory.capacity > 0:
+        actor = cast(Actor, entity)
+        if actor.inventory.capacity > 0:
             items: List[Entity] = get_entities_at_random(
-                item_chances, entity.inventory.capacity, floor_number
+                item_chances, actor.inventory.capacity, floor_number
             )
             for item in items:
                 l_hp = copy.deepcopy(item)
 
-                l_hp.parent = entity.inventory
-                entity.inventory.items.append(l_hp)
+                l_hp.parent = actor.inventory
+                actor.inventory.items.append(l_hp)
 
 
 class RectangularRoom:
