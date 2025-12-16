@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional, cast
 
-from Documents.Git.FleshTower.Code.entity import Actor
+from entity import Actor
 from components.perlin import build_map_new
 from game_map import GameMap
 import tile_types
@@ -481,6 +481,40 @@ def generate_class_select(
     dungeon.tiles[new_room.center] = tile_types.stairs_up
     engine.message_log.add_message(
         "Choose you're class by consuming a the remains before you. Or don't and stay a rouge"
+    )
+    dungeon.upstairs_location = new_room.center
+    return dungeon
+
+
+def generate_shop_room(
+        engine: Engine,
+    map_width: int,  # width of map
+    map_height: int,
+    current_floor: int,
+) -> GameMap:
+    room_width = 10
+    room_height = 10
+    # create new dungeon
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
+    # randomly get the position of the room
+    x = random.randint(0, dungeon.width - room_width - 1)
+    y = random.randint(0, dungeon.height - room_height - 1)
+    # creates the rect room
+    new_room = RectangularRoom(x, y, room_width, room_height)
+
+    dungeon.tiles[new_room.inner] = tile_types.randFloor()
+
+    player.place(*new_room.center, dungeon)
+
+    entity_factory.vendor.spawn(dungeon, player.x - 2, player.y - 2)
+    for entity in dungeon.entities:
+        if "Organ" in entity.name:
+            generate_shop_items(entity=entity,floor_number=current_floor)
+    
+    dungeon.tiles[new_room.center] = tile_types.stairs_up
+    engine.message_log.add_message(
+        "You sumble upon a humble merchant."
     )
     dungeon.upstairs_location = new_room.center
     return dungeon

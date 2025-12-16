@@ -165,12 +165,23 @@ class GameWorld:
     def generate_floor(self) -> None:
         from procgen import generate_dungeon
         from procgen import generate_class_select
+        from procgen import generate_shop_room
 
         self.current_floor += 1
+        shop_chance = random.randint(0,100)
         # self.randSizes()
         if self.current_floor == 0:
             self.engine.game_map = generate_class_select(
-                map_width=self.map_width, map_height=self.map_height, engine=self.engine
+                map_width=self.map_width, 
+                map_height=self.map_height, 
+                engine=self.engine
+            )
+        elif (shop_chance <= 20 or self.current_floor%5==0) and not self.current_floor == 1:
+            self.engine.game_map = generate_shop_room(
+                map_width=self.map_width, 
+                map_height=self.map_height, 
+                engine=self.engine, 
+                current_floor=self.current_floor
             )
         else:
             self.engine.game_map = generate_dungeon(
