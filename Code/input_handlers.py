@@ -935,7 +935,7 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.E:
             return EquipmentScreen(self.engine)
         elif key == tcod.event.KeySym.DELETE:
-            return ItemCheatScreen(self.engine)
+            return CheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1070,32 +1070,53 @@ class ItemCheatScreen(AskUserEventHandler):
         x = 0
         y = 0
         width = len(self.TITLE) + 40
+        pages = []
+        for floor in self.engine.item_chances:
+            pages.append(floor)
+
+        itemIndex = 0
+        self.currentFloor = pages[0]
 
         console.draw_frame(
             x=x,
             y=y,
             width=width,
             height=40,
-            title=self.TITLE,
+            title=f"{self.TITLE} Floor {self.currentFloor}",
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
         # this increment is for not writin in title line
         y += 1
-        pages = []
-        for floor in self.engine.item_chances:
-            pages.append[floor]
-
-        itemIndex = 0
-        self.currentFloor = pages[0]
+        
 
 
         itemOnFloor = self.engine.item_chances[self.currentFloor]
-        for item in itemOnFloor:
-            y+=1
-            console.print(x=x+1,y=y,string=f"{itemIndex}) {item[0].name}")
-            itemIndex+=1
+        for i, item in enumerate(itemOnFloor):
+                item_key = chr(ord("a") + i)
+                item_string = f"({item_key}) {item[0].name}"
+                console.print(x + 1, y + i + 1, item_string)
+
 
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        pass
+        player = self.engine.player
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+
+        if 0 <= index <= 26:
+            try:
+                selected_item = self.engine.item_chances[self.currentFloor][index]
+            except IndexError:
+                self.engine.message_log.add_message(
+                    "Invalid inventory slot.", color.invalid
+                )
+                return None
+            return self.on_item_selected(selected_item)
+        return super().ev_keydown(event)
+
+
+class CheatActiveHandler(ItemCheatScreen):
+    def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        item[0].spawn(gamemap=self.engine.game_map,x=self.engine.player.x,y=self.engine.player.y)
+        self.engine.message_log.add_message(f"The Tower creates 1 {item[0].name}")
