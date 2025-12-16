@@ -8,8 +8,10 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-#from procgen import item_chances, enemy_chances
-#from components.procgen_chances import item_chances
+from components.settings import CHEATS
+
+# from procgen import item_chances, enemy_chances
+# from components.procgen_chances import item_chances
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -24,8 +26,6 @@ MOVE_KEYS = {
     tcod.event.KeySym.RIGHT: (1, 0),
     tcod.event.KeySym.HOME: (-1, -1),
     tcod.event.KeySym.END: (-1, 1),
-    tcod.event.KeySym.PAGEUP: (1, -1),
-    tcod.event.KeySym.PAGEDOWN: (1, 1),
     # Numpad keys.
     tcod.event.KeySym.KP_1: (-1, 1),
     tcod.event.KeySym.KP_2: (0, 1),
@@ -156,6 +156,8 @@ class AskUserEventHandler(EventHandler):
             tcod.event.KeySym.RCTRL,
             tcod.event.KeySym.LALT,
             tcod.event.KeySym.RALT,
+            tcod.event.KeySym.PAGEUP,
+            tcod.event.KeySym.PAGEDOWN,
         }:
             return None
         return self.on_exit()
@@ -934,7 +936,7 @@ class MainGameEventHandler(EventHandler):
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.E:
             return EquipmentScreen(self.engine)
-        elif key == tcod.event.KeySym.DELETE:
+        elif key == tcod.event.KeySym.DELETE and CHEATS:
             return CheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
@@ -1060,10 +1062,10 @@ class EquipmentScreen(AskUserEventHandler):
 
                 y += 2
 
-#TODO implement rest of cheat logik
+
+# TODO implement rest of cheat logik
 class ItemCheatScreen(AskUserEventHandler):
     TITLE = "Item cheats"
-    currentFloor = 0
 
     def on_render(self, console):
         super().on_render(console)
@@ -1074,49 +1076,57 @@ class ItemCheatScreen(AskUserEventHandler):
         for floor in self.engine.item_chances:
             pages.append(floor)
 
-        itemIndex = 0
-        self.currentFloor = pages[0]
-
         console.draw_frame(
             x=x,
             y=y,
             width=width,
             height=40,
-            title=f"{self.TITLE} Floor {self.currentFloor}",
+            title=f"{self.TITLE} Floor {self.engine.current_cheat_page}",
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
         # this increment is for not writin in title line
         y += 1
-        
 
-
-        itemOnFloor = self.engine.item_chances[self.currentFloor]
+        itemOnFloor = self.engine.item_chances[self.engine.current_cheat_page]
         for i, item in enumerate(itemOnFloor):
-                item_key = chr(ord("a") + i)
-                item_string = f"({item_key}) {item[0].name}"
-                console.print(x + 1, y + i + 1, item_string)
-
+            item_key = chr(ord("a") + i)
+            item_string = f"({item_key}) {item[0].name}"
+            console.print(x + 1, y + i + 1, item_string)
 
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.A
 
-        if 0 <= index <= 26:
-            try:
-                selected_item = self.engine.item_chances[self.currentFloor][index]
-            except IndexError:
-                self.engine.message_log.add_message(
-                    "Invalid inventory slot.", color.invalid
-                )
-                return None
-            return self.on_item_selected(selected_item)
+        if key == tcod.event.KeySym.PAGEUP:
+            if len(self.engine.item_chances) - 1 >= self.engine.current_cheat_page + 1:
+                self.engine.current_cheat_page += 1
+            else:
+                self.engine.current_cheat_page = 0
+        elif key == tcod.event.KeySym.PAGEDOWN:
+            if 0 <= self.engine.current_cheat_page - 1:
+                self.engine.current_cheat_page -= 1
+            else:
+                self.engine.current_cheat_page = len(self.engine.item_chances) - 1
+        else:
+            if 0 <= index <= 26:
+                try:
+                    selected_item = self.engine.item_chances[
+                        self.engine.current_cheat_page
+                    ][index]
+                except IndexError:
+                    self.engine.message_log.add_message(
+                        "Invalid input slot.", color.invalid
+                    )
+                    return None
+                return self.on_item_selected(selected_item)
         return super().ev_keydown(event)
 
 
 class CheatActiveHandler(ItemCheatScreen):
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        item[0].spawn(gamemap=self.engine.game_map,x=self.engine.player.x,y=self.engine.player.y)
+        item[0].spawn(
+            gamemap=self.engine.game_map, x=self.engine.player.x, y=self.engine.player.y
+        )
         self.engine.message_log.add_message(f"The Tower creates 1 {item[0].name}")

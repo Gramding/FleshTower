@@ -76,7 +76,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.shredded_greaves, 2),
         (entity_factory.bone_spliced_trousers, 2),
     ],
-    2: [
+    1: [
         # Utility scrolls and early upgrades
         (entity_factory.confusion_scroll, 10),
         (entity_factory.gristle_hook, 4),
@@ -89,7 +89,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.throbbing_band, 1),
         (entity_factory.tendon_girdle, 1),
     ],
-    4: [
+    2: [
         # Mid-tier loot and solid weapons
         (entity_factory.lightning_scroll, 25),
         (entity_factory.sword, 5),
@@ -117,7 +117,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.vein_wrapped_leggings, 2),
         (entity_factory.tendon_laced_pants, 1),
     ],
-    5: [
+    3: [
         # Rare mid-high items start appearing
         (entity_factory.marrow_saw, 2),
         (entity_factory.bonegrinder_maul, 2),
@@ -143,7 +143,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.marrow_stitched_legwraps, 1),
         (entity_factory.tumorous_legplates, 1),
     ],
-    6: [
+    4: [
         (entity_factory.fireball_scroll, 25),
         (entity_factory.chain_mail, 15),
         (entity_factory.thrall_reaver, 1),
@@ -155,7 +155,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.marrowstrap, 1),
         (entity_factory.pulsing_calfwraps, 1),
     ],
-    8: [
+    5: [
         (entity_factory.thrall_reaver, 2),
         (entity_factory.marrow_saw, 1),
         (entity_factory.knotted_mace, 1),
@@ -488,7 +488,7 @@ def generate_class_select(
 
 
 def generate_shop_room(
-        engine: Engine,
+    engine: Engine,
     map_width: int,  # width of map
     map_height: int,
     current_floor: int,
@@ -511,11 +511,10 @@ def generate_shop_room(
     entity_factory.vendor.spawn(dungeon, player.x - 2, player.y - 2)
     for entity in dungeon.entities:
         if "Organ" in entity.name:
-            generate_shop_items(entity=entity,floor_number=current_floor)
-    
+            generate_shop_items(entity=entity, floor_number=current_floor)
+
     dungeon.tiles[new_room.center] = tile_types.stairs_up
-    engine.message_log.add_message(
-        "You sumble upon a humble merchant."
-    )
+    engine.message_log.add_message("You sumble upon a humble merchant.")
     dungeon.upstairs_location = new_room.center
     return dungeon
+
