@@ -8,6 +8,8 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
+#from procgen import item_chances, enemy_chances
+#from components.procgen_chances import item_chances
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -932,6 +934,8 @@ class MainGameEventHandler(EventHandler):
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.E:
             return EquipmentScreen(self.engine)
+        elif key == tcod.event.KeySym.DELETE:
+            return ItemCheatScreen(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1055,3 +1059,43 @@ class EquipmentScreen(AskUserEventHandler):
                     x = x_save
 
                 y += 2
+
+#TODO implement rest of cheat logik
+class ItemCheatScreen(AskUserEventHandler):
+    TITLE = "Item cheats"
+    currentFloor = 0
+
+    def on_render(self, console):
+        super().on_render(console)
+        x = 0
+        y = 0
+        width = len(self.TITLE) + 40
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=40,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        pages = []
+        for floor in self.engine.item_chances:
+            pages.append[floor]
+
+        itemIndex = 0
+        self.currentFloor = pages[0]
+
+
+        itemOnFloor = self.engine.item_chances[self.currentFloor]
+        for item in itemOnFloor:
+            y+=1
+            console.print(x=x+1,y=y,string=f"{itemIndex}) {item[0].name}")
+            itemIndex+=1
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        pass

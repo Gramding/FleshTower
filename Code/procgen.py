@@ -461,6 +461,7 @@ def generate_class_select(
     map_width: int,  # width of map
     map_height: int,  # height of map
 ) -> GameMap:
+    engine.item_chances = item_chances
     room_width = 10
     room_height = 10
     # create new dungeon

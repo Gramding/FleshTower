@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 class Engine:
     game_map: GameMap
     game_world: GameWorld
+    item_chances: dict
 
     def __init__(self, player: Actor):
         self.message_log = MessageLog()
