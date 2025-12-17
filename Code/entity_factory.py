@@ -118,10 +118,7 @@ zombie = Actor(
     level=Level(xp_given=100),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    # TODO Special effect for consumption
-    # should in this case be a negative one
-    # at 25 or so consumed, player turns undead
-    effect=DefaultEffect(),
+    effect=ZombieEffect(),
 )
 
 flesh_golem = Actor(

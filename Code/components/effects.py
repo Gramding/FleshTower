@@ -58,6 +58,7 @@ class Effect:
                 color.corpse_consumption,
             )
             engine.game_map.entities.remove(corpse)
+        engine.player.fighter.derive_Effects()
 
     def add_currency(self, engine: Engine, amount: int):
         engine.message_log.add_message(f"You find {amount} organs")
@@ -235,7 +236,7 @@ class LeatherArmorEffect(Effect):
 
     def activate(self, engine, corpse, first=False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
+            super().activate(engine, corpse, True,"NS")
             engine.player.fighter.stats["NS"] += 1
         else:
             super().activate(engine, corpse, False)
@@ -290,10 +291,20 @@ class FleshGolemEffect(Effect):
 
     def activate(self, engine, corpse, first=False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True)
+            first = True
             engine.player.fighter.bonus_attack_count += 1
             engine.player.is_mage = False
             engine.player.fighter.base_hp *= 2
-        else:
-            super().activate(engine, corpse, False)
-        return super().activate(engine, corpse, first, stat_to_improve)
+        return super().activate(engine, corpse, first)
+        
+class ZombieEffect(Effect):
+    def __init__(self):
+        super().__init__()
+    
+    def activate(self, engine, corpse, first = False, stat_to_improve = ""):
+        if corpse.name not in engine.player.logbook.book:
+            engine.player.fighter.current_effecs.append("Zombie")
+            first = True
+        return super().activate(engine, corpse, first)
+            
+

@@ -8,7 +8,7 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-from components.settings import CHEATS
+from components.settings import CHEATS, GENERAL_CHEATS
 
 # from procgen import item_chances, enemy_chances
 # from components.procgen_chances import item_chances
@@ -940,6 +940,8 @@ class MainGameEventHandler(EventHandler):
             return CheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F2 and CHEATS:
             return EnemyCheatActiveHandler(self.engine)
+        elif key == tcod.event.KeySym.F3:
+            return GerneralCheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1202,3 +1204,54 @@ def cheatNav(key,engine,arr)->bool:
             engine.current_cheat_page = len(arr) - 1
             return True
     return False
+
+
+class GeneralCheats(AskUserEventHandler):
+    TITLE = "Gerneral Cheats"
+
+    def on_render(self, console):
+        super().on_render(console)
+        x = 0
+        y = 0
+        title=f"{self.TITLE}"
+        width = len(title) + 15
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=40,
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        for i, cheat in enumerate(GENERAL_CHEATS):
+            cheatKey = chr(ord("a") + i)
+            cheatString = f"({cheatKey}) {cheat}: {GENERAL_CHEATS[cheat]}"
+            console.print(x + 1, y + i + 1, cheatString)
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+
+        if 0 <= index <= 26:
+            try:
+                cheatSelected = list(GENERAL_CHEATS)[index]
+            except IndexError:
+                self.engine.message_log.add_message(
+                    "Invalid input slot.", color.invalid
+                )
+                return None
+            return self.on_cheat_select(cheatSelected)
+        return super().ev_keydown(event)
+
+
+class GerneralCheatActiveHandler(GeneralCheats):
+    def on_cheat_select(self, cheat ) -> Optional[ActionOrHandler]:
+        if GENERAL_CHEATS[cheat]:
+            GENERAL_CHEATS[cheat] = False
+        else:
+            GENERAL_CHEATS[cheat] = True

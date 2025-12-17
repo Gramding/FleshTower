@@ -8,6 +8,7 @@ from components.base_component import BaseComponent
 from render_order import RenderOrder
 from components.spells import Spell
 import math
+from components.consumption import *
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -71,6 +72,8 @@ class Fighter(BaseComponent):
         self.mass = 0
         self.max_mass = 30
         self.mass_level = 0
+
+        self.current_effecs = []
 
         self.derive_stats(req_hp_reset=True)
 
@@ -220,3 +223,11 @@ class Fighter(BaseComponent):
 
         # Defense
         self.defense = self.base_defense + self.bonus_defense
+    
+    def derive_Effects(self):
+        for effect in self.current_effecs:
+            match effect:
+                case "Zombie":
+                    zombie(engine=self.engine)
+                    
+        

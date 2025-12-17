@@ -4,6 +4,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import color
 import exceptions
 import random
+from components.settings import CHEATS, GENERAL_CHEATS
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -155,7 +156,10 @@ class MeleeAction(ActionWithDirection):
                 self.engine.message_log.add_message(
                     f"{attack_desc} for {damage} HP.", attack_color
                 )
-                target.fighter.hp -= damage
+                if target == self.engine.player and GENERAL_CHEATS["god_mode"]:
+                    pass
+                else:
+                    target.fighter.hp -= damage
             elif doged:
                 self.engine.message_log.add_message(f"{attack_desc}, doged")
             else:
