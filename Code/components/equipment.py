@@ -95,13 +95,10 @@ class Equipment(BaseComponent):
                         if action_type == "+" and not slot.equippable.is_applied:
                             self.engine.player.fighter.bonus_power += slot.equippable.power_bonus
                             self.engine.player.fighter.bonus_defense += slot.equippable.defense_bonus
-                        elif action_type == "-" and slot.equippable.is_applied:
-                            self.engine.player.fighter.bonus_power -= slot.equippable.power_bonus
-                            self.engine.player.fighter.bonus_defense -= slot.equippable.defense_bonus
-
-                        if action_type == "+" and not slot.equippable.is_applied:
                             slot.equippable.is_applied = True
                         elif action_type == "-" and slot.equippable.is_applied:
+                            self.engine.player.fighter.bonus_power -= slot.equippable.power_bonus       
+                            self.engine.player.fighter.bonus_defense -= slot.equippable.defense_bonus
                             slot.equippable.is_applied = False
         # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
