@@ -229,5 +229,7 @@ class Fighter(BaseComponent):
             match effect:
                 case "Zombie":
                     zombie(engine=self.engine)
-                    
+                case "FlayedThrall":
+                    flayed_thrall(engine=self.engine)
+        self.derive_stats()
         

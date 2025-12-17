@@ -194,7 +194,7 @@ flayed_thrall = Actor(
     level=Level(xp_given=30),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=DefaultEffect(),
+    effect=FlayedThrall(),
 )
 
 
