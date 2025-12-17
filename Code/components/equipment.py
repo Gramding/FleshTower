@@ -92,6 +92,12 @@ class Equipment(BaseComponent):
                                 self.engine.player.fighter.bonus_stats[i] -= (
                                     slot.equippable.stat_bonus[i]
                                 )
+                        if action_type == "+" and not slot.equippable.is_applied:
+                            self.engine.player.fighter.bonus_power += slot.equippable.power_bonus
+                            self.engine.player.fighter.bonus_defense += slot.equippable.defense_bonus
+                        elif action_type == "-" and slot.equippable.is_applied:
+                            self.engine.player.fighter.bonus_power -= slot.equippable.power_bonus
+                            self.engine.player.fighter.bonus_defense -= slot.equippable.defense_bonus
 
                         if action_type == "+" and not slot.equippable.is_applied:
                             slot.equippable.is_applied = True

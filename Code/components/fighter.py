@@ -39,6 +39,7 @@ class Fighter(BaseComponent):
         self.max_mana = 0
 
         # POWER
+        self.bonus_power = 0
         self.base_power = base_power
         self.power = 0
 
@@ -49,6 +50,8 @@ class Fighter(BaseComponent):
 
         # DEFENCE
         self.base_defense = base_defense
+        self.defense = 0
+        self.bonus_defense = 0
         self.damage_reduction_base = 5
         self.damage_reduction = 0
 
@@ -85,23 +88,6 @@ class Fighter(BaseComponent):
         if self._hp == 0 and self.parent.ai:
             self.die()
 
-    @property
-    def defense(self) -> int:
-        return self.base_defense + self.defense_bonus
-
-    @property
-    def defense_bonus(self) -> int:
-        if self.parent.equipment:
-            return self.parent.equipment.defence_bonus
-        else:
-            return 0
-
-    @property
-    def power_bonus(self) -> int:
-        if self.parent.equipment:
-            return self.parent.equipment.power_bonus
-        else:
-            return 0
 
     def die(self) -> None:
         if self.engine.player is self.parent:
@@ -228,3 +214,9 @@ class Fighter(BaseComponent):
 
         # Attack Count
         self.attack_count = self.base_attack_count + self.bonus_attack_count
+
+        # Power
+        self.power = self.base_power + self.bonus_power
+
+        # Defense
+        self.defense = self.base_defense + self.bonus_defense
