@@ -15,7 +15,7 @@ from components.settings import CHEATS
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Item
+    from entity import Item, Actor
     from components.spells import Spell
 
 MOVE_KEYS = {
@@ -936,8 +936,10 @@ class MainGameEventHandler(EventHandler):
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.E:
             return EquipmentScreen(self.engine)
-        elif key == tcod.event.KeySym.DELETE and CHEATS:
+        elif key == tcod.event.KeySym.F1 and CHEATS:
             return CheatActiveHandler(self.engine)
+        elif key == tcod.event.KeySym.F2 and CHEATS:
+            return EnemyCheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1071,7 +1073,8 @@ class ItemCheatScreen(AskUserEventHandler):
         super().on_render(console)
         x = 0
         y = 0
-        width = len(self.TITLE) + 40
+        title=f"{self.TITLE} Floor {self.engine.current_cheat_page}"
+        width = len(title) + 15
         pages = []
         for floor in self.engine.item_chances:
             pages.append(floor)
@@ -1081,14 +1084,16 @@ class ItemCheatScreen(AskUserEventHandler):
             y=y,
             width=width,
             height=40,
-            title=f"{self.TITLE} Floor {self.engine.current_cheat_page}",
+            title=title,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
         # this increment is for not writin in title line
         y += 1
-
+        if self.engine.current_cheat_page > len(self.engine.item_chances)-1:
+            #set to 0 so that different indecies from different cheat menues dont wrongfully collide
+            self.engine.current_cheat_page = 0
         itemOnFloor = self.engine.item_chances[self.engine.current_cheat_page]
         for i, item in enumerate(itemOnFloor):
             item_key = chr(ord("a") + i)
@@ -1099,17 +1104,7 @@ class ItemCheatScreen(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.A
 
-        if key == tcod.event.KeySym.PAGEUP:
-            if len(self.engine.item_chances) - 1 >= self.engine.current_cheat_page + 1:
-                self.engine.current_cheat_page += 1
-            else:
-                self.engine.current_cheat_page = 0
-        elif key == tcod.event.KeySym.PAGEDOWN:
-            if 0 <= self.engine.current_cheat_page - 1:
-                self.engine.current_cheat_page -= 1
-            else:
-                self.engine.current_cheat_page = len(self.engine.item_chances) - 1
-        else:
+        if not cheatNav(engine=self.engine,key=key, arr=self.engine.item_chances):
             if 0 <= index <= 26:
                 try:
                     selected_item = self.engine.item_chances[
@@ -1130,3 +1125,80 @@ class CheatActiveHandler(ItemCheatScreen):
             gamemap=self.engine.game_map, x=self.engine.player.x, y=self.engine.player.y
         )
         self.engine.message_log.add_message(f"The Tower creates 1 {item[0].name}")
+
+
+class EnemyCheatScreen(AskUserEventHandler):
+    TITLE = "Enemy cheats"
+
+    def on_render(self, console):
+        super().on_render(console)
+        x = 0
+        y = 0
+        title=f"{self.TITLE} Floor {self.engine.current_cheat_page}"
+        width = len(title) + 15
+        pages = []
+        for floor in self.engine.enemy_chances:
+            pages.append(floor)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=40,
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        if self.engine.current_cheat_page > len(self.engine.enemy_chances)-1:
+            self.engine.current_cheat_page = 0
+        enemyOnFloor = self.engine.enemy_chances[self.engine.current_cheat_page]
+        for i, enemy in enumerate(enemyOnFloor):
+            enemyKey = chr(ord("a") + i)
+            enemyString = f"({enemyKey}) {enemy[0].name}"
+            console.print(x + 1, y + i + 1, enemyString)
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+
+        if not cheatNav(engine=self.engine,key=key, arr=self.engine.enemy_chances):
+            if 0 <= index <= 26:
+                try:
+                    selected_enemy = self.engine.enemy_chances[
+                        self.engine.current_cheat_page
+                    ][index]
+                except IndexError:
+                    self.engine.message_log.add_message(
+                        "Invalid input slot.", color.invalid
+                    )
+                    return None
+                return self.on_enemy_selected(selected_enemy)
+        return super().ev_keydown(event)
+
+
+class EnemyCheatActiveHandler(EnemyCheatScreen):
+    def on_enemy_selected(self, enemy: Actor ) -> Optional[ActionOrHandler]:
+        enemy[0].spawn(
+            gamemap=self.engine.game_map, x=self.engine.player.x+1, y=self.engine.player.y
+        )
+        self.engine.message_log.add_message(f"The Tower creates 1 {enemy[0].name}")
+
+# Since it was now reused code this is now its own function
+# Cheat Navigation is now reusable
+def cheatNav(key,engine,arr)->bool:
+    if key == tcod.event.KeySym.PAGEUP:
+            if len(arr) - 1 >= engine.current_cheat_page + 1:
+                engine.current_cheat_page += 1
+            else:
+                engine.current_cheat_page = 0
+                return True
+    elif key == tcod.event.KeySym.PAGEDOWN:
+        if 0 <= engine.current_cheat_page - 1:
+            engine.current_cheat_page -= 1
+        else:
+            engine.current_cheat_page = len(arr) - 1
+            return True
+    return False

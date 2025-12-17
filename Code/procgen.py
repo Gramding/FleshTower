@@ -178,39 +178,39 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.flayed_thrall, 8),
         (entity_factory.sinew_crawler, 6),
     ],
-    2: [
+    1: [
         (entity_factory.zombie, 1),
         (entity_factory.eye_screamer, 4),
         (entity_factory.gnashing_swarm, 5),
     ],
-    3: [
+    2: [
         (entity_factory.troll, 15),
         (entity_factory.howling_cyst, 5),
         (entity_factory.gnashing_swarm, 8),
     ],
-    4: [
+    3: [
         (entity_factory.flesh_golem, 1),
         (entity_factory.vendor, 10),
         (entity_factory.howling_cyst, 6),
         (entity_factory.eye_screamer, 5),
     ],
-    5: [
+    4: [
         (entity_factory.troll, 30),
         (entity_factory.vein_reaper, 10),
         (entity_factory.tumor_host, 8),
         (entity_factory.viscera_hound, 12),
     ],
-    6: [
+    5: [
         (entity_factory.vein_reaper, 15),
         (entity_factory.tumor_host, 10),
         (entity_factory.viscera_hound, 15),
     ],
-    7: [
+    6: [
         (entity_factory.troll, 60),
         (entity_factory.stitched_abomination, 10),
         (entity_factory.marrow_drinker, 12),
     ],
-    8: [
+    7: [
         (entity_factory.stitched_abomination, 15),
         (entity_factory.marrow_drinker, 18),
     ],
@@ -462,6 +462,7 @@ def generate_class_select(
     map_height: int,  # height of map
 ) -> GameMap:
     engine.item_chances = item_chances
+    engine.enemy_chances = enemy_chances
     room_width = 10
     room_height = 10
     # create new dungeon

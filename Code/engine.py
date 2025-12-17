@@ -23,6 +23,7 @@ class Engine:
     game_map: GameMap
     game_world: GameWorld
     item_chances: dict
+    enemy_chances: dict
     current_cheat_page: int = 0
 
     def __init__(self, player: Actor):
