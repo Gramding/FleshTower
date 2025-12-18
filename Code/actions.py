@@ -192,10 +192,11 @@ class MovementAction(ActionWithDirection):
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
             raise exceptions.Impossible("The way is blocked!")
         # checks if tile is walkable
-        if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
-            raise exceptions.Impossible("Path inaccessible!")
-        if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
-            raise exceptions.Impossible("The path is blocked!")
+        if not GENERAL_CHEATS["noclip"]:
+            if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
+                raise exceptions.Impossible("Path inaccessible!")
+            if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+                raise exceptions.Impossible("The path is blocked!")
         # if above are correct movement is triggered
         self.entity.move(self.dx, self.dy)
 
