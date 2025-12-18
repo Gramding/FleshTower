@@ -85,22 +85,34 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
 
 
 class PopupMessage(BaseEventHandler):
-    def __init__(self, parent_handler: BaseEventHandler, text: str):
+    def __init__(
+        self, parent_handler: BaseEventHandler, text: str, halved: bool, alignment
+    ):
         self.parent = parent_handler
         self.text = text
+        self.halved = halved
+        self.alignment = alignment
 
     def on_render(self, console):
         self.parent.on_render(console)
         console.rgb["fg"] //= 8
         console.rgb["bg"] //= 8
+        width = console.width
+        height = console.height
+        if self.halved:
+            width = width // 2
+            height = height // 2
+        else:
+            width = int(width / 2)
+            height = height // 5
 
         console.print(
-            console.width // 2,
-            console.height // 2,
+            width,
+            height,
             self.text,
             fg=color.white,
             bg=color.black,
-            alignment=libtcodpy.CENTER,
+            alignment=self.alignment,
         )
 
     def ev_keydown(self, event):
@@ -1258,4 +1270,3 @@ class GerneralCheatActiveHandler(GeneralCheats):
             GENERAL_CHEATS[cheat] = False
         else:
             GENERAL_CHEATS[cheat] = True
-

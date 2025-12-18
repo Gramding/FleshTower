@@ -5,3 +5,31 @@ GENERAL_CHEATS = {
     "inf_stamina": False,
     "noclip": False,
 }
+
+# DON'T CHANGE these here are purley for informing the player via keybinds on main meue
+KEYBINDS = {
+    "Movement": {
+        "UP": "Move up",
+        "DOWN": "Move down",
+        "LEFT": "Move left",
+        "RIGHT": "Move right",
+    },
+    "Interaction": {
+        "PERIOD + SHIFT": "Take stairs",
+        "C + SHIFT": "Consume ground item",
+        "T": "Trade with vendor",
+        "G": "Pickup stuff",
+    },
+    "System": {
+        "ESCAPE": "Exit game",
+    },
+    "Menues": {
+        "I": "Inventory",
+        "D": "Drop from Inventory",
+        "C": "Character sheet",
+        "E": "Equipments",
+        "P": "Spellbook",
+        "L": "Consumption log",
+        "V": "Game history",
+    },
+}

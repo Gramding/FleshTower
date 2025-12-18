@@ -4,7 +4,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import color
 import exceptions
 import random
-from components.settings import CHEATS, GENERAL_CHEATS
+from components.settings import GENERAL_CHEATS
 
 if TYPE_CHECKING:
     from engine import Engine

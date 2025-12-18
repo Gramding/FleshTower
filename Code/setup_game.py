@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from ctypes import alignment
 import lzma
 import pickle
 import traceback
@@ -14,6 +15,8 @@ import entity_factory
 import input_handlers
 from game_map import GameWorld
 
+from components.settings import KEYBINDS
+
 background_image = tcod.image.load("Res/main_menu.png")[:, :, :3]
 
 
@@ -21,8 +24,8 @@ def new_game() -> Engine:
     map_width = 200
     map_height = 100
 
-    viewport_width = 80#80
-    viewport_height = 50#43
+    viewport_width = 80  # 80
+    viewport_height = 50  # 43
 
     room_max_size = 20
     room_min_size = 12
@@ -39,8 +42,8 @@ def new_game() -> Engine:
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
-        viewport_height = viewport_height,
-        viewport_width = viewport_width
+        viewport_height=viewport_height,
+        viewport_width=viewport_width,
     )
     engine.game_world.generate_floor()
     engine.update_fov()
@@ -77,9 +80,12 @@ class MainMenu(input_handlers.BaseEventHandler):
         )
 
         menu_width = 24
-        for i, text in enumerate(
-            ["[N] New try?", "[C] Continue last game", "[Q] Quit"]
-        ):
+        for i, text in enumerate([
+            "[N] New try?",
+            "[C] Continue last game",
+            "[K] Keybinds",
+            "[Q] Quit",
+        ]):
             console.print(
                 console.width // 2,
                 console.height // 2 - 2 + i,
@@ -98,10 +104,29 @@ class MainMenu(input_handlers.BaseEventHandler):
                 return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
             except FileNotFoundError:
                 return input_handlers.PopupMessage(
-                    self, "The flesh does not remember youre presence"
+                    self,
+                    "The flesh does not remember youre presence",
+                    halved=True,
+                    alignment=libtcodpy.CENTER,
                 )
             except Exception as exc:
                 traceback.print_exc()
-                return input_handlers.PopupMessage(self, f"Failed to load: \n{exc}")
+                return input_handlers.PopupMessage(
+                    self,
+                    f"Failed to load: \n{exc}",
+                    halved=True,
+                    alignment=libtcodpy.CENTER,
+                )
         elif event.sym == tcod.event.KeySym.N:
             return input_handlers.MainGameEventHandler(new_game())
+        elif event.sym == tcod.event.KeySym.K:
+            text = ""
+            for section in KEYBINDS:
+                text = f"{text}{section}\n\n"
+                for bind in KEYBINDS[section]:
+                    text = f"{text}{bind}:{KEYBINDS[section][bind]}\n"
+                text = f"{text}\n\n\n"
+
+            return input_handlers.PopupMessage(
+                self, text, halved=False, alignment=libtcodpy.CENTER
+            )
