@@ -9,6 +9,7 @@ from render_order import RenderOrder
 from components.spells import Spell
 import math
 from components.consumption import *
+from components.settings import GENERAL_CHEATS
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -91,7 +92,6 @@ class Fighter(BaseComponent):
         if self._hp == 0 and self.parent.ai:
             self.die()
 
-
     def die(self) -> None:
         if self.engine.player is self.parent:
             death_message = "Your flesh becomes part of the tower"
@@ -161,7 +161,8 @@ class Fighter(BaseComponent):
             spell.mana_cost * (self.engine.player.fighter.spell_cost_reduction / 100)
         )
         if self.mana >= true_cost:
-            self.mana -= true_cost
+            if not GENERAL_CHEATS["inf_mana"]:
+                self.mana -= true_cost
             return True
         return False
 
@@ -223,7 +224,7 @@ class Fighter(BaseComponent):
 
         # Defense
         self.defense = self.base_defense + self.bonus_defense
-    
+
     def derive_Effects(self):
         for effect in self.current_effecs:
             match effect:
@@ -232,4 +233,4 @@ class Fighter(BaseComponent):
                 case "FlayedThrall":
                     flayed_thrall(engine=self.engine)
         self.derive_stats()
-        
+

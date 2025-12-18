@@ -210,14 +210,16 @@ class BumpAction(ActionWithDirection):
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
             if "2" in str(self.dx) or "2" in str(self.dy):
-                self.entity.fighter.stamina -= 2
+                if not GENERAL_CHEATS["inf_stamina"]:
+                    self.entity.fighter.stamina -= 2
             return MovementAction(self.entity, self.dx, self.dy).perform()
 
 
 # Function to check whether the stamina action of the Rouge is permitted
 def MovementCehck(dx, dy, entity):
     if "2" in str(dx) or "2" in str(dy) and entity.fighter.stamina >= 10:
-        entity.fighter.stamina -= 10
+        if not GENERAL_CHEATS["inf_stamina"]:
+            entity.fighter.stamina -= 10
     else:
         return dx / 2, dy / 2
 

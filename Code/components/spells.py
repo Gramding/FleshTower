@@ -52,7 +52,7 @@ class LightningSpell(Spell):
 
 class FireballSpell(Spell):
     def __init__(self, engine, name, mana_cost: int, radius: int):
-        self.damage = 12 + self.engine.player.fighter.spell_damage_bonus
+        self.damage = 12 + engine.player.fighter.spell_damage_bonus
         self.range = 8
         self.radius = radius
         super().__init__(engine, name, mana_cost)
@@ -108,7 +108,7 @@ class SpellBook:
         self.spells.append(spell)
 
     def learn_spell(self, spell: Spell, engine: Engine) -> bool:
-        if random.randint(0, 100) >= 90 and engine.player.is_mage:
+        if engine.player.is_mage:
             if len(engine.player.spellbook.spells) > 0:
                 for spellbook_spell in engine.player.spellbook.spells:
                     if spellbook_spell.name == spell.name:

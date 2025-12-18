@@ -1075,7 +1075,7 @@ class ItemCheatScreen(AskUserEventHandler):
         super().on_render(console)
         x = 0
         y = 0
-        title=f"{self.TITLE} Floor {self.engine.current_cheat_page}"
+        title = f"{self.TITLE} Floor {self.engine.current_cheat_page}"
         width = len(title) + 15
         pages = []
         for floor in self.engine.item_chances:
@@ -1093,8 +1093,8 @@ class ItemCheatScreen(AskUserEventHandler):
         )
         # this increment is for not writin in title line
         y += 1
-        if self.engine.current_cheat_page > len(self.engine.item_chances)-1:
-            #set to 0 so that different indecies from different cheat menues dont wrongfully collide
+        if self.engine.current_cheat_page > len(self.engine.item_chances) - 1:
+            # set to 0 so that different indecies from different cheat menues dont wrongfully collide
             self.engine.current_cheat_page = 0
         itemOnFloor = self.engine.item_chances[self.engine.current_cheat_page]
         for i, item in enumerate(itemOnFloor):
@@ -1106,7 +1106,7 @@ class ItemCheatScreen(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.A
 
-        if not cheatNav(engine=self.engine,key=key, arr=self.engine.item_chances):
+        if not cheatNav(engine=self.engine, key=key, arr=self.engine.item_chances):
             if 0 <= index <= 26:
                 try:
                     selected_item = self.engine.item_chances[
@@ -1136,7 +1136,7 @@ class EnemyCheatScreen(AskUserEventHandler):
         super().on_render(console)
         x = 0
         y = 0
-        title=f"{self.TITLE} Floor {self.engine.current_cheat_page}"
+        title = f"{self.TITLE} Floor {self.engine.current_cheat_page}"
         width = len(title) + 15
         pages = []
         for floor in self.engine.enemy_chances:
@@ -1154,7 +1154,7 @@ class EnemyCheatScreen(AskUserEventHandler):
         )
         # this increment is for not writin in title line
         y += 1
-        if self.engine.current_cheat_page > len(self.engine.enemy_chances)-1:
+        if self.engine.current_cheat_page > len(self.engine.enemy_chances) - 1:
             self.engine.current_cheat_page = 0
         enemyOnFloor = self.engine.enemy_chances[self.engine.current_cheat_page]
         for i, enemy in enumerate(enemyOnFloor):
@@ -1166,7 +1166,7 @@ class EnemyCheatScreen(AskUserEventHandler):
         key = event.sym
         index = key - tcod.event.KeySym.A
 
-        if not cheatNav(engine=self.engine,key=key, arr=self.engine.enemy_chances):
+        if not cheatNav(engine=self.engine, key=key, arr=self.engine.enemy_chances):
             if 0 <= index <= 26:
                 try:
                     selected_enemy = self.engine.enemy_chances[
@@ -1182,21 +1182,24 @@ class EnemyCheatScreen(AskUserEventHandler):
 
 
 class EnemyCheatActiveHandler(EnemyCheatScreen):
-    def on_enemy_selected(self, enemy: Actor ) -> Optional[ActionOrHandler]:
+    def on_enemy_selected(self, enemy: Actor) -> Optional[ActionOrHandler]:
         enemy[0].spawn(
-            gamemap=self.engine.game_map, x=self.engine.player.x+1, y=self.engine.player.y
+            gamemap=self.engine.game_map,
+            x=self.engine.player.x + 1,
+            y=self.engine.player.y,
         )
         self.engine.message_log.add_message(f"The Tower creates 1 {enemy[0].name}")
 
+
 # Since it was now reused code this is now its own function
 # Cheat Navigation is now reusable
-def cheatNav(key,engine,arr)->bool:
+def cheatNav(key, engine, arr) -> bool:
     if key == tcod.event.KeySym.PAGEUP:
-            if len(arr) - 1 >= engine.current_cheat_page + 1:
-                engine.current_cheat_page += 1
-            else:
-                engine.current_cheat_page = 0
-                return True
+        if len(arr) - 1 >= engine.current_cheat_page + 1:
+            engine.current_cheat_page += 1
+        else:
+            engine.current_cheat_page = 0
+            return True
     elif key == tcod.event.KeySym.PAGEDOWN:
         if 0 <= engine.current_cheat_page - 1:
             engine.current_cheat_page -= 1
@@ -1213,7 +1216,7 @@ class GeneralCheats(AskUserEventHandler):
         super().on_render(console)
         x = 0
         y = 0
-        title=f"{self.TITLE}"
+        title = f"{self.TITLE}"
         width = len(title) + 15
 
         console.draw_frame(
@@ -1230,7 +1233,7 @@ class GeneralCheats(AskUserEventHandler):
         y += 1
         for i, cheat in enumerate(GENERAL_CHEATS):
             cheatKey = chr(ord("a") + i)
-            cheatString = f"({cheatKey}) {cheat}: {GENERAL_CHEATS[cheat]}"
+            cheatString = f"({cheatKey}) {cheat:<17}: {GENERAL_CHEATS[cheat]}"
             console.print(x + 1, y + i + 1, cheatString)
 
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
@@ -1250,8 +1253,9 @@ class GeneralCheats(AskUserEventHandler):
 
 
 class GerneralCheatActiveHandler(GeneralCheats):
-    def on_cheat_select(self, cheat ) -> Optional[ActionOrHandler]:
+    def on_cheat_select(self, cheat) -> Optional[ActionOrHandler]:
         if GENERAL_CHEATS[cheat]:
             GENERAL_CHEATS[cheat] = False
         else:
             GENERAL_CHEATS[cheat] = True
+
