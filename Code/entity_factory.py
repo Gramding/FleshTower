@@ -451,7 +451,7 @@ sword = Item(
 )
 
 bonegrinder_maul = Item(
-    char="Ω",
+    char="╔",
     color=(139, 69, 19),
     name="Bonegrinder Maul",
     equippable=equippable.BonegrinderMaul(),
@@ -469,7 +469,7 @@ sinewcleaver = Item(
 )
 
 neural_razor = Item(
-    char="†",
+    char="n",
     color=(178, 34, 34),
     name="Neural Razor",
     equippable=equippable.NeuralRazor(),
@@ -478,7 +478,7 @@ neural_razor = Item(
 )
 
 spine_talon = Item(
-    char="»",
+    char="s",
     color=(205, 92, 92),
     name="Spine Talon",
     equippable=equippable.SpineTalon(),
@@ -487,7 +487,7 @@ spine_talon = Item(
 )
 
 marrow_saw = Item(
-    char="≡",
+    char="m",
     color=(128, 0, 0),
     name="Marrow Saw",
     equippable=equippable.MarrowSaw(),
@@ -496,7 +496,7 @@ marrow_saw = Item(
 )
 
 viscera_blade = Item(
-    char="∫",
+    char="v",
     color=(139, 0, 0),
     name="Viscera Blade",
     equippable=equippable.VisceraBlade(),
@@ -505,7 +505,7 @@ viscera_blade = Item(
 )
 
 gristle_hook = Item(
-    char="ʓ",
+    char="g",
     color=(153, 50, 204),
     name="Gristle Hook",
     equippable=equippable.GristleHook(),
@@ -514,7 +514,7 @@ gristle_hook = Item(
 )
 
 phage_fang = Item(
-    char="λ",
+    char="p",
     color=(255, 69, 0),
     name="Phage Fang",
     equippable=equippable.PhageFang(),
@@ -523,7 +523,7 @@ phage_fang = Item(
 )
 
 knotted_mace = Item(
-    char="◉",
+    char="k",
     color=(139, 69, 19),
     name="Knotted Mace",
     equippable=equippable.KnottedMace(),
@@ -532,7 +532,7 @@ knotted_mace = Item(
 )
 
 thrall_reaver = Item(
-    char="⚔",
+    char="t",
     color=(178, 0, 0),
     name="Thrall Reaver",
     equippable=equippable.ThrallReaver(),
@@ -551,7 +551,7 @@ leather_armor = Item(
 )
 
 crimson_skullcap = Item(
-    char="Ω",
+    char="c",
     color=(139, 0, 0),
     name="Crimson Skullcap",
     equippable=equippable.CrimsonSkullcap(),
@@ -560,7 +560,7 @@ crimson_skullcap = Item(
 )
 
 flayed_helm = Item(
-    char="†",
+    char="f",
     color=(165, 42, 42),
     name="Flayed Helm",
     equippable=equippable.FlayedHelm(),
@@ -569,7 +569,7 @@ flayed_helm = Item(
 )
 
 ooze_crowned_cap = Item(
-    char="≈",
+    char="o",
     color=(178, 34, 34),
     name="Ooze-Crowned Cap",
     equippable=equippable.OozeCrownedCap(),
@@ -578,7 +578,7 @@ ooze_crowned_cap = Item(
 )
 
 boneplate_hood = Item(
-    char="∑",
+    char="b",
     color=(139, 69, 19),
     name="Boneplate Hood",
     equippable=equippable.BoneplateHood(),
@@ -587,7 +587,7 @@ boneplate_hood = Item(
 )
 
 pulsing_cranium = Item(
-    char="¤",
+    char="p",
     color=(255, 0, 0),
     name="Pulsing Cranium",
     equippable=equippable.PulsingCranium(),
@@ -596,7 +596,7 @@ pulsing_cranium = Item(
 )
 
 veinwoven_circlet = Item(
-    char="⊗",
+    char="v",
     color=(153, 50, 204),
     name="Veinwoven Circlet",
     equippable=equippable.VeinwovenCirclet(),
@@ -605,7 +605,7 @@ veinwoven_circlet = Item(
 )
 
 tumor_crowned_helm = Item(
-    char="☠",
+    char="t",
     color=(178, 0, 34),
     name="Tumor-Crowned Helm",
     equippable=equippable.TumorCrownedHelm(),
@@ -614,7 +614,7 @@ tumor_crowned_helm = Item(
 )
 
 shredded_faceguard = Item(
-    char="⌂",
+    char="s",
     color=(205, 92, 92),
     name="Shredded Faceguard",
     equippable=equippable.ShreddedFaceguard(),
@@ -623,7 +623,7 @@ shredded_faceguard = Item(
 )
 
 sinewcap = Item(
-    char="∂",
+    char="s",
     color=(139, 69, 19),
     name="Sinewcap",
     equippable=equippable.Sinewcap(),
@@ -632,7 +632,7 @@ sinewcap = Item(
 )
 
 marrow_visage = Item(
-    char="∇",
+    char="m",
     color=(128, 0, 0),
     name="Marrow Visage",
     equippable=equippable.MarrowVisage(),
@@ -641,7 +641,7 @@ marrow_visage = Item(
 )
 
 blindeye_lenses = Item(
-    char="●",
+    char="b",
     color=(178, 34, 34),
     name="Blindeye Lenses",
     equippable=equippable.BlindeyeLenses(),
@@ -650,7 +650,7 @@ blindeye_lenses = Item(
 )
 
 third_orb = Item(
-    char="◎",
+    char="t",
     color=(139, 0, 0),
     name="Third Orb",
     equippable=equippable.ThirdOrb(),
@@ -659,7 +659,7 @@ third_orb = Item(
 )
 
 gore_sight_goggles = Item(
-    char="◉",
+    char="g",
     color=(165, 42, 42),
     name="Gore-Sight Goggles",
     equippable=equippable.GoreSightGoggles(),
@@ -668,7 +668,7 @@ gore_sight_goggles = Item(
 )
 
 hemogaze_lens = Item(
-    char="◌",
+    char="h",
     color=(205, 92, 92),
     name="Hemogaze Lens",
     equippable=equippable.HemogazeLens(),
@@ -677,7 +677,7 @@ hemogaze_lens = Item(
 )
 
 ocular_tumor = Item(
-    char="◎",
+    char="o",
     color=(178, 0, 0),
     name="Ocular Tumor",
     equippable=equippable.OcularTumor(),
@@ -686,7 +686,7 @@ ocular_tumor = Item(
 )
 
 veinbound_spectacles = Item(
-    char="◐",
+    char="v",
     color=(153, 50, 204),
     name="Veinbound Spectacles",
     equippable=equippable.VeinboundSpectacles(),
@@ -695,7 +695,7 @@ veinbound_spectacles = Item(
 )
 
 corrupted_iris = Item(
-    char="◑",
+    char="c",
     color=(178, 34, 34),
     name="Corrupted Iris",
     equippable=equippable.CorruptedIris(),
@@ -704,7 +704,7 @@ corrupted_iris = Item(
 )
 
 eye_of_the_wyrm = Item(
-    char="◍",
+    char="e",
     color=(128, 0, 0),
     name="Eye of the Wyrm",
     equippable=equippable.EyeOfTheWyrm(),
@@ -713,7 +713,7 @@ eye_of_the_wyrm = Item(
 )
 
 pustular_eyeband = Item(
-    char="◔",
+    char="p",
     color=(205, 92, 92),
     name="Pustular Eyeband",
     equippable=equippable.PustularEyeband(),
@@ -722,7 +722,7 @@ pustular_eyeband = Item(
 )
 
 bloodstare_monocle = Item(
-    char="◎",
+    char="b",
     color=(139, 0, 0),
     name="Bloodstare Monocle",
     equippable=equippable.BloodstareMonocle(),
@@ -731,7 +731,7 @@ bloodstare_monocle = Item(
 )
 
 throatlace = Item(
-    char="≈",
+    char="t",
     color=(139, 0, 0),
     name="Throatlace",
     equippable=equippable.Throatlace(),
@@ -740,7 +740,7 @@ throatlace = Item(
 )
 
 humeral_chain = Item(
-    char="∞",
+    char="h",
     color=(178, 34, 34),
     name="Humeral Chain",
     equippable=equippable.HumeralChain(),
@@ -749,7 +749,7 @@ humeral_chain = Item(
 )
 
 tumor_amulet = Item(
-    char="⊕",
+    char="t",
     color=(128, 0, 0),
     name="Tumor Amulet",
     equippable=equippable.TumorAmulet(),
@@ -758,7 +758,7 @@ tumor_amulet = Item(
 )
 
 heartstring_pendant = Item(
-    char="◈",
+    char="h",
     color=(205, 92, 92),
     name="Heartstring Pendant",
     equippable=equippable.HeartstringPendant(),
@@ -767,7 +767,7 @@ heartstring_pendant = Item(
 )
 
 sinew_choker = Item(
-    char="⨀",
+    char="s",
     color=(139, 69, 19),
     name="Sinew Choker",
     equippable=equippable.SinewChoker(),
@@ -776,7 +776,7 @@ sinew_choker = Item(
 )
 
 pulsing_collar = Item(
-    char="⨁",
+    char="p",
     color=(153, 50, 204),
     name="Pulsing Collar",
     equippable=equippable.PulsingCollar(),
@@ -785,7 +785,7 @@ pulsing_collar = Item(
 )
 
 ossified_torque = Item(
-    char="⨂",
+    char="o",
     color=(178, 0, 34),
     name="Ossified Torque",
     equippable=equippable.OssifiedTorque(),
@@ -794,7 +794,7 @@ ossified_torque = Item(
 )
 
 veinloop_necklace = Item(
-    char="⊗",
+    char="v",
     color=(139, 0, 0),
     name="Veinloop Necklace",
     equippable=equippable.VeinloopNecklace(),
@@ -803,7 +803,7 @@ veinloop_necklace = Item(
 )
 
 rib_bound_medallion = Item(
-    char="⊙",
+    char="r",
     color=(178, 34, 34),
     name="Rib-Bound Medallion",
     equippable=equippable.RibBoundMedallion(),
@@ -812,7 +812,7 @@ rib_bound_medallion = Item(
 )
 
 carotid_chain = Item(
-    char="⦿",
+    char="c",
     color=(128, 0, 0),
     name="Carotid Chain",
     equippable=equippable.CarotidChain(),
@@ -821,7 +821,7 @@ carotid_chain = Item(
 )
 
 shredded_shroud = Item(
-    char="≈",
+    char="s",
     color=(139, 0, 0),
     name="Shredded Shroud",
     equippable=equippable.ShreddedShroud(),
@@ -830,7 +830,7 @@ shredded_shroud = Item(
 )
 
 vein_mantle = Item(
-    char="∑",
+    char="v",
     color=(178, 34, 34),
     name="Vein-Mantle",
     equippable=equippable.VeinMantle(),
@@ -839,7 +839,7 @@ vein_mantle = Item(
 )
 
 cystic_cape = Item(
-    char="⊕",
+    char="c",
     color=(128, 0, 0),
     name="Cystic Cape",
     equippable=equippable.CysticCape(),
@@ -848,7 +848,7 @@ cystic_cape = Item(
 )
 
 rotting_wing = Item(
-    char="◈",
+    char="r",
     color=(205, 92, 92),
     name="Rotting Wing",
     equippable=equippable.RottingWing(),
@@ -857,7 +857,7 @@ rotting_wing = Item(
 )
 
 skinfold_mantle = Item(
-    char="⨀",
+    char="s",
     color=(139, 69, 19),
     name="Skinfold Mantle",
     equippable=equippable.SkinfoldMantle(),
@@ -866,7 +866,7 @@ skinfold_mantle = Item(
 )
 
 ichorous_drape = Item(
-    char="⨁",
+    char="i",
     color=(153, 50, 204),
     name="Ichorous Drape",
     equippable=equippable.IchorousDrape(),
@@ -875,7 +875,7 @@ ichorous_drape = Item(
 )
 
 tendril_cloak = Item(
-    char="⊗",
+    char="t",
     color=(178, 0, 34),
     name="Tendril Cloak",
     equippable=equippable.TendrilCloak(),
@@ -884,7 +884,7 @@ tendril_cloak = Item(
 )
 
 marrow_veil = Item(
-    char="◍",
+    char="m",
     color=(139, 0, 0),
     name="Marrow Veil",
     equippable=equippable.MarrowVeil(),
@@ -893,7 +893,7 @@ marrow_veil = Item(
 )
 
 flesh_tattered_robe = Item(
-    char="∇",
+    char="f",
     color=(178, 34, 34),
     name="Flesh-Tattered Robe",
     equippable=equippable.FleshTatteredRobe(),
@@ -902,7 +902,7 @@ flesh_tattered_robe = Item(
 )
 
 oozing_pall = Item(
-    char="∂",
+    char="o",
     color=(128, 0, 0),
     name="Oozing Pall",
     equippable=equippable.OozingPall(),
@@ -911,7 +911,7 @@ oozing_pall = Item(
 )
 
 gristle_bracer = Item(
-    char="╬",
+    char="g",
     color=(139, 69, 19),
     name="Gristle Bracer",
     equippable=equippable.GristleBracer(),
@@ -920,7 +920,7 @@ gristle_bracer = Item(
 )
 
 bone_cuffs = Item(
-    char="╩",
+    char="b",
     color=(178, 34, 34),
     name="Bone Cuffs",
     equippable=equippable.BoneCuffs(),
@@ -929,7 +929,7 @@ bone_cuffs = Item(
 )
 
 throbbing_band = Item(
-    char="╠",
+    char="t",
     color=(139, 0, 0),
     name="Throbbing Band",
     equippable=equippable.ThrobbingBand(),
@@ -938,7 +938,7 @@ throbbing_band = Item(
 )
 
 sinew_wrap = Item(
-    char="╬",
+    char="s",
     color=(205, 92, 92),
     name="Sinew Wrap",
     equippable=equippable.SinewWrap(),
@@ -947,7 +947,7 @@ sinew_wrap = Item(
 )
 
 tumorous_wristguard = Item(
-    char="╣",
+    char="t",
     color=(128, 0, 0),
     name="Tumorous Wristguard",
     equippable=equippable.TumorousWristguard(),
@@ -956,7 +956,7 @@ tumorous_wristguard = Item(
 )
 
 marrow_cuff = Item(
-    char="╚",
+    char="m",
     color=(153, 50, 204),
     name="Marrow Cuff",
     equippable=equippable.MarrowCuff(),
@@ -965,7 +965,7 @@ marrow_cuff = Item(
 )
 
 veinlace_wristband = Item(
-    char="╔",
+    char="v",
     color=(178, 0, 34),
     name="Veinlace Wristband",
     equippable=equippable.VeinlaceWristband(),
@@ -974,7 +974,7 @@ veinlace_wristband = Item(
 )
 
 pustule_bracelet = Item(
-    char="╩",
+    char="p",
     color=(139, 0, 0),
     name="Pustule Bracelet",
     equippable=equippable.PustuleBracelet(),
@@ -983,7 +983,7 @@ pustule_bracelet = Item(
 )
 
 ossified_armlet = Item(
-    char="╦",
+    char="o",
     color=(178, 34, 34),
     name="Ossified Armlet",
     equippable=equippable.OssifiedArmlet(),
@@ -992,7 +992,7 @@ ossified_armlet = Item(
 )
 
 bloodring = Item(
-    char="╠",
+    char="b",
     color=(128, 0, 0),
     name="Bloodring",
     equippable=equippable.Bloodring(),
@@ -1001,7 +1001,7 @@ bloodring = Item(
 )
 
 guts_belt = Item(
-    char="≡",
+    char="g",
     color=(139, 0, 0),
     name="Guts-Belt",
     equippable=equippable.GutsBelt(),
@@ -1010,7 +1010,7 @@ guts_belt = Item(
 )
 
 rib_binder = Item(
-    char="≋",
+    char="r",
     color=(178, 34, 34),
     name="Rib-Binder",
     equippable=equippable.RibBinder(),
@@ -1019,7 +1019,7 @@ rib_binder = Item(
 )
 
 visceral_cinch = Item(
-    char="≌",
+    char="v",
     color=(128, 0, 0),
     name="Visceral Cinch",
     equippable=equippable.VisceralCinch(),
@@ -1028,7 +1028,7 @@ visceral_cinch = Item(
 )
 
 tendon_girdle = Item(
-    char="≡",
+    char="t",
     color=(205, 92, 92),
     name="Tendon Girdle",
     equippable=equippable.TendonGirdle(),
@@ -1037,7 +1037,7 @@ tendon_girdle = Item(
 )
 
 fleshbinder = Item(
-    char="≋",
+    char="f",
     color=(139, 69, 19),
     name="Fleshbinder",
     equippable=equippable.Fleshbinder(),
@@ -1046,7 +1046,7 @@ fleshbinder = Item(
 )
 
 veinloop_sash = Item(
-    char="≌",
+    char="v",
     color=(153, 50, 204),
     name="Veinloop Sash",
     equippable=equippable.VeinloopSash(),
@@ -1055,7 +1055,7 @@ veinloop_sash = Item(
 )
 
 tumor_laced_strap = Item(
-    char="≡",
+    char="t",
     color=(178, 0, 34),
     name="Tumor-Laced Strap",
     equippable=equippable.TumorLacedStrap(),
@@ -1064,7 +1064,7 @@ tumor_laced_strap = Item(
 )
 
 bone_clasp_belt = Item(
-    char="≋",
+    char="b",
     color=(139, 0, 0),
     name="Bone-Clasp Belt",
     equippable=equippable.BoneClaspBelt(),
@@ -1073,7 +1073,7 @@ bone_clasp_belt = Item(
 )
 
 marrowstrap = Item(
-    char="≌",
+    char="m",
     color=(178, 34, 34),
     name="Marrowstrap",
     equippable=equippable.Marrowstrap(),
@@ -1082,7 +1082,7 @@ marrowstrap = Item(
 )
 
 sinewbelt = Item(
-    char="≡",
+    char="s",
     color=(128, 0, 0),
     name="Sinewbelt",
     equippable=equippable.Sinewbelt(),
@@ -1091,7 +1091,7 @@ sinewbelt = Item(
 )
 
 shredded_greaves = Item(
-    char="╬",
+    char="s",
     color=(139, 69, 19),
     name="Shredded Greaves",
     equippable=equippable.ShreddedGreaves(),
@@ -1100,7 +1100,7 @@ shredded_greaves = Item(
 )
 
 vein_wrapped_leggings = Item(
-    char="╩",
+    char="v",
     color=(178, 34, 34),
     name="Vein-Wrapped Leggings",
     equippable=equippable.VeinWrappedLeggings(),
@@ -1109,7 +1109,7 @@ vein_wrapped_leggings = Item(
 )
 
 bone_spliced_trousers = Item(
-    char="╠",
+    char="b",
     color=(128, 0, 0),
     name="Bone-Spliced Trousers",
     equippable=equippable.BoneSplicedTrousers(),
@@ -1118,7 +1118,7 @@ bone_spliced_trousers = Item(
 )
 
 tendon_laced_pants = Item(
-    char="╬",
+    char="t",
     color=(205, 92, 92),
     name="Tendon-Laced Pants",
     equippable=equippable.TendonLacedPants(),
@@ -1127,7 +1127,7 @@ tendon_laced_pants = Item(
 )
 
 marrow_stitched_legwraps = Item(
-    char="╣",
+    char="m",
     color=(139, 0, 0),
     name="Marrow-Stitched Legwraps",
     equippable=equippable.MarrowStitchedLegwraps(),
@@ -1136,7 +1136,7 @@ marrow_stitched_legwraps = Item(
 )
 
 fleshbound_breeches = Item(
-    char="╚",
+    char="f",
     color=(153, 50, 204),
     name="Fleshbound Breeches",
     equippable=equippable.FleshboundBreeches(),
@@ -1145,7 +1145,7 @@ fleshbound_breeches = Item(
 )
 
 sinewweave_leggings = Item(
-    char="╔",
+    char="s",
     color=(178, 0, 34),
     name="Sinewweave Leggings",
     equippable=equippable.SinewweaveLeggings(),
@@ -1154,7 +1154,7 @@ sinewweave_leggings = Item(
 )
 
 tumorous_legplates = Item(
-    char="╩",
+    char="t",
     color=(139, 0, 0),
     name="Tumorous Legplates",
     equippable=equippable.TumorousLegplates(),
@@ -1163,7 +1163,7 @@ tumorous_legplates = Item(
 )
 
 pulsing_calfwraps = Item(
-    char="╦",
+    char="p",
     color=(178, 34, 34),
     name="Pulsing Calfwraps",
     equippable=equippable.PulsingCalfwraps(),
@@ -1172,7 +1172,7 @@ pulsing_calfwraps = Item(
 )
 
 skin_wrapped_legguards = Item(
-    char="╠",
+    char="s",
     color=(128, 0, 0),
     name="Skin-Wrapped Legguards",
     equippable=equippable.SkinWrappedLegguards(),

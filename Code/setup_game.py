@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-from ctypes import alignment
 import lzma
 import pickle
 import traceback
