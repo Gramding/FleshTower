@@ -117,6 +117,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         # Mid-tier legs
         (entity_factory.vein_wrapped_leggings, 2),
         (entity_factory.tendon_laced_pants, 1),
+        (entity_factory.healing_scrollII, 4),
     ],
     3: [
         # Rare mid-high items start appearing
@@ -155,6 +156,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         (entity_factory.ossified_armlet, 1),
         (entity_factory.marrowstrap, 1),
         (entity_factory.pulsing_calfwraps, 1),
+        (entity_factory.healing_scrollIII, 3),
     ],
     5: [
         (entity_factory.thrall_reaver, 2),
@@ -469,9 +471,9 @@ def generate_class_select(
     # create new dungeon
     player = engine.player
     dungeon = GameMap(engine, map_width, map_height, entities=[player])
-    # randomly get the position of the room
-    x = random.randint(0, dungeon.width - room_width - 1)
-    y = random.randint(0, dungeon.height - room_height - 1)
+    # center this room
+    y = engine.game_world.map_height // 4
+    x = engine.game_world.map_width // 4
     # creates the rect room
     new_room = RectangularRoom(x, y, room_width, room_height)
 
@@ -500,9 +502,9 @@ def generate_shop_room(
     # create new dungeon
     player = engine.player
     dungeon = GameMap(engine, map_width, map_height, entities=[player])
-    # randomly get the position of the room
-    x = random.randint(0, dungeon.width - room_width - 1)
-    y = random.randint(0, dungeon.height - room_height - 1)
+    y = engine.game_world.map_height // 4
+    x = engine.game_world.map_width // 4
+
     # creates the rect room
     new_room = RectangularRoom(x, y, room_width, room_height)
 

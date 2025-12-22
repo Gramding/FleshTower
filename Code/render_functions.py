@@ -112,8 +112,8 @@ def render_names_at_mouse_location(
 ) -> None:
     o_x, o_y, e_x, e_y = engine.game_map.get_viewport()
     mouse_x, mouse_y = engine.mouse_location
-    mouse_x = int(mouse_x+o_x)
-    mouse_y = int(mouse_y+o_y)
+    mouse_x = int(mouse_x + o_x)
+    mouse_y = int(mouse_y + o_y)
 
     names_at_mouse_location = get_names_at_location(
         x=mouse_x, y=mouse_y, game_map=engine.game_map
@@ -122,7 +122,9 @@ def render_names_at_mouse_location(
         names_at_mouse_location = engine.message_log.wrap(names_at_mouse_location, 30)
         for i, line in enumerate(names_at_mouse_location):
             console.print(x=0, y=0 + i, string=line)
-    elif(len(names_at_mouse_location) > 0):
+    elif len(names_at_mouse_location) > 0:
         console.print(
-            x=int(mouse_x-o_x), y=int(mouse_y-o_y) - 1, string=names_at_mouse_location
+            x=int(mouse_x - o_x),
+            y=int(mouse_y - o_y) - 1,
+            string=names_at_mouse_location,
         )

@@ -8,7 +8,7 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-from components.settings import CHEATS, GENERAL_CHEATS
+from components.settings import CHEATS, GENERAL_CHEATS, GENERAL_CHEAT_ACTIVATIONS
 
 # from procgen import item_chances, enemy_chances
 # from components.procgen_chances import item_chances
@@ -952,8 +952,10 @@ class MainGameEventHandler(EventHandler):
             return CheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F2 and CHEATS:
             return EnemyCheatActiveHandler(self.engine)
-        elif key == tcod.event.KeySym.F3:
+        elif key == tcod.event.KeySym.F3 and CHEATS:
             return GerneralCheatActiveHandler(self.engine)
+        elif key == tcod.event.KeySym.F4 and CHEATS:
+            return GerneralCheatActivationActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1270,3 +1272,64 @@ class GerneralCheatActiveHandler(GeneralCheats):
             GENERAL_CHEATS[cheat] = False
         else:
             GENERAL_CHEATS[cheat] = True
+
+
+class GeneralCheatsActivaions(AskUserEventHandler):
+    TITLE = "Gerneral Cheats to Activate"
+
+    def on_render(self, console):
+        super().on_render(console)
+        x = 0
+        y = 0
+        title = f"{self.TITLE}"
+        width = len(title) + 15
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=40,
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        for i, cheat in enumerate(GENERAL_CHEAT_ACTIVATIONS):
+            cheatKey = chr(ord("a") + i)
+            cheatString = f"({cheatKey}) {cheat:<17}"
+            console.print(x + 1, y + i + 1, cheatString)
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+
+        if 0 <= index <= 26:
+            try:
+                cheatSelected = list(GENERAL_CHEAT_ACTIVATIONS)[index]
+            except IndexError:
+                self.engine.message_log.add_message(
+                    "Invalid input slot.", color.invalid
+                )
+                return None
+            return self.on_cheat_select(cheatSelected)
+        return super().ev_keydown(event)
+
+
+class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
+    def on_cheat_select(self, cheat) -> Optional[ActionOrHandler]:
+        from procgen import generate_shop_room
+
+        match cheat:
+            case "spawn_shop":
+                self.engine.game_map = generate_shop_room(
+                    engine=self.engine,
+                    map_width=100,
+                    map_height=100,
+                    current_floor=self.engine.game_world.current_floor,
+                )
+            case "current_floor_+":
+                self.engine.game_world.current_floor += 1
+            case "current_floor_-":
+                self.engine.game_world.current_floor -= 1
