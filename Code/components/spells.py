@@ -26,6 +26,11 @@ class Spell:
                     self.target = actor
 
 
+class SelfSepll(Spell):
+    def __init__(self, engine: Engine, name: str, mana_cost: int):
+        super().__init__(engine, name, mana_cost)
+
+
 class LightningSpell(Spell):
     def __init__(self, engine, name, mana_cost: int, damage: int):
         self.damage = damage + engine.player.fighter.spell_damage_bonus
@@ -97,6 +102,20 @@ class ConfusionSpell(Spell):
                     self.mana_cost
                     * (self.engine.player.fighter.spell_cost_reduction / 100)
                 )
+
+
+class HealingSpell(SelfSepll):
+    def __init__(self, engine: Engine, name: str, mana_cost: int, healing: int):
+        self.healing = healing + engine.player.fighter.spell_damage_bonus
+        super().__init__(engine, name, mana_cost)
+
+    def activate(self):
+        success = self.engine.player.fighter.cast_spell(self)
+        if success:
+            self.engine.message_log.add_message(
+                f"You recover {self.healing} HP", color.health_recovered
+            )
+            self.engine.player.fighter.heal(self.healing)
 
 
 class SpellBook:

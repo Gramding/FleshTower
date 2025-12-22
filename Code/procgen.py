@@ -75,6 +75,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
         # Early legs
         (entity_factory.shredded_greaves, 2),
         (entity_factory.bone_spliced_trousers, 2),
+        (entity_factory.healing_scrollI, 2),
     ],
     1: [
         # Utility scrolls and early upgrades
@@ -518,4 +519,3 @@ def generate_shop_room(
     engine.message_log.add_message("You sumble upon a humble merchant.")
     dungeon.upstairs_location = new_room.center
     return dungeon
-

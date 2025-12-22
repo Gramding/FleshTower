@@ -423,7 +423,7 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
             x = 0
 
         y = 0
-        width = len(self.TITLE) + 12
+        width = len(self.TITLE) + 20
 
         console.draw_frame(
             x=x,
@@ -441,7 +441,7 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
                 console.print(
                     x + 1,
                     y + i + 1,
-                    f"{print}: {self.engine.player.logbook.book[name]}",
+                    f"{print:<30}: {self.engine.player.logbook.book[name]}",
                 )
         else:
             console.print(x + 1, y + 1, "(Empty)")

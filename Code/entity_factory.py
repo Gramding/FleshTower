@@ -414,6 +414,15 @@ lightning_scroll = Item(
     price=100,
 )
 
+healing_scrollI = Item(
+    char="~",
+    color=(0, 255, 0),
+    name="Scroll of Healing I",
+    consumable=consumable.HealingConsumable(amount=10),
+    effect=HealingScrollEffect(spellName="Healing I", mana_cost=10, healing=10),
+    price=20,
+)
+
 confusion_scroll = Item(
     char="~",
     color=(207, 63, 255),
