@@ -121,6 +121,26 @@ zombie = Actor(
     effect=ZombieEffect(),
 )
 
+vicera_abomination = Actor(
+    char="V",
+    color=(52, 71, 54),
+    name="Vicera Abomination",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=100,
+        base_defense=3,
+        base_power=5,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
+    inventory=Inventory(capacity=5),
+    level=Level(xp_given=1000),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=ViceraAbominationEffect(),
+)
+
+
 flesh_golem = Actor(
     char="G",
     color=(128, 127, 0),

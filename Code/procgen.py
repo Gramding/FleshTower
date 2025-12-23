@@ -219,6 +219,10 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
     ],
 }
 
+boss_dict = {
+    5: entity_factory.vicera_abomination,
+}
+
 
 def get_max_value_for_floor(
     max_value_by_floor: List[Tuple[int, int]], floor: int
@@ -525,3 +529,29 @@ def generate_shop_room(
 
 # TODO Generate a boss room with specific boss enemy.
 # This will need new AI For "Projectile type enemies and so on"
+
+
+def generate_boss_room(
+    engine: Engine,
+    map_width: int,
+    map_height: int,
+    current_floor: int,
+) -> GameMap:
+    room_width = 30
+    room_height = 30
+    # create new dungeon
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
+    y = engine.game_world.map_height // 4
+    x = engine.game_world.map_width // 4
+
+    # creates the rect room
+    new_room = RectangularRoom(x, y, room_width, room_height)
+
+    dungeon.tiles[new_room.inner] = tile_types.randFloor()
+
+    player.place(*new_room.center, dungeon)
+
+    boss_dict[current_floor].spawn(dungeon, player.x - 2, player.y - 2)
+
+    return dungeon

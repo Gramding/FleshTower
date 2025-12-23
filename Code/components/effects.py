@@ -349,3 +349,13 @@ class FlayedThrall(Effect):
             engine.player.fighter.current_effecs.append("FlayedThrall")
             first = True
         return super().activate(engine, corpse, first)
+
+
+class ViceraAbominationEffect(Effect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+        if corpse.name not in engine.player.logbook.book:
+            first = True
+        return super().activate(engine, corpse, first)
