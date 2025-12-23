@@ -521,3 +521,7 @@ def generate_shop_room(
     engine.message_log.add_message("You sumble upon a humble merchant.")
     dungeon.upstairs_location = new_room.center
     return dungeon
+
+
+# TODO Generate a boss room with specific boss enemy.
+# This will need new AI For "Projectile type enemies and so on"
