@@ -51,18 +51,16 @@ class ConfusedEnemy(BaseAI):
             )
             self.entity.ai = self.previous_ai
         else:
-            direction_x, direction_y = random.choice(
-                [
-                    (-1, -1),  # Northwest
-                    (0, -1),  # North
-                    (1, -1),  # Northeast
-                    (-1, 0),  # West
-                    (1, 0),  # East
-                    (-1, 1),  # Southwest
-                    (0, 1),  # South
-                    (1, 1),  # Southeast
-                ]
-            )
+            direction_x, direction_y = random.choice([
+                (-1, -1),  # Northwest
+                (0, -1),  # North
+                (1, -1),  # Northeast
+                (-1, 0),  # West
+                (1, 0),  # East
+                (-1, 1),  # Southwest
+                (0, 1),  # South
+                (1, 1),  # Southeast
+            ])
             self.turns_remaining -= 1
             return BumpAction(self.entity, direction_x, direction_y).perform()
 
@@ -148,4 +146,41 @@ class Vendor(BaseAI):
         super().__init__(entity)
 
     def perform(self):
+        return WaitAction(self.entity).perform()
+
+
+class ViceraAbomination(BaseAI):
+    def __init__(self, entity: Actor) -> None:
+        super().__init__(entity)
+        self.turn_count = 0
+        self.path: List[Tuple[int, int]] = []
+        self.confused = ConfusedEnemy(entity, self, 8)
+
+    def perform(self) -> None:
+        target = self.engine.player
+        dx = target.x - self.entity.x
+        dy = target.y - self.entity.y
+        distance = max(abs(dx), abs(dy))
+
+        if self.turn_count >= 10:
+            self.turn_count = 0
+            from entity_factory import vicera_spawn
+
+            vicera_spawn.spawn(self.engine.game_map, self.entity.x, self.entity.y)
+        else:
+            self.turn_count += 1
+
+        if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+            if distance <= 1:
+                return MeleeAction(self.entity, dx, dy).perform()
+            self.path = self.get_path_to(target.x, target.y)
+
+        if self.path:
+            dest_x, dest_y = self.path.pop(0)
+            return MovementAction(
+                self.entity,
+                dest_x - self.entity.x,
+                dest_y - self.entity.y,
+            ).perform()
+
         return WaitAction(self.entity).perform()

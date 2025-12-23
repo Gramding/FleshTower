@@ -1,4 +1,4 @@
-from components.ai import HostileEnemy, HostileCaster, Vendor
+from components.ai import HostileEnemy, HostileCaster, Vendor, ViceraAbomination
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components import consumable, equippable
@@ -121,11 +121,30 @@ zombie = Actor(
     effect=ZombieEffect(),
 )
 
+vicera_spawn = Actor(
+    char="v",
+    color=(100, 0, 0),
+    name="Vicera spawn",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=3,
+        base_defense=0,
+        base_power=1,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=10),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=ViceraAbominationEffect(),
+)
+
 vicera_abomination = Actor(
     char="V",
-    color=(52, 71, 54),
+    color=(255, 0, 0),
     name="Vicera Abomination",
-    ai_cls=HostileEnemy,
+    ai_cls=ViceraAbomination,
     equipment=Equipment(),
     fighter=Fighter(
         base_hp=100,
