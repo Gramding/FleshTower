@@ -56,12 +56,12 @@ class Effect:
                 stat = name_dict[stat_to_improve]
                 engine.message_log.add_message(f"Your {stat} improves")
                 engine.player.fighter.derive_stats()
-            engine.game_map.entities.remove(corpse)
         else:
             engine.message_log.add_message(
                 f"You consume {corpse.name}, nothing happens",
                 color.corpse_consumption,
             )
+        if corpse in engine.game_map.entities:
             engine.game_map.entities.remove(corpse)
         engine.player.fighter.derive_Effects()
 
@@ -358,4 +358,18 @@ class ViceraAbominationEffect(Effect):
     def activate(self, engine, corpse, first=False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
             first = True
+        from procgen import generate_boss_room_empty
+
+        engine.message_log.add_message(
+            f"From consuming the strange flesh of the {corpse.name} your vision fades for a second"
+        )
+
+        engine.game_map = generate_boss_room_empty(
+            engine=engine,
+            map_width=engine.game_world.map_width,
+            map_height=engine.game_world.map_height,
+            current_floor=engine.game_world.current_floor,
+            current_x=engine.player.x,
+            current_y=engine.player.y,
+        )
         return super().activate(engine, corpse, first)

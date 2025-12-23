@@ -555,3 +555,31 @@ def generate_boss_room(
     boss_dict[current_floor].spawn(dungeon, player.x - 2, player.y - 2)
 
     return dungeon
+
+
+def generate_boss_room_empty(
+    engine: Engine,
+    map_width: int,
+    map_height: int,
+    current_floor: int,
+    current_x: int,
+    current_y: int,
+) -> GameMap:
+    room_width = 30
+    room_height = 30
+    # create new dungeon
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
+    y = engine.game_world.map_height // 4
+    x = engine.game_world.map_width // 4
+
+    # creates the rect room
+    new_room = RectangularRoom(x, y, room_width, room_height)
+
+    dungeon.tiles[new_room.inner] = tile_types.randFloor()
+    current_location = (current_x, current_y)
+    player.place(*current_location, dungeon)
+
+    dungeon.tiles[new_room.center] = tile_types.stairs_up
+    dungeon.upstairs_location = new_room.center
+    return dungeon

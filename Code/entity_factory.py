@@ -137,7 +137,7 @@ vicera_spawn = Actor(
     level=Level(xp_given=10),
     spellbook=SpellBook(0),
     logbook=LogBook(),
-    effect=ViceraAbominationEffect(),
+    effect=DefaultEffect(),
 )
 
 vicera_abomination = Actor(

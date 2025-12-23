@@ -169,11 +169,20 @@ class GameWorld:
         self.current_floor += 1
         shop_chance = random.randint(0, 100)
         # self.randSizes()
+        # Small description
+        # Check if floor is 0 for character creation room
+        # if shop is rolled and its not the first floor or a floor number divisibile by 5 a shop room gets spawned
+        # if floor number is increment of 5 spawn a boss fight
+        # if not any of the above gen a normal floor
         if self.current_floor == 0:
             self.engine.game_map = generate_class_select(
                 map_width=self.map_width, map_height=self.map_height, engine=self.engine
             )
-        elif shop_chance <= 20 and not self.current_floor == 1:
+        elif (
+            shop_chance <= 20
+            and not self.current_floor == 1
+            and not self.current_floor % 5 == 0
+        ):
             self.engine.game_map = generate_shop_room(
                 map_width=self.map_width,
                 map_height=self.map_height,
