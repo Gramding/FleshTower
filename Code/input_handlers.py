@@ -1333,3 +1333,8 @@ class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
                 self.engine.game_world.current_floor += 1
             case "current_floor_-":
                 self.engine.game_world.current_floor -= 1
+            case "level_up":
+                self.engine.player.level.current_xp = (
+                    self.engine.player.level.xp_to_next_level
+                )
+                return LevelUpEventHandler(engine=self.engine)

@@ -5,7 +5,12 @@ GENERAL_CHEATS = {
     "inf_stamina": False,
     "noclip": False,
 }
-GENERAL_CHEAT_ACTIVATIONS = ["spawn_shop", "current_floor_+", "current_floor_-"]
+GENERAL_CHEAT_ACTIVATIONS = [
+    "spawn_shop",
+    "current_floor_+",
+    "current_floor_-",
+    "level_up",
+]
 
 
 # DON'T CHANGE these here are purley for informing the player via keybinds on main meue
