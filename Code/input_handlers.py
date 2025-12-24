@@ -697,7 +697,8 @@ class SpellBookEventHandler(AskUserEventHandler):
 
 class SpellBookActivateHandler(SpellBookEventHandler):
     def on_spell_selected(self, spell: Spell) -> Optional[ActionOrHandler]:
-        return spell.activate()
+        spell.activate()
+        return actions.CastSpell(self.engine.player)
 
 
 class ShopHandler(AskUserEventHandler):

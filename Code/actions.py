@@ -237,3 +237,8 @@ class ConsumeCorpseAction(Action):
                 corpse.effect.activate(self.engine, corpse)
                 return
         raise exceptions.Impossible("No corpse here")
+
+
+class CastSpell(Action):
+    def perform(self, spell=None) -> None:
+        pass
