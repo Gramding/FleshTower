@@ -351,7 +351,7 @@ class FlayedThrall(Effect):
         return super().activate(engine, corpse, first)
 
 
-class ViceraAbominationEffect(Effect):
+class BossEffect(Effect):
     def __init__(self):
         super().__init__()
 
@@ -373,3 +373,19 @@ class ViceraAbominationEffect(Effect):
             current_y=engine.player.y,
         )
         return super().activate(engine, corpse, first)
+
+
+class ViceraAbominationEffect(BossEffect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first=False, stat_to_improve=None):
+        return super().activate(engine, corpse, first, stat_to_improve)
+
+
+class BloatedCorpseFlyEffect(BossEffect):
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first=False, stat_to_improve=None):
+        return super().activate(engine, corpse, first, stat_to_improve)

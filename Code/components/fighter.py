@@ -93,6 +93,17 @@ class Fighter(BaseComponent):
             self.die()
 
     def die(self) -> None:
+        from procgen import boss_dict
+
+        is_boss = False
+
+        for boss in boss_dict:
+            if boss_dict[boss].name == self.parent.name:
+                is_boss = True
+
+        if is_boss:
+            self.perform_boss_death()
+
         if self.engine.player is self.parent:
             death_message = "Your flesh becomes part of the tower"
             death_message_color = color.player_die
@@ -233,3 +244,10 @@ class Fighter(BaseComponent):
                 case "FlayedThrall":
                     flayed_thrall(engine=self.engine)
         self.derive_stats()
+
+    def perform_boss_death(self):
+        if self.parent.name == "Bloated Corpse Fly":
+            from entity_factory import corpse_fly
+
+            for i in range(20):
+                corpse_fly.spawn(self.engine.game_map, x=self.parent.x, y=self.parent.y)

@@ -1,4 +1,10 @@
-from components.ai import HostileEnemy, HostileCaster, Vendor, ViceraAbomination
+from components.ai import (
+    HostileEnemy,
+    HostileCaster,
+    Vendor,
+    ViceraAbomination,
+    BloatedCorpseFly,
+)
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components import consumable, equippable
@@ -157,6 +163,44 @@ vicera_abomination = Actor(
     spellbook=SpellBook(0),
     logbook=LogBook(),
     effect=ViceraAbominationEffect(),
+)
+
+bloated_corpse_fly = Actor(
+    char="B",
+    color=(255, 255, 255),
+    name="Bloated Corpse Fly",
+    ai_cls=BloatedCorpseFly,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=200,
+        base_defense=5,
+        base_power=9,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
+    inventory=Inventory(capacity=5),
+    level=Level(xp_given=1000),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=BloatedCorpseFlyEffect(),
+)
+
+corpse_fly = Actor(
+    char="b",
+    color=(100, 100, 10),
+    name="Corpse Fly",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(
+        base_hp=2,
+        base_defense=0,
+        base_power=1,
+        stats={"TM": 8, "NS": 8, "FI": 8, "CD": 8, "PE": 8, "VI": 8},
+    ),
+    inventory=Inventory(capacity=5),
+    level=Level(xp_given=5),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
 )
 
 

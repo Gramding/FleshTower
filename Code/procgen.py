@@ -221,6 +221,7 @@ enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
 
 boss_dict = {
     5: entity_factory.vicera_abomination,
+    10: entity_factory.bloated_corpse_fly,
 }
 
 
