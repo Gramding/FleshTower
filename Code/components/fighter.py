@@ -247,7 +247,11 @@ class Fighter(BaseComponent):
 
     def perform_boss_death(self):
         if self.parent.name == "Bloated Corpse Fly":
+            death_amount = 30
             from entity_factory import corpse_fly
 
-            for i in range(20):
+            self.engine.message_log.add_message(
+                f"The {self.parent.name} dies and from its corpse burst {death_amount} creatures"
+            )
+            for i in range(death_amount):
                 corpse_fly.spawn(self.engine.game_map, x=self.parent.x, y=self.parent.y)

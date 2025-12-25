@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 
+from sys import path
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np
@@ -207,7 +208,7 @@ class BloatedCorpseFly(BaseAI):
             self.path = self.get_path_to(target.x, target.y)
 
         if self.path:
-            dest_x, dest_y = self.path.pop(0)
+            dest_x, dest_y = self.path.pop(1)
             return MovementAction(
                 self.entity,
                 dest_x - self.entity.x,
