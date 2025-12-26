@@ -46,8 +46,8 @@ SHROUD = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)
 stairs_up = new_tile(
     walkable=True,
     transparent=True,
-    dark=(ord("<"), (0, 0, 100), (132, 38, 7)),
-    light=(ord("<"), (255, 255, 255), (219, 63, 11)),
+    dark=(9005, (255, 255, 255), (0, 0, 0)),
+    light=(9002, (255, 255, 255), (0, 0, 0)),
 )
 
 
@@ -55,7 +55,7 @@ def randFloor() -> np.ndarray:
     floor = new_tile(
         walkable=True,
         transparent=True,
-        dark=(9001, (255, 255, 255), (0, 0, 0)),
+        dark=(9004, (255, 255, 255), (0, 0, 0)),
         light=(9001, (255, 255, 255), (0, 0, 0)),
     )
     return floor
@@ -65,7 +65,7 @@ def randWall() -> np.ndarray:
     wall = new_tile(
         walkable=False,
         transparent=False,
-        dark=(9000, (255, 255, 255), (0, 0, 0)),
+        dark=(9003, (255, 255, 255), (0, 0, 0)),
         light=(9000, (255, 255, 255), (0, 0, 0)),
     )
     return wall

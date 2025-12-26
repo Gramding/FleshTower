@@ -79,15 +79,15 @@ class GameMap:
         s_x = slice(o_x, e_x + 1)
         s_y = slice(o_y, e_y + 1)
         viewport_tiles = self.tiles[s_x, s_y]  # [o_x:e_x+1,o_y:e_y + 1]
-        # viewport_visible  = self.visible[s_x,s_y]
+        viewport_visible = self.visible[s_x, s_y]
         viewport_explored = self.explored[s_x, s_y]
 
         console.rgb[
             0 : self.engine.game_world.viewport_width,
             0 : self.engine.game_world.viewport_height,
         ] = np.select(
-            condlist=[viewport_explored],
-            choicelist=[viewport_tiles["light"]],
+            condlist=[viewport_visible, viewport_explored],
+            choicelist=[viewport_tiles["light"], viewport_tiles["dark"]],
             default=tile_types.SHROUD,
         )
         entities_sorted_for_rendering = sorted(
@@ -98,7 +98,7 @@ class GameMap:
                 console.print(
                     x=entity.x - o_x,
                     y=entity.y - o_y,
-                    string=entity.char,
+                    text=entity.char,
                     fg=entity.color,
                 )
 

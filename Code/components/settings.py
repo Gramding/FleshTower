@@ -1,4 +1,4 @@
-CHEATS = True
+CHEATS = True  # True for the ability to open cheats and so on
 GENERAL_CHEATS = {
     "god_mode": False,
     "inf_mana": False,
@@ -40,3 +40,8 @@ KEYBINDS = {
         "V": "Game history",
     },
 }
+
+
+FOV = 20
+
+TILE_SET = "Res/sprites.png"

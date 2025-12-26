@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from components.settings import FOV
+
 import lzma
 import pickle
 
@@ -41,7 +43,9 @@ class Engine:
 
     def update_fov(self) -> None:
         self.game_map.visible[:] = compute_fov(
-            self.game_map.tiles["transparent"], (self.player.x, self.player.y), radius=8
+            self.game_map.tiles["transparent"],
+            (self.player.x, self.player.y),
+            radius=FOV,
         )
         self.game_map.explored |= self.game_map.visible
 
