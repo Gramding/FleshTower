@@ -5,8 +5,12 @@ import lzma
 import pickle
 import traceback
 
+from PIL import Image
+
 from tcod import libtcodpy
 import tcod
+
+import numpy as np
 
 import color
 from engine import Engine
@@ -16,7 +20,7 @@ from game_map import GameWorld
 
 from components.settings import KEYBINDS
 
-background_image = tcod.image.load("Res/main_menu.png")[:, :, :3]
+background_image = np.asarray(Image.open("Res/main_menu.png").convert("RGB"))[:, :, :3]
 
 
 def new_game() -> Engine:
@@ -48,13 +52,6 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
-    """     
-    l_hp = copy.deepcopy(entity_factory.large_health_potion)
-
-    l_hp.parent = player.inventory
-    for i in range(3):
-    player.inventory.items.append(l_hp) 
-    """
 
     return engine
 
