@@ -57,8 +57,8 @@ def randFloor() -> np.ndarray:
     floor = new_tile(
         walkable=True,
         transparent=True,
-        dark=(ord(" "), (255, 255, 255), (dark_i, 51, 49)),
-        light=(ord(" "), (255, 255, 255), (light_i, 18, 3)),
+        dark=(9001, (255, 255, 255), (0, 0, 0)),
+        light=(9001, (255, 255, 255), (0, 0, 0)),
     )
     return floor
 
@@ -67,7 +67,7 @@ def randWall() -> np.ndarray:
     wall = new_tile(
         walkable=False,
         transparent=False,
-        dark=(ord(" "), (255, 255, 255), (50, 92, 255)),
-        light=(ord(" "), (255, 255, 255), (92, 0, 0)),
+        dark=(9000, (255, 255, 255), (0, 0, 0)),
+        light=(9000, (255, 255, 255), (0, 0, 0)),
     )
     return wall

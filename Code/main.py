@@ -21,8 +21,10 @@ def main() -> None:
 
     # this uses the file as a tileset
     tileset = tcod.tileset.load_tilesheet(
-        "Res/dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
+        "Res/sprites.png", 32, 10, tcod.tileset.CHARMAP_TCOD
     )
+    tileset.remap(9000, 0, 5)  # new wall tile
+    tileset.remap(9001, 1, 5)  # new floor tile
     handler: input_handlers.BaseEventHandler = setup_game.MainMenu()
     # this creates the screen (the game window)
     # screen size and name are passed
