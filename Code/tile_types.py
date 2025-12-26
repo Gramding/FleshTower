@@ -52,8 +52,6 @@ stairs_up = new_tile(
 
 
 def randFloor() -> np.ndarray:
-    dark_i = random.randint(30, 50)
-    light_i = random.randint(50, 70)
     floor = new_tile(
         walkable=True,
         transparent=True,
