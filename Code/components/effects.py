@@ -25,6 +25,18 @@ name_dict = {
 }
 
 
+class LogBook:
+    def __init__(self):
+        self.book: dict[Entity:int] = {}
+        pass
+
+    def write_to_book(self, entity_name: str):
+        if entity_name in self.book:
+            self.book[entity_name] += 1
+        else:
+            self.book[entity_name] = 1
+
+
 class Effect:
     def __init__(self):
         pass
@@ -285,18 +297,6 @@ class ChainMailEffect(Effect):
             super().activate(engine, corpse, False)
 
 
-class LogBook:
-    def __init__(self):
-        self.book: dict[Entity:int] = {}
-        pass
-
-    def write_to_book(self, entity_name: str):
-        if entity_name in self.book:
-            self.book[entity_name] += 1
-        else:
-            self.book[entity_name] = 1
-
-
 class GoreboundEffect(Effect):
     def __init__(self):
         super().__init__()
@@ -349,6 +349,9 @@ class FlayedThrall(Effect):
             engine.player.fighter.current_effects.append("FlayedThrall")
             first = True
         return super().activate(engine, corpse, first)
+
+
+# Effects for Bosses BossEffects
 
 
 class BossEffect(Effect):
