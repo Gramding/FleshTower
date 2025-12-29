@@ -335,7 +335,7 @@ class ZombieEffect(Effect):
 
     def activate(self, engine, corpse, first=False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
-            engine.player.fighter.current_effecs.append("Zombie")
+            engine.player.fighter.current_effects.append("Zombie")
             first = True
         return super().activate(engine, corpse, first)
 
@@ -346,7 +346,7 @@ class FlayedThrall(Effect):
 
     def activate(self, engine, corpse, first=False, stat_to_improve=""):
         if corpse.name not in engine.player.logbook.book:
-            engine.player.fighter.current_effecs.append("FlayedThrall")
+            engine.player.fighter.current_effects.append("FlayedThrall")
             first = True
         return super().activate(engine, corpse, first)
 

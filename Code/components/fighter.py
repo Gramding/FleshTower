@@ -8,7 +8,7 @@ from components.base_component import BaseComponent
 from render_order import RenderOrder
 from components.spells import Spell
 import math
-from components.consumption import *
+from components.consumption import ConsumptionFactory
 from components.settings import GENERAL_CHEATS
 
 if TYPE_CHECKING:
@@ -74,7 +74,7 @@ class Fighter(BaseComponent):
         self.max_mass = 30
         self.mass_level = 0
 
-        self.current_effecs = []
+        self.current_effects = []
 
         self.derive_stats(req_hp_reset=True)
 
@@ -237,12 +237,13 @@ class Fighter(BaseComponent):
         self.defense = self.base_defense + self.bonus_defense
 
     def derive_Effects(self):
-        for effect in self.current_effecs:
-            match effect:
-                case "Zombie":
-                    zombie(engine=self.engine)
-                case "FlayedThrall":
-                    flayed_thrall(engine=self.engine)
+        factory = ConsumptionFactory(engine=self.engine, name="Factory")
+        conEffect = None
+        for effect in self.current_effects:
+            print(effect)
+            conEffect = factory.deriveClass(effect)
+            conEffect.activate()
+
         self.derive_stats()
 
     def perform_boss_death(self):
