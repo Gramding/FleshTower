@@ -80,7 +80,7 @@ class Equipment(BaseComponent):
     def stat_bonus(self, action_type, slot_give):
         multiplyer = 1 if action_type == "+" else -1
         for equip in self.__dict__:
-            if not self.check_relevant_equipt(equip, slot_give):
+            if not self.check_relevant_equip(equip, slot_give):
                 continue
             slot = getattr(self, equip)
             for i in slot.equippable.stat_bonus:
@@ -101,7 +101,7 @@ class Equipment(BaseComponent):
         # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
 
-    def check_relevant_equipt(self, equip, slot_give) -> bool:
+    def check_relevant_equip(self, equip, slot_give) -> bool:
         if "_" in equip and "parent" in equip:
             return False
         if not getattr(self, equip):
