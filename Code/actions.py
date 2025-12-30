@@ -207,7 +207,7 @@ class BumpAction(ActionWithDirection):
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":
                 if self.entity.is_rouge:
-                    MovementCehck(dx=self.dx, dy=self.dy, entity=self.entity)
+                    MovementCheck(dx=self.dx, dy=self.dy, entity=self.entity)
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
             if "2" in str(self.dx) or "2" in str(self.dy):
@@ -217,7 +217,7 @@ class BumpAction(ActionWithDirection):
 
 
 # Function to check whether the stamina action of the Rouge is permitted
-def MovementCehck(dx, dy, entity):
+def MovementCheck(dx, dy, entity):
     if "2" in str(dx) or "2" in str(dy) and entity.fighter.stamina >= 10:
         if not GENERAL_CHEATS["inf_stamina"]:
             entity.fighter.stamina -= 10
