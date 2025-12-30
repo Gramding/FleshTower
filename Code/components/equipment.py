@@ -8,6 +8,13 @@ from equipment_types import EquipmentType
 if TYPE_CHECKING:
     from entity import Actor, Item
 
+# TODO Total rewrite of Equipment can be done
+# instead of different attributs dicttionary will do
+# key is EquipmentType of corresponding value
+# Value is equipped item
+# this negates 36 lines of declaration of vars and the need for getting slots entirely
+# also no need for separate logic for rings
+
 
 class Equipment(BaseComponent):
     parent: Actor
