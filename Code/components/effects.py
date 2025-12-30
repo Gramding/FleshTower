@@ -78,8 +78,9 @@ class Effect:
         engine.player.fighter.derive_Effects()
 
     def add_currency(self, engine: Engine, amount: int):
-        engine.message_log.add_message(f"You find {amount} organs")
-        engine.player.currency += amount
+        if amount != 0:
+            engine.message_log.add_message(f"You find {amount} organs")
+            engine.player.currency += amount
 
 
 class DefaultEffect(Effect):

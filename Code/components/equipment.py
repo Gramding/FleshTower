@@ -79,39 +79,24 @@ class Equipment(BaseComponent):
 
     def stat_bonus(self, action_type, slot_give):
         multiplyer = 1 if action_type == "+" else -1
-        for equip in self.__dict__:
-            if not self.check_relevant_equip(equip, slot_give):
-                continue
-            slot = getattr(self, equip)
-            for i in slot.equippable.stat_bonus:
-                self.engine.player.fighter.bonus_stats[i] += (
-                    multiplyer * slot.equippable.stat_bonus[i]
-                )
-
-            self.engine.player.fighter.bonus_power += (
-                multiplyer * slot.equippable.power_bonus
+        # if not self.check_relevant_equip(equip, slot_give):
+        slot = getattr(self, slot_give)
+        for i in slot.equippable.stat_bonus:
+            self.engine.player.fighter.bonus_stats[i] += (
+                multiplyer * slot.equippable.stat_bonus[i]
             )
-            self.engine.player.fighter.bonus_defense += (
-                multiplyer * slot.equippable.defense_bonus
-            )
-            if action_type == "+":
-                slot.equippable.is_applied = True
-            else:
-                slot.equippable.is_applied = False
+        self.engine.player.fighter.bonus_power += (
+            multiplyer * slot.equippable.power_bonus
+        )
+        self.engine.player.fighter.bonus_defense += (
+            multiplyer * slot.equippable.defense_bonus
+        )
+        if action_type == "+":
+            slot.equippable.is_applied = True
+        else:
+            slot.equippable.is_applied = False
         # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
-
-    def check_relevant_equip(self, equip, slot_give) -> bool:
-        if "_" in equip and "parent" in equip:
-            return False
-        if not getattr(self, equip):
-            return False
-        if not hasattr(getattr(self, equip), "equippable"):
-            return False
-        if getattr(self, equip).equippable is None and equip != slot_give:
-            return False
-
-        return True
 
     def item_is_equipped(self, item: Item) -> bool:
         # new logic allows for dynamic check if any slot is currently equipped
@@ -150,6 +135,11 @@ class Equipment(BaseComponent):
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
+        # TODO total rewrite
+        # possibly assign empty slots the corrispnding Types from EquipmentType.
+        # loop at all slots via __dict__ and find slot for everything except rings
+        # in unequip instead of setting slot to None set to EquipmentType again?
+        # this would make this so much less cumbersome of a methode
         slot = ""
         if (
             equippable_item.equippable
@@ -166,13 +156,16 @@ class Equipment(BaseComponent):
             and equippable_item.equippable.equipment_type == EquipmentType.RING
         ):
             # logic allows for the equipping of up to 10 rings
-            # should work
+            # first get first free slot
             for i in range(9):
                 slot_name = f"ring{i}"
-                if (
-                    getattr(self, slot_name) == equippable_item
-                    or getattr(self, slot_name) is None
-                ):
+                if getattr(self, slot_name) is None:
+                    slot = slot_name
+                    break
+            # check if unequip is necesarry
+            for i in range(9):
+                slot_name = f"ring{i}"
+                if getattr(self, slot_name) == equippable_item:
                     slot = slot_name
                     break
         elif (

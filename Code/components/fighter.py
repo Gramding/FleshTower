@@ -240,7 +240,6 @@ class Fighter(BaseComponent):
         factory = ConsumptionFactory(engine=self.engine, name="Factory")
         conEffect = None
         for effect in self.current_effects:
-            print(effect)
             conEffect = factory.deriveClass(effect)
             conEffect.activate()
 
