@@ -91,11 +91,6 @@ class Equipment(BaseComponent):
         self.engine.player.fighter.bonus_defense += (
             multiplyer * slot.equippable.defense_bonus
         )
-        if action_type == "+":
-            slot.equippable.is_applied = True
-        else:
-            slot.equippable.is_applied = False
-        # forgot to derive stats, now effects get correctly applied
         self.engine.player.fighter.derive_stats()
 
     def item_is_equipped(self, item: Item) -> bool:

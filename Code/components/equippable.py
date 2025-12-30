@@ -23,7 +23,6 @@ class Equippable(BaseComponent):
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
         self.stat_bonus = stat_bonus
-        self.is_applied = False
 
 
 class Dagger(Equippable):
