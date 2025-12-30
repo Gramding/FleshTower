@@ -1,6 +1,5 @@
 from typing import Tuple
 import numpy as np
-import random
 
 # this is like a structure in ABAP
 # its got three headers with correspoing values

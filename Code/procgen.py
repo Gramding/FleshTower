@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional, cast
 
-from entity import Actor
+from entity import Actor, Item
 from components.perlin import build_map_new
 from game_map import GameMap
 import tile_types
@@ -272,7 +272,7 @@ def generate_shop_items(entity: Entity, floor_number: int):
                 item_chances, actor.inventory.capacity, floor_number
             )
             for item in items:
-                l_hp = copy.deepcopy(item)
+                l_hp = copy.deepcopy(cast(Item, item))
 
                 l_hp.parent = actor.inventory
                 actor.inventory.items.append(l_hp)
@@ -424,6 +424,7 @@ def generate_dungeon(
 
         if room_type == "rect":
             dungeon.tiles[new_room.inner] = tile_types.randFloor()
+            center_of_last_room = new_room.center
         else:
             slice_x, slice_y = new_room.inner
             cx, cy = new_room.center

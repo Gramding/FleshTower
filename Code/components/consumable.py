@@ -53,7 +53,7 @@ class HealingConsumable(Consumable):
             self.consume()
             consumer.logbook.write_to_book(self.parent.name)
         else:
-            raise Impossible(f"Your HP is already full!")
+            raise Impossible("Your HP is already full!")
 
 
 class FireballDamageConsumable(Consumable):
@@ -111,7 +111,7 @@ class LightningDamageConsumable(Consumable):
                     closest_distance = distance
 
         if target:
-            living_name = actor.name
+            living_name = target.name
             actual_damage = target.fighter.take_damage(self.damage)
             self.engine.message_log.add_message(
                 f"A bolt of lightning strikes {living_name} with a bang for {actual_damage} HP"
@@ -177,6 +177,6 @@ class ManaConsumable(Consumable):
                 self.consume()
                 consumer.logbook.write_to_book(self.parent.name)
             else:
-                raise Impossible(f"Your Mana is already full!")
+                raise Impossible("Your Mana is already full!")
         else:
             raise Impossible("The blue liquid has no effect on you")

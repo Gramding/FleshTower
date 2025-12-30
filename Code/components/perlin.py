@@ -1,19 +1,15 @@
 import random
-
-# import noise
 import numpy as np
 
 
 def build_map_new(shape):
-    seed = random.randint(0, 1000000)
     world = np.zeros(shape)
     for x in range(shape[0]):
         for y in range(shape[1]):
-            world[x][y] = perlin(x=x, y=y, seed=seed)
+            world[x][y] = perlin()
 
     return world
 
 
-def perlin(x, y, seed):
+def perlin():
     return random.randint(0, 100)
-

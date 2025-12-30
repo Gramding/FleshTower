@@ -1,8 +1,6 @@
 from engine import Engine
 import color
 
-import random
-
 
 class Spell:
     def __init__(self, engine: Engine, name: str, mana_cost: int):
@@ -10,6 +8,7 @@ class Spell:
         self.name = name
         self.mana_cost = mana_cost
         self.target = None
+        self.range = 0
 
     def activate(self):
         raise NotImplementedError()
@@ -33,9 +32,9 @@ class SelfSepll(Spell):
 
 class LightningSpell(Spell):
     def __init__(self, engine, name, mana_cost: int, damage: int):
+        super().__init__(engine, name, mana_cost)
         self.damage = damage + engine.player.fighter.spell_damage_bonus
         self.range = 8
-        super().__init__(engine, name, mana_cost)
 
     def activate(self):
         success = self.engine.player.fighter.cast_spell(self)
@@ -57,12 +56,13 @@ class LightningSpell(Spell):
 
 class FireballSpell(Spell):
     def __init__(self, engine, name, mana_cost: int, radius: int):
+        super().__init__(engine, name, mana_cost)
         self.damage = 12 + engine.player.fighter.spell_damage_bonus
         self.range = 8
         self.radius = radius
-        super().__init__(engine, name, mana_cost)
 
     def activate(self):
+        tarets_hit = False
         success = self.engine.player.fighter.cast_spell(self)
         if success:
             self.get_target()

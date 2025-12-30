@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 
-from sys import path
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np
