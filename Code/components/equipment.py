@@ -130,23 +130,9 @@ class Equipment(BaseComponent):
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
-        # TODO total rewrite
-        # possibly assign empty slots the corrispnding Types from EquipmentType.
-        # loop at all slots via __dict__ and find slot for everything except rings
-        # in unequip instead of setting slot to None set to EquipmentType again?
-        # this would make this so much less cumbersome of a methode
         slot = ""
+
         if (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.WEAPON
-        ):
-            slot = "weapon"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.ARMOR
-        ):
-            slot = "armor"
-        elif (
             equippable_item.equippable
             and equippable_item.equippable.equipment_type == EquipmentType.RING
         ):
@@ -163,41 +149,13 @@ class Equipment(BaseComponent):
                 if getattr(self, slot_name) == equippable_item:
                     slot = slot_name
                     break
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.HEAD
-        ):
-            slot = "head"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.EYES
-        ):
-            slot = "eyes"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.NECKLACE
-        ):
-            slot = "necklace"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.CLOAK
-        ):
-            slot = "cloak"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.WRIST
-        ):
-            slot = "wrist"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.BELT
-        ):
-            slot = "belt"
-        elif (
-            equippable_item.equippable
-            and equippable_item.equippable.equipment_type == EquipmentType.LEGS
-        ):
-            slot = "legs"
+        else:
+            for etype in EquipmentType.__dict__:
+                if "_" in etype or etype == "RING":
+                    continue
+                das = getattr(EquipmentType, etype)
+                if das == equippable_item.equippable.equipment_type:
+                    slot = etype.lower()
 
         if getattr(self, slot) == equippable_item:
             self.unequip_from_slot(slot, add_message)
