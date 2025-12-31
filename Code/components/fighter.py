@@ -26,6 +26,11 @@ class Fighter(BaseComponent):
         stats: Dict[str, int],
         # consumption: Optional[ConsumeCorpse],
     ):
+        # TODO rewrite stats and level up mechanics compleatly
+        # idk theese stats and such fit in a grand RPG but in an
+        # rougelike theese feel like just fluff and the changes are meaningless since they
+        # are infrequent and in the end quite boring / needlessly complicated for what they
+        # influence in the end.
         self.stats = {}
         self.base_stats = stats
         self.bonus_stats = {"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0}
