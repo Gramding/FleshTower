@@ -21,6 +21,8 @@ health_recovered = (0x0, 0xFF, 0x0)
 bar_text = white
 bar_filled = (0x0, 0x60, 0x0)
 bar_empty = (0x40, 0x10, 0x10)
+xp_bar_empty = (52, 96, 97)
+xp_bar_filled = (43, 251, 255)
 
 mana_bar_filled = (0, 0, 255)
 stamina_bar_filled = (205, 197, 10)

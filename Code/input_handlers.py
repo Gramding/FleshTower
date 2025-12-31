@@ -215,17 +215,19 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
         # display class name in stat screen
         console.print(
-            x=(x + 1) + len(level) + 5,
+            x=(x + 1),
             y=y + 2,
             text=f"Class: {self.engine.player.class_name}",
         )
-        console.print(
-            x=x + 1, y=y + 2, text=f"XP: {self.engine.player.level.current_xp}"
-        )
-        console.print(
+        from render_functions import render_xp_bar
+
+        render_xp_bar(
+            console=console,
+            current_value=self.engine.player.level.current_xp,
+            maximum_value=self.engine.player.level.xp_to_next_level,
+            total_width=width - 2,
             x=x + 1,
             y=y + 3,
-            text=f"XP for next Level: {self.engine.player.level.xp_to_next_level}",
         )
 
         console.draw_rect(

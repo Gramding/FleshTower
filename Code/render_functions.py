@@ -100,6 +100,33 @@ def render_mass_bar(
     )
 
 
+def render_xp_bar(
+    console: Console,
+    current_value: int,
+    maximum_value: int,
+    total_width: int,
+    x: int,
+    y: int,
+):
+    bar_width = int(float(current_value) / maximum_value * total_width)
+
+    console.draw_rect(
+        x=x, y=y, width=total_width, height=1, ch=1, bg=color.xp_bar_empty
+    )
+
+    if bar_width > 0:
+        console.draw_rect(
+            x=x, y=y, width=bar_width, height=1, ch=1, bg=color.xp_bar_filled
+        )
+
+    console.print(
+        x=x,
+        y=y,
+        string=f"XP {current_value}/{maximum_value}",
+        fg=color.bar_text,
+    )
+
+
 def render_tower_floor(
     console: Console, tower_floor: int, location: Tuple[int, int]
 ) -> None:

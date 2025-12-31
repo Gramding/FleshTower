@@ -16,7 +16,7 @@ class Level(BaseComponent):
         current_level: int = 1,
         current_xp: int = 0,
         level_up_base: int = 0,
-        level_up_factor: int = 150,
+        level_up_factor: int = 50,
         xp_given: int = 0,
     ):
         self.current_level = current_level
@@ -43,7 +43,7 @@ class Level(BaseComponent):
         if self.requires_level_up:
             self.parent.fighter.derive_stats()
             self.engine.message_log.add_message(
-                f"You gain a level to {self.current_level +1}"
+                f"You gain a level to {self.current_level + 1}"
             )
 
     def increase_level(self) -> None:
