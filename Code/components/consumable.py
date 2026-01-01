@@ -44,10 +44,9 @@ class HealingConsumable(Consumable):
         # percent based healing
         heal_amount = int(self.engine.player.fighter.max_hp * (self.amount / 100))
         amount_recovered = consumer.fighter.heal(heal_amount)
-
         if amount_recovered > 0:
             self.engine.message_log.add_message(
-                f"You drink a {self.parent.name}, and recover {amount_recovered} HP!",
+                f"You use a {self.parent.name}, and recover {amount_recovered} HP!",
                 color.health_recovered,
             )
             self.consume()
@@ -171,7 +170,7 @@ class ManaConsumable(Consumable):
         if self.engine.player.is_mage:
             if amount_recovered > 0:
                 self.engine.message_log.add_message(
-                    f"You drink a {self.parent.name}, and recover {amount_recovered} Mana!",
+                    f"You use a {self.parent.name}, and recover {amount_recovered} Mana!",
                     color.mana_bar_filled,
                 )
                 self.consume()
