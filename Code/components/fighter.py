@@ -83,8 +83,6 @@ class Fighter(BaseComponent):
 
         self.derive_stats(req_hp_reset=True)
 
-        # TODO Add modifiers like when going up the staris the player gains an affixe or sth.
-
     @property
     def hp(self) -> int:
         return self._hp

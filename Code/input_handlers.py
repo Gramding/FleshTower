@@ -1084,7 +1084,6 @@ class EquipmentScreen(AskUserEventHandler):
                 y += 2
 
 
-# TODO implement rest of cheat logik
 class ItemCheatScreen(AskUserEventHandler):
     TITLE = "Item cheats"
 

@@ -36,9 +36,7 @@ max_monsters_by_floor = [
     (7, 5),
     (8, 6),
 ]
-# TODO Check why if one item is generated only this item gets chosen afterwards
-# if sinewcleaver is generated only sinewcleaver is getting generated
-# this is wrong and needs fixing
+
 item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     0: [
         # Common early loot
