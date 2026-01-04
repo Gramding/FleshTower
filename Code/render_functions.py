@@ -134,10 +134,10 @@ def render_tower_floor(
     console.print(x=x, y=y, string=f"Tower floor: {tower_floor}")
 
 
-def render_names_at_mouse_location(
-    console: Console, x: int, y: int, engine: Engine
-) -> None:
+def render_names_at_mouse_location(console: Console, engine: Engine) -> None:
     o_x, o_y, e_x, e_y = engine.game_map.get_viewport()
+    e_x = e_y
+    e_y = e_x
     mouse_x, mouse_y = engine.mouse_location
     mouse_x = int(mouse_x + o_x)
     mouse_y = int(mouse_y + o_y)

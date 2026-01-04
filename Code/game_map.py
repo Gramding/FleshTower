@@ -33,7 +33,7 @@ class GameMap:
             (width, height), fill_value=False, order="F"
         )  # this is tiles the player has seen before
 
-        self.upstairs_location = (0, 0)
+        self.upstairs_location = (int(0), int(0))
 
     @property
     def gamemap(self) -> GameMap:
