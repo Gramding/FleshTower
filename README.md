@@ -6,7 +6,13 @@ ideas.
 ## Premise
 The premise is a lone survivor going up a tower built from flesh and viscera.
 
-![Main menue](Res/image.png)
+![Main menue](Res/mainMenue.png)
+
+### Info how to play
+
+The Keybinds are a bit convoluted thus there is a screen to inform the player.
+
+![Keybinds](Res/Keybinds.png)
 
 ## Game
 
@@ -17,11 +23,11 @@ By consuming one of two corpses in the starting room the player permanently swit
 - **Mage**: Helixbound
 - **Rouge**: Whisperbound *Default*
 
-![Game start](<Res/Game Room.png>)
+![Game start](<Res/ClassSelect.png>)
 
 The player has a stats panel with various stats.
 
-![alt text](<Res/stats screen.png>)
+![alt text](<Res/Stats.png>)
 
 The player can hover over various things in the world and get a hover over text. Depending on length
 its displayed at cursor or one of the corners.
@@ -56,3 +62,10 @@ starts with no spells but can by consuming spell scrolls learn them and use them
 (These values for learning need tweaking and don't feal good at this moment.)
 
 ![alt text](Res/mana_bar.png)
+
+
+### Equipments
+
+If the player equips some stuff there is a separat Equipment screen where all slots and equipped items with corresponding stat changes are displayed. 
+
+![alt text](Res/Equipments.png)

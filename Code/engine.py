@@ -62,7 +62,7 @@ class Engine:
             console=console, tower_floor=self.game_world.current_floor, location=(0, 49)
         )
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=44, engine=self
+            console=console, engine=self
         )
 
         if self.player.is_mage:
