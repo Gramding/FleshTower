@@ -885,6 +885,16 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+def get_event_by_name(id: int):
+    from components.settings import KEYBINDS
+
+    for section in KEYBINDS:
+        for key in KEYBINDS[section]:
+            if KEYBINDS[section][key]["ID"] == id:
+                currentKey = KEYBINDS[section][key]
+    return currentKey
+
+
 class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
@@ -893,24 +903,35 @@ class MainGameEventHandler(EventHandler):
         modifier = event.mod
 
         player = self.engine.player
-
-        if key == tcod.event.KeySym.PERIOD and modifier & (
-            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        c_event = get_event_by_name(1)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
         ):
             return actions.TakeStairsAction(player)
-
-        if key == tcod.event.KeySym.C and modifier & (
-            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        c_event = get_event_by_name(2)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
         ):
             return actions.ConsumeCorpseAction(player)
-
-        if key == tcod.event.KeySym.L:
+        c_event = get_event_by_name(11)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return ConsumptionScreenEventHandler(self.engine)
 
-        if key == tcod.event.KeySym.P and self.engine.player.is_mage:
+        c_event = get_event_by_name(10)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return SpellBookActivateHandler(self.engine)
         target = get_target_vendor(engine=self.engine)
-        if key == tcod.event.KeySym.T and target and "Organ" in target.name:
+        c_event = get_event_by_name(3)
+        if (
+            key == tcod.event.KeySym(c_event["KEY"])
+            and modifier == tcod.event.Modifier(c_event["MOD"])
+            and target
+            and "Organ" in target.name
+        ):
             return ShopActivateHandler(engine=self.engine, target=target)
 
         if key in MOVE_KEYS:
@@ -935,23 +956,51 @@ class MainGameEventHandler(EventHandler):
         elif key in WAIT_KEYS:
             action = WaitAction(player)
 
-        elif key == tcod.event.KeySym.ESCAPE:
+        c_event = get_event_by_name(5)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             raise SystemExit()
-        elif key == tcod.event.KeySym.V:
+
+        c_event = get_event_by_name(12)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return HistoryViewer(self.engine)
-        elif key == tcod.event.KeySym.G:
+
+        c_event = get_event_by_name(4)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             action = PickupAction(player)
-        elif key == tcod.event.KeySym.I:
+
+        c_event = get_event_by_name(6)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return InventoryActivateHandler(self.engine)
-        elif key == tcod.event.KeySym.D:
+
+        c_event = get_event_by_name(7)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return InventoryDropHandler(self.engine)
-        elif key == tcod.event.KeySym.C:
+
+        c_event = get_event_by_name(8)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return CharacterScreenEventHandler(self.engine)
-        elif key == tcod.event.KeySym.SLASH:
+        if key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)
-        elif key == tcod.event.KeySym.E:
+
+        c_event = get_event_by_name(9)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return EquipmentScreen(self.engine)
-        elif key == tcod.event.KeySym.F1 and CHEATS:
+
+        if key == tcod.event.KeySym.F1 and CHEATS:
             return CheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F2 and CHEATS:
             return EnemyCheatActiveHandler(self.engine)

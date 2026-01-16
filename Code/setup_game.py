@@ -120,7 +120,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             for section in KEYBINDS:
                 text = f"{text}{section}\n\n"
                 for bind in KEYBINDS[section]:
-                    text = f"{text}{bind}:{KEYBINDS[section][bind]}\n"
+                    text = f"{text}{bind}:{KEYBINDS[section][bind]['NAME']}\n"
                 text = f"{text}\n\n\n"
 
             return input_handlers.PopupMessage(
