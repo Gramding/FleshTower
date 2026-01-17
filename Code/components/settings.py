@@ -65,7 +65,7 @@ KEYBINDS = {
         "C": {"NAME": "Character sheet", "ID": 8, "KEY": event.KeySym.C, "MOD": 4096},
         "E": {"NAME": "Equipments", "ID": 9, "KEY": event.KeySym.E, "MOD": 4096},
         "P": {"NAME": "Spellbook", "ID": 10, "KEY": event.KeySym.P, "MOD": 4096},
-        "L": {"NAME": "Consumption log", "ID": 11, "KEY": event.KeySym.C, "MOD": 4096},
+        "L": {"NAME": "Consumption log", "ID": 11, "KEY": event.KeySym.L, "MOD": 4096},
         "V": {"NAME": "Game history", "ID": 12, "KEY": event.KeySym.V, "MOD": 4096},
     },
 }
