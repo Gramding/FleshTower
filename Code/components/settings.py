@@ -16,19 +16,18 @@ GENERAL_CHEAT_ACTIVATIONS = [
 
 
 # DONT CHANGE THE ID of the bind this is what determins what happens
-# Movement currently cant be changed from here
-# All other keys can be freely changed to whatever the KeySym allows
+# All here keys can be freely changed to whatever the KeySym allows
 
 KEYBINDS = {
     "Movement": {
-        "UP": {"NAME": "Move up", "ID": 100, "KEY": event.KeySym.UP, "MOD": 4096},
-        "DOWN": {"NAME": "Move down", "ID": 101, "KEY": event.KeySym.DOWN, "MOD": 4096},
-        "LEFT": {"NAME": "Move left", "ID": 102, "KEY": event.KeySym.LEFT, "MOD": 4096},
+        "UP": {"NAME": "Move up", "ID": 100, "KEY": event.KeySym.UP, "MOD": 4097},
+        "DOWN": {"NAME": "Move down", "ID": 101, "KEY": event.KeySym.DOWN, "MOD": 4097},
+        "LEFT": {"NAME": "Move left", "ID": 102, "KEY": event.KeySym.LEFT, "MOD": 4097},
         "RIGHT": {
             "NAME": "Move right",
             "ID": 103,
             "KEY": event.KeySym.RIGHT,
-            "MOD": 4096,
+            "MOD": 4097,
         },
     },
     "Interaction": {

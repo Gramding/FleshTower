@@ -20,21 +20,10 @@ if TYPE_CHECKING:
 
 MOVE_KEYS = {
     # Arrow keys.
-    tcod.event.KeySym.UP: (0, -1),
-    tcod.event.KeySym.DOWN: (0, 1),
-    tcod.event.KeySym.LEFT: (-1, 0),
-    tcod.event.KeySym.RIGHT: (1, 0),
-    tcod.event.KeySym.HOME: (-1, -1),
-    tcod.event.KeySym.END: (-1, 1),
-    # Numpad keys.
-    tcod.event.KeySym.KP_1: (-1, 1),
-    tcod.event.KeySym.KP_2: (0, 1),
-    tcod.event.KeySym.KP_3: (1, 1),
-    tcod.event.KeySym.KP_4: (-1, 0),
-    tcod.event.KeySym.KP_6: (1, 0),
-    tcod.event.KeySym.KP_7: (-1, -1),
-    tcod.event.KeySym.KP_8: (0, -1),
-    tcod.event.KeySym.KP_9: (1, -1),
+    100: (0, -1),
+    101: (0, 1),
+    102: (-1, 0),
+    103: (1, 0),
 }
 
 WAIT_KEYS = {
@@ -885,8 +874,10 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
-def get_event_by_name(id: int):
+def get_event_by_id(id: int):
     from components.settings import KEYBINDS
+
+    currentKey = {}
 
     for section in KEYBINDS:
         for key in KEYBINDS[section]:
@@ -903,29 +894,29 @@ class MainGameEventHandler(EventHandler):
         modifier = event.mod
 
         player = self.engine.player
-        c_event = get_event_by_name(1)
+        c_event = get_event_by_id(1)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return actions.TakeStairsAction(player)
-        c_event = get_event_by_name(2)
+        c_event = get_event_by_id(2)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return actions.ConsumeCorpseAction(player)
-        c_event = get_event_by_name(11)
+        c_event = get_event_by_id(11)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return ConsumptionScreenEventHandler(self.engine)
 
-        c_event = get_event_by_name(10)
+        c_event = get_event_by_id(10)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return SpellBookActivateHandler(self.engine)
         target = get_target_vendor(engine=self.engine)
-        c_event = get_event_by_name(3)
+        c_event = get_event_by_id(3)
         if (
             key == tcod.event.KeySym(c_event["KEY"])
             and modifier == tcod.event.Modifier(c_event["MOD"])
@@ -934,59 +925,61 @@ class MainGameEventHandler(EventHandler):
         ):
             return ShopActivateHandler(engine=self.engine, target=target)
 
-        if key in MOVE_KEYS:
-            dx, dy = MOVE_KEYS[key]
-            # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
-            if (
-                self.engine.player.is_rouge
-                and tcod.event.Modifier.LSHIFT in modifier
-                and self.engine.player.fighter.stamina >= 2
-            ):
-                dx = dx * 2
-                dy = dy * 2
-                # stamina is now handlede by the bump action
-                # self.engine.player.fighter.stamina -= 2
-            elif (
-                self.engine.player.fighter.stamina
-                < self.engine.player.fighter.max_stamina
-            ):
-                # if player is not sprinting they regain 1 stamina per movement
-                self.engine.player.fighter.stamina += 1
-            action = BumpAction(player, dx, dy)
-        elif key in WAIT_KEYS:
-            action = WaitAction(player)
+        for movement_id in range(100, 104):
+            c_event = get_event_by_id(movement_id)
+            if c_event["ID"] in MOVE_KEYS and key == c_event["KEY"]:
+                dx, dy = MOVE_KEYS[c_event["ID"]]
+                # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
+                if (
+                    self.engine.player.is_rouge
+                    and tcod.event.Modifier(c_event["MOD"]) in modifier
+                    and self.engine.player.fighter.stamina >= 2
+                ):
+                    dx = dx * 2
+                    dy = dy * 2
+                    # stamina is now handlede by the bump action
+                    # self.engine.player.fighter.stamina -= 2
+                elif (
+                    self.engine.player.fighter.stamina
+                    < self.engine.player.fighter.max_stamina
+                ):
+                    # if player is not sprinting they regain 1 stamina per movement
+                    self.engine.player.fighter.stamina += 1
+                return BumpAction(player, dx, dy)
+            elif key in WAIT_KEYS:
+                return WaitAction(player)
 
-        c_event = get_event_by_name(5)
+        c_event = get_event_by_id(5)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             raise SystemExit()
 
-        c_event = get_event_by_name(12)
+        c_event = get_event_by_id(12)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return HistoryViewer(self.engine)
 
-        c_event = get_event_by_name(4)
+        c_event = get_event_by_id(4)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             action = PickupAction(player)
 
-        c_event = get_event_by_name(6)
+        c_event = get_event_by_id(6)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return InventoryActivateHandler(self.engine)
 
-        c_event = get_event_by_name(7)
+        c_event = get_event_by_id(7)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
             return InventoryDropHandler(self.engine)
 
-        c_event = get_event_by_name(8)
+        c_event = get_event_by_id(8)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
@@ -994,7 +987,7 @@ class MainGameEventHandler(EventHandler):
         if key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)
 
-        c_event = get_event_by_name(9)
+        c_event = get_event_by_id(9)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
