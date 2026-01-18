@@ -181,14 +181,13 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x = 0
 
         y = 0
-        self.engine.player.fighter.derive_stats()
         width = len(self.TITLE) + 30
 
         console.draw_frame(
             x=x,
             y=y,
             width=width,
-            height=len(self.engine.player.fighter.stats) + 20,
+            height=27,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -229,112 +228,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
-        console.print(
-            x + 1,
-            5,
-            text="┤Vital Aberrations├",
-            alignment=libtcodpy.CENTER,
-            width=width - 2,
-            height=1,
-        )
-
-        # Tendon Mass
-        tm = self.engine.player.fighter.stats["TM"]
-
-        # Nerve Sync
-        ns = self.engine.player.fighter.stats["NS"]
-
-        # Flesh Integrity
-        fi = self.engine.player.fighter.stats["FI"]
-
-        # Cerebral Drift
-        cd = self.engine.player.fighter.stats["CD"]
-
-        # Perceptual Echo
-        pe = self.engine.player.fighter.stats["PE"]
-
-        # Visceral Influence
-        vi = self.engine.player.fighter.stats["VI"]
-        # Descriptors
-        console.print(x=x + 24, y=7, text="Val  | Mod")
-        # STAT
-        text = "Strength"
-        console.print(
-            x=x + 1,
-            y=8,
-            text=f"{text:<23}: {tm} ",
-        )
-        console.print(
-            x=x + 29,
-            y=8,
-            text=f"| {self.engine.player.fighter.get_modifier_value(tm)}",
-        )
-
-        # STAT
-        text = "Dexterity"
-        console.print(
-            x=x + 1,
-            y=9,
-            text=f"{text:<23}: {ns} ",
-        )
-        console.print(
-            x=x + 29,
-            y=9,
-            text=f"| {self.engine.player.fighter.get_modifier_value(ns)}",
-        )
-
-        # STAT
-        text = "Constitution"
-        console.print(
-            x=x + 1,
-            y=10,
-            text=f"{text:<23}: {fi} ",
-        )
-        console.print(
-            x=x + 29,
-            y=10,
-            text=f"| {self.engine.player.fighter.get_modifier_value(fi)}",
-        )
-
-        # STAT
-        text = "Intelligence"
-        console.print(
-            x=x + 1,
-            y=11,
-            text=f"{text:<23}: {cd} ",
-        )
-        console.print(
-            x=x + 29,
-            y=11,
-            text=f"| {self.engine.player.fighter.get_modifier_value(cd)}",
-        )
-
-        # STAT
-        text = "Wisdom"
-        console.print(
-            x=x + 1,
-            y=12,
-            text=f"{text:<23}: {pe} ",
-        )
-        console.print(
-            x=x + 29,
-            y=12,
-            text=f"| {self.engine.player.fighter.get_modifier_value(pe)}",
-        )
-
-        # STAT
-        text = "Charisma"
-        console.print(
-            x=x + 1,
-            y=13,
-            text=f"{text:<23}: {vi} ",
-        )
-        console.print(
-            x=x + 29,
-            y=13,
-            text=f"| {self.engine.player.fighter.get_modifier_value(vi)}",
-        )
-
+        # TODO dispaly new modifiers
         console.draw_rect(
             x=x + 1,
             y=15,
@@ -451,7 +345,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x,
             y=0,
             width=40,
-            height=len(self.engine.player.fighter.stats) + 5,
+            height=13,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -459,79 +353,19 @@ class LevelUpEventHandler(AskUserEventHandler):
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
         console.print(x=x + 1, y=2, string="Select the towers blessing")
-        tm = self.engine.player.fighter.stats["TM"]
 
-        # Nerve Sync
-        ns = self.engine.player.fighter.stats["NS"]
-
-        # Flesh Integrity
-        fi = self.engine.player.fighter.stats["FI"]
-
-        # Cerebral Drift
-        cd = self.engine.player.fighter.stats["CD"]
-
-        # Perceptual Echo
-        pe = self.engine.player.fighter.stats["PE"]
-
-        # Visceral Influence
-        vi = self.engine.player.fighter.stats["VI"]
-        console.print(
-            x=x + 1,
-            y=4,
-            string=f"a) Tendon Mass (current: {tm})",
-        )
-        console.print(
-            x=x + 1,
-            y=5,
-            string=f"b) Nerve Sync (current: {ns})",
-        )
-        console.print(
-            x=x + 1,
-            y=6,
-            string=f"c) Flesh Integrity (current: {fi})",
-        )
-        console.print(
-            x=x + 1,
-            y=7,
-            string=f"d) Cerebral Drift (current: {cd})",
-        )
-        console.print(
-            x=x + 1,
-            y=8,
-            string=f"e) Perceptual Echo (current: {pe})",
-        )
-        console.print(
-            x=x + 1,
-            y=9,
-            string=f"f) Visceral Influence (current: {vi})",
-        )
+        # TODO Implement level up
 
     def ev_keydown(self, event):
         player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.A
 
-        if 0 <= index <= 5:
-            if index == 0:
-                player.fighter.bonus_stats["TM"] += 1
-            elif index == 1:
-                player.fighter.bonus_stats["NS"] += 1
-            elif index == 2:
-                player.fighter.bonus_stats["FI"] += 1
-            elif index == 3:
-                player.fighter.bonus_stats["CD"] += 1
-            elif index == 4:
-                player.fighter.bonus_stats["PE"] += 1
-            elif index == 5:
-                player.fighter.bonus_stats["VI"] += 1
+        # TODO implement level up keydown
 
-            self.engine.player.level.increase_level()
-            self.engine.player.fighter.derive_stats(True)
+        self.engine.player.level.increase_level()
 
-        else:
-            self.engine.message_log.add_message("Invalide selection", color.invalid)
-
-            return None
+        return None
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(self, event):
@@ -1113,14 +947,6 @@ class EquipmentScreen(AskUserEventHandler):
                         line = line + f" Attack: {slot.equippable.power_bonus}"
                     console.print(x=x + 13, y=y, string=line)
                     x += 13
-                    for bonus in slot.equippable.stat_bonus:
-                        console.print(
-                            x=x,
-                            y=y + 1,
-                            string=f"{bonus}:{slot.equippable.stat_bonus[bonus]}",
-                        )
-                        x += 5
-
                     x = x_save
 
                 y += 2

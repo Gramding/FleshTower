@@ -17,12 +17,10 @@ class Equippable(BaseComponent):
         equipment_type: EquipmentType,
         power_bonus: int = 0,
         defense_bonus: int = 0,
-        stat_bonus: dict = {},
     ):
         self.equipment_type = equipment_type
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
-        self.stat_bonus = stat_bonus
 
 
 class Dagger(Equippable):
@@ -40,7 +38,6 @@ class BonegrinderMaul(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=4,
-            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
         )
 
 
@@ -49,7 +46,6 @@ class Sinewcleaver(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=3,
-            stat_bonus={"TM": 1, "NS": 2, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
         )
 
 
@@ -58,7 +54,6 @@ class NeuralRazor(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=2,
-            stat_bonus={"TM": 0, "NS": 3, "FI": 0, "CD": 1, "PE": 0, "VI": 0},
         )
 
 
@@ -67,7 +62,6 @@ class SpineTalon(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=3,
-            stat_bonus={"TM": 1, "NS": 1, "FI": 0, "CD": 0, "PE": 1, "VI": 0},
         )
 
 
@@ -76,7 +70,6 @@ class MarrowSaw(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=6,
-            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
         )
 
 
@@ -85,7 +78,6 @@ class VisceraBlade(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=4,
-            stat_bonus={"TM": 1, "NS": 1, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
         )
 
 
@@ -94,7 +86,6 @@ class GristleHook(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=3,
-            stat_bonus={"TM": 0, "NS": 2, "FI": 0, "CD": 0, "PE": 1, "VI": 0},
         )
 
 
@@ -103,7 +94,6 @@ class PhageFang(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=4,
-            stat_bonus={"TM": 1, "NS": 0, "FI": 0, "CD": 2, "PE": 0, "VI": 0},
         )
 
 
@@ -112,7 +102,6 @@ class KnottedMace(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=5,
-            stat_bonus={"TM": 2, "NS": 0, "FI": 1, "CD": 0, "PE": 0, "VI": 0},
         )
 
 
@@ -121,7 +110,6 @@ class ThrallReaver(Equippable):
         super().__init__(
             equipment_type=EquipmentType.WEAPON,
             power_bonus=7,
-            stat_bonus={"TM": 3, "NS": 0, "FI": 2, "CD": 0, "PE": 1, "VI": 0},
         )
 
 
@@ -150,7 +138,7 @@ class FlayedHelm(Equippable):
 
 class OozeCrownedCap(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.HEAD, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.HEAD)
 
 
 class BoneplateHood(Equippable):
@@ -160,12 +148,12 @@ class BoneplateHood(Equippable):
 
 class PulsingCranium(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.HEAD, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.HEAD)
 
 
 class VeinwovenCirclet(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.HEAD, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.HEAD)
 
 
 class TumorCrownedHelm(Equippable):
@@ -175,7 +163,7 @@ class TumorCrownedHelm(Equippable):
 
 class ShreddedFaceguard(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.HEAD, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.HEAD)
 
 
 class Sinewcap(Equippable):
@@ -185,9 +173,7 @@ class Sinewcap(Equippable):
 
 class MarrowVisage(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.HEAD, stat_bonus={"FI": 1, "TM": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.HEAD)
 
 
 # =========================
@@ -195,58 +181,52 @@ class MarrowVisage(Equippable):
 # =========================
 class BlindeyeLenses(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class ThirdOrb(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class GoreSightGoggles(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class HemogazeLens(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class OcularTumor(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"PE": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class VeinboundSpectacles(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.EYES, stat_bonus={"NS": 1, "CD": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class CorruptedIris(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class EyeOfTheWyrm(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.EYES, stat_bonus={"TM": 1, "FI": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class PustularEyeband(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.EYES, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 class BloodstareMonocle(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.EYES, stat_bonus={"NS": 1, "PE": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.EYES)
 
 
 # =========================
@@ -254,60 +234,52 @@ class BloodstareMonocle(Equippable):
 # =========================
 class Throatlace(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class HumeralChain(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class TumorAmulet(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class HeartstringPendant(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class SinewChoker(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.NECKLACE, stat_bonus={"FI": 1, "TM": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class PulsingCollar(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"PE": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class OssifiedTorque(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.NECKLACE, stat_bonus={"CD": 1, "FI": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class VeinloopNecklace(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.NECKLACE, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class RibBoundMedallion(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.NECKLACE, stat_bonus={"TM": 1, "PE": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 class CarotidChain(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.NECKLACE, stat_bonus={"FI": 1, "CD": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.NECKLACE)
 
 
 # =========================
@@ -325,7 +297,7 @@ class VeinMantle(Equippable):
 
 class CysticCape(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.CLOAK, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.CLOAK)
 
 
 class RottingWing(Equippable):
@@ -335,17 +307,17 @@ class RottingWing(Equippable):
 
 class SkinfoldMantle(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.CLOAK, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.CLOAK)
 
 
 class IchorousDrape(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.CLOAK, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.CLOAK)
 
 
 class TendrilCloak(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.CLOAK, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.CLOAK)
 
 
 class MarrowVeil(Equippable):
@@ -360,7 +332,7 @@ class FleshTatteredRobe(Equippable):
 
 class OozingPall(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.CLOAK, stat_bonus={"PE": 1})
+        super().__init__(equipment_type=EquipmentType.CLOAK)
 
 
 # =========================
@@ -368,7 +340,7 @@ class OozingPall(Equippable):
 # =========================
 class GristleBracer(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.WRIST, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class BoneCuffs(Equippable):
@@ -378,12 +350,12 @@ class BoneCuffs(Equippable):
 
 class ThrobbingBand(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.WRIST, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class SinewWrap(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.WRIST, stat_bonus={"NS": 1})
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class TumorousWristguard(Equippable):
@@ -393,19 +365,17 @@ class TumorousWristguard(Equippable):
 
 class MarrowCuff(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.WRIST, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class VeinlaceWristband(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.WRIST, stat_bonus={"TM": 1, "FI": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class PustuleBracelet(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.WRIST, stat_bonus={"PE": 1})
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 class OssifiedArmlet(Equippable):
@@ -415,9 +385,7 @@ class OssifiedArmlet(Equippable):
 
 class Bloodring(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.WRIST, stat_bonus={"NS": 1, "CD": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.WRIST)
 
 
 # =========================
@@ -425,7 +393,7 @@ class Bloodring(Equippable):
 # =========================
 class GutsBelt(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.BELT, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 class RibBinder(Equippable):
@@ -435,12 +403,14 @@ class RibBinder(Equippable):
 
 class VisceralCinch(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.BELT, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 class TendonGirdle(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.BELT, stat_bonus={"NS": 1})
+        super().__init__(
+            equipment_type=EquipmentType.BELT,
+        )
 
 
 class Fleshbinder(Equippable):
@@ -450,14 +420,12 @@ class Fleshbinder(Equippable):
 
 class VeinloopSash(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.BELT, stat_bonus={"CD": 1})
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 class TumorLacedStrap(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.BELT, stat_bonus={"FI": 1, "PE": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 class BoneClaspBelt(Equippable):
@@ -467,16 +435,12 @@ class BoneClaspBelt(Equippable):
 
 class Marrowstrap(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.BELT, stat_bonus={"TM": 1, "NS": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 class Sinewbelt(Equippable):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.BELT, stat_bonus={"CD": 1, "FI": 1}
-        )
+        super().__init__(equipment_type=EquipmentType.BELT)
 
 
 # =========================
@@ -499,7 +463,7 @@ class BoneSplicedTrousers(Equippable):
 
 class TendonLacedPants(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.LEGS, stat_bonus={"TM": 1})
+        super().__init__(equipment_type=EquipmentType.LEGS)
 
 
 class MarrowStitchedLegwraps(Equippable):
@@ -509,12 +473,14 @@ class MarrowStitchedLegwraps(Equippable):
 
 class FleshboundBreeches(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.LEGS, stat_bonus={"FI": 1})
+        super().__init__(equipment_type=EquipmentType.LEGS)
 
 
 class SinewweaveLeggings(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.LEGS, stat_bonus={"NS": 1})
+        super().__init__(
+            equipment_type=EquipmentType.LEGS,
+        )
 
 
 class TumorousLegplates(Equippable):
@@ -524,7 +490,7 @@ class TumorousLegplates(Equippable):
 
 class PulsingCalfwraps(Equippable):
     def __init__(self):
-        super().__init__(equipment_type=EquipmentType.LEGS, stat_bonus={"PE": 1})
+        super().__init__(equipment_type=EquipmentType.LEGS)
 
 
 class SkinWrappedLegguards(Equippable):
@@ -536,11 +502,9 @@ class Ring(Equippable):
     def __init__(
         self,
         equipment_type,
-        stat_bonus: dict = {"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0},
     ):
         super().__init__(
             equipment_type=equipment_type,
-            stat_bonus=stat_bonus,
         )
 
 
@@ -548,7 +512,6 @@ class WierdRing(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"CD": 1},
         )
 
 
@@ -556,7 +519,6 @@ class OssuaryLoop(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 2, "FI": 1},
         )
 
 
@@ -564,7 +526,6 @@ class Veinbinder(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"NS": 2, "FI": 1},
         )
 
 
@@ -572,7 +533,6 @@ class WeepingKnuckle(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"FI": 1, "PE": 2},
         )
 
 
@@ -580,7 +540,6 @@ class PhageCirclet(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"FI": 1, "CD": 2, "VI": 1},
         )
 
 
@@ -588,7 +547,6 @@ class Stitchband(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 1, "NS": 1, "FI": 1},
         )
 
 
@@ -596,7 +554,6 @@ class MawsEmbrace(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 2, "PE": 1, "VI": 1},
         )
 
 
@@ -604,7 +561,6 @@ class CarrionLoop(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"FI": 2, "PE": 1},
         )
 
 
@@ -612,7 +568,6 @@ class ThrobbingHalo(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"NS": 1, "CD": 1, "PE": 2},
         )
 
 
@@ -620,13 +575,9 @@ class TumorsPromise(Ring):
     def __init__(self):
         super().__init__(
             equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 1, "FI": 2, "VI": 1},
         )
 
 
 class KnottedVisceraBand(Ring):
     def __init__(self):
-        super().__init__(
-            equipment_type=EquipmentType.RING,
-            stat_bonus={"TM": 1, "FI": 1, "CD": 1},
-        )
+        super().__init__(equipment_type=EquipmentType.RING)

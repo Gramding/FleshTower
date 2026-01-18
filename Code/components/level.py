@@ -41,7 +41,6 @@ class Level(BaseComponent):
         self.engine.message_log.add_message(f"You gain {xp} XP")
 
         if self.requires_level_up:
-            self.parent.fighter.derive_stats()
             self.engine.message_log.add_message(
                 f"You gain a level to {self.current_level + 1}"
             )

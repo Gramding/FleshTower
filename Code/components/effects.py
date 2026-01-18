@@ -15,15 +15,6 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
-name_dict = {
-    "TM": "Tendon Mass",
-    "NS": "Nerve Sync",
-    "FI": "Flesh Integrity",
-    "CD": "Cerebral Drift",
-    "PE": "Perceptual Echo",
-    "VI": "Viceral Influence",
-}
-
 
 class LogBook:
     def __init__(self):
@@ -46,7 +37,6 @@ class Effect:
         engine: Engine,
         corpse: Entity,
         first: bool = False,
-        stat_to_improve: Optional[str] = "",
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name[:30])
         if engine.player.is_fighter:
@@ -64,10 +54,6 @@ class Effect:
                 f"You consume {corpse.name}",
                 color.corpse_consumption,
             )
-            if stat_to_improve:
-                stat = name_dict[stat_to_improve]
-                engine.message_log.add_message(f"Your {stat} improves")
-                engine.player.fighter.derive_stats()
         else:
             engine.message_log.add_message(
                 f"You consume {corpse.name}, nothing happens",
@@ -87,7 +73,7 @@ class DefaultEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(self, engine, corpse, first=False):
         self.add_currency(engine=engine, amount=random.randint(0, 3))
         return super().activate(engine, corpse, False)
 
@@ -96,11 +82,15 @@ class OrcEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         # If player eats an orc health increses by one
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True, "FI")
-            engine.player.fighter.stats["FI"] += 1
+            super().activate(engine, corpse, True)
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
@@ -110,10 +100,14 @@ class TrollEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True, "TM")
-            engine.player.fighter.stats["TM"] += 1
+            super().activate(engine, corpse, True)
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
@@ -123,7 +117,12 @@ class Lvl5BossEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         gorebound = ""
         for entity in engine.game_map.entities:
             if "Gore" in entity.name:
@@ -136,7 +135,6 @@ class Lvl5BossEffect(Effect):
             engine.player.is_rouge = False
             engine.player.fighter.base_hp = 20
             engine.player.fighter.hp = 20
-            engine.player.fighter.derive_stats()
             engine.message_log.add_message(
                 "You feel the mutagen of the mage coursing through your blood. Your flesh weakens but your mind strengthens",
                 color.mage,
@@ -156,7 +154,12 @@ class LightningEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         spell_name = "Lightning Spell"
         success = engine.player.spellbook.learn_spell(
             spell=LightningSpell(
@@ -172,7 +175,12 @@ class FireballEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         spell_name = "Fireball Spell"
         success = engine.player.spellbook.learn_spell(
             spell=FireballSpell(engine, spell_name, 10, 3), engine=engine
@@ -184,7 +192,12 @@ class ConfusionEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         spell_name = "Confusion Spell"
         success = engine.player.spellbook.learn_spell(
             spell=ConfusionSpell(
@@ -210,7 +223,6 @@ class HealingScrollEffect(Effect):
         engine: Engine,
         corpse: Entity,
         first: bool = False,
-        stat_to_improve: Optional[str] = "",
     ):
         success = engine.player.spellbook.learn_spell(
             spell=HealingSpell(
@@ -221,14 +233,19 @@ class HealingScrollEffect(Effect):
             ),
             engine=engine,
         )
-        return super().activate(engine, corpse, success, stat_to_improve)
+        return super().activate(engine, corpse, success)
 
 
 class HealthEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         heal_amount = int(
             engine.player.fighter.max_hp * (corpse.consumable.amount / 100)
         )
@@ -241,7 +258,12 @@ class ManaEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if engine.player.is_mage:
             engine.player.fighter.heal_mana(corpse.consumable.amount)
             engine.message_log.add_message(f"You gain {corpse.consumable.amount} Mana")
@@ -254,10 +276,14 @@ class SwordEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True, "TM")
-            engine.player.fighter.stats["TM"] += 2
+            super().activate(engine, corpse, True)
         else:
             super().activate(engine, corpse, False)
 
@@ -266,10 +292,14 @@ class DaggerEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True, "TM")
-            engine.player.fighter.stats["TM"] += 1
+            super().activate(engine, corpse, True)
         else:
             super().activate(engine, corpse, False)
 
@@ -278,10 +308,14 @@ class LeatherArmorEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, True, "NS")
-            engine.player.fighter.stats["NS"] += 1
+            super().activate(engine, corpse, True)
         else:
             super().activate(engine, corpse, False)
 
@@ -290,10 +324,14 @@ class ChainMailEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
             super().activate(engine, corpse, True)
-            engine.player.fighter.stats["NS"] += 1
         else:
             super().activate(engine, corpse, False)
 
@@ -302,7 +340,12 @@ class GoreboundEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         helixbound = ""
         for entity in engine.game_map.entities:
             if "Helix" in entity.name:
@@ -313,15 +356,19 @@ class GoreboundEffect(Effect):
             engine.player.is_rouge = False
             engine.player.fighter.base_hp = 40
             engine.player.fighter.hp = 40
-            engine.player.fighter.derive_stats(True)
-        return super().activate(engine, corpse, True, stat_to_improve)
+        return super().activate(engine, corpse, True)
 
 
 class FleshGolemEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
             first = True
             engine.player.fighter.bonus_attack_count += 1
@@ -334,7 +381,12 @@ class ZombieEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
             engine.player.fighter.current_effects.append("Zombie")
             first = True
@@ -345,7 +397,12 @@ class FlayedThrall(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
             engine.player.fighter.current_effects.append("FlayedThrall")
             first = True
@@ -359,7 +416,12 @@ class BossEffect(Effect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=""):
+    def activate(
+        self,
+        engine,
+        corpse,
+        first=False,
+    ):
         if corpse.name not in engine.player.logbook.book:
             first = True
         from procgen import generate_boss_room_empty
@@ -383,13 +445,13 @@ class ViceraAbominationEffect(BossEffect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=None):
-        return super().activate(engine, corpse, first, stat_to_improve)
+    def activate(self, engine, corpse, first=False):
+        return super().activate(engine, corpse, first)
 
 
 class BloatedCorpseFlyEffect(BossEffect):
     def __init__(self):
         super().__init__()
 
-    def activate(self, engine, corpse, first=False, stat_to_improve=None):
-        return super().activate(engine, corpse, first, stat_to_improve)
+    def activate(self, engine, corpse, first=False):
+        return super().activate(engine, corpse, first)

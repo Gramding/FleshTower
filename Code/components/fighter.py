@@ -23,7 +23,6 @@ class Fighter(BaseComponent):
         base_hp: int,
         base_defense: int,
         base_power: int,
-        stats: Dict[str, int],
         # consumption: Optional[ConsumeCorpse],
     ):
         # TODO rewrite stats and level up mechanics compleatly
@@ -31,9 +30,7 @@ class Fighter(BaseComponent):
         # rougelike theese feel like just fluff and the changes are meaningless since they
         # are infrequent and in the end quite boring / needlessly complicated for what they
         # influence in the end.
-        self.stats = {}
-        self.base_stats = stats
-        self.bonus_stats = {"TM": 0, "NS": 0, "FI": 0, "CD": 0, "PE": 0, "VI": 0}
+        # Begin of stat Purge 18.01.2026
 
         # HP
         self.base_hp = base_hp
@@ -70,9 +67,8 @@ class Fighter(BaseComponent):
         self.price_discount = 0
 
         # STAMINA
-        self.base_stamina = 30
-        self.max_stamina = 0
-        self.stamina = 0
+        self.max_stamina = 30
+        self.stamina = 30
 
         # MASS
         self.mass = 0
@@ -80,8 +76,6 @@ class Fighter(BaseComponent):
         self.mass_level = 0
 
         self.current_effects = []
-
-        self.derive_stats(req_hp_reset=True)
 
     @property
     def hp(self) -> int:
@@ -183,70 +177,12 @@ class Fighter(BaseComponent):
     def get_modifier_value(self, value: int) -> int:
         return math.ceil((value - 8) / 2)
 
-    def derive_stats(self, req_hp_reset: Optional[bool] = False):
-        # Apply stat bonuses
-        for stat in self.base_stats:
-            self.stats[stat] = self.base_stats[stat] + self.bonus_stats[stat]
-
-        # Tendous Mass
-        tm = self.get_modifier_value(self.stats["TM"])
-        self.power = tm + self.base_power
-
-        # Nerve Sync
-        ns = self.get_modifier_value(self.stats["NS"])
-        if self.damage_reduction + (self.damage_reduction_base * (ns * 2)) <= 50:
-            if ns == 0:
-                self.damage_reduction = self.damage_reduction_base
-            else:
-                self.damage_reduction = self.damage_reduction_base * (ns * 2)
-        else:
-            self.damage_reduction = 50
-        self.max_stamina = self.base_stamina + (ns * 4)
-        if req_hp_reset:
-            self.stamina = self.max_stamina
-
-        # Flesh Integrity
-        fi = self.get_modifier_value(self.stats["FI"])
-        self.max_hp = self.base_hp + (fi * 4)
-        if req_hp_reset:
-            self._hp = self.max_hp
-
-        # Cerebral Drift
-        cd = self.get_modifier_value(self.stats["CD"])
-        self.spell_damage_bonus = cd
-
-        # Perceptual Echo
-        pe = self.get_modifier_value(self.stats["PE"])
-        self.max_mana = self.base_mana + (pe * 4)
-        if req_hp_reset:
-            self.mana = self.base_mana + pe
-
-        # Visceral Influence
-        vi = self.get_modifier_value(self.stats["VI"])
-        self.price_discount = vi
-        self.spell_cost_reduction = vi * 2
-
-        # Fighter Mass
-        self.max_hp += self.mass_level * 4
-        self.damage_reduction += self.mass_level * 2
-
-        # Attack Count
-        self.attack_count = self.base_attack_count + self.bonus_attack_count
-
-        # Power
-        self.power = self.base_power + self.bonus_power
-
-        # Defense
-        self.defense = self.base_defense + self.bonus_defense
-
     def derive_Effects(self):
         factory = ConsumptionFactory(engine=self.engine, name="Factory")
         conEffect = None
         for effect in self.current_effects:
             conEffect = factory.deriveClass(effect)
             conEffect.activate()
-
-        self.derive_stats()
 
     def perform_boss_death(self):
         if self.parent.name == "Bloated Corpse Fly":
