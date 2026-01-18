@@ -9,6 +9,7 @@ import color
 import exceptions
 import libtcodpy
 from components.settings import CHEATS, GENERAL_CHEATS, GENERAL_CHEAT_ACTIVATIONS
+import components.affix as affix
 
 # from procgen import item_chances, enemy_chances
 # from components.procgen_chances import item_chances
@@ -356,16 +357,19 @@ class LevelUpEventHandler(AskUserEventHandler):
 
         # TODO Implement level up
 
+        self.affix = random_affix = self.engine.affixManager.rand_affix()
+
+        console.print(
+            x=x + 1,
+            y=4,
+            string=random_affix.AFFIX_NAME,
+        )
+
     def ev_keydown(self, event):
-        player = self.engine.player
-        key = event.sym
-        index = key - tcod.event.KeySym.A
-
-        # TODO implement level up keydown
-
+        self.engine.affixManager.gain_affix(self.affix)
+        self.engine.affixManager.derive_affixes()
         self.engine.player.level.increase_level()
 
-        return None
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(self, event):

@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from components.affix import PercentHPIncrease
 from typing import TYPE_CHECKING, Optional
 import color
 from components.spells import (
@@ -94,6 +94,7 @@ class OrcEffect(Effect):
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
+        engine.affixManager.gain_affix(PercentHPIncrease(percentValue=0.01))
 
 
 class TrollEffect(Effect):

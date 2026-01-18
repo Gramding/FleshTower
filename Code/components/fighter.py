@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Dict
+from typing import TYPE_CHECKING, Optional
 import random
 import color
 import copy
@@ -25,11 +25,6 @@ class Fighter(BaseComponent):
         base_power: int,
         # consumption: Optional[ConsumeCorpse],
     ):
-        # TODO rewrite stats and level up mechanics compleatly
-        # idk theese stats and such fit in a grand RPG but in an
-        # rougelike theese feel like just fluff and the changes are meaningless since they
-        # are infrequent and in the end quite boring / needlessly complicated for what they
-        # influence in the end.
         # Begin of stat Purge 18.01.2026
 
         # HP
@@ -39,18 +34,18 @@ class Fighter(BaseComponent):
 
         # MANA
         self.base_mana = 30
-        self.mana = int(0)
-        self.max_mana = 0
+        self.mana = self.base_mana
+        self.max_mana = self.base_mana
 
         # POWER
         self.bonus_power = 0
         self.base_power = base_power
-        self.power = 0
+        self.power = base_power + self.bonus_power
 
         # ATTACKS
         self.base_attack_count = 1
         self.bonus_attack_count = 0
-        self.attack_count = 0
+        self.attack_count = self.base_attack_count
 
         # DEFENCE
         self.base_defense = base_defense

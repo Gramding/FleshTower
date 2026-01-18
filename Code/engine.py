@@ -15,6 +15,7 @@ import exceptions
 from game_map import GameMap, GameWorld
 from message_log import MessageLog
 import render_functions
+from components.affix import AffixManager
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -32,6 +33,7 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
+        self.affixManager = AffixManager(self.player)
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
