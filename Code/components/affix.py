@@ -14,24 +14,6 @@ class Affix:
         raise NotImplementedError()
 
 
-class AffixManager:
-    def __init__(self, player) -> None:
-        self.player = player
-        self.affixes = []
-
-    def gain_affix(self, affix: Affix):
-        self.affixes.append(affix)
-        self.derive_affixes()
-
-    def derive_affixes(self):
-        for affix in self.affixes:
-            if not affix.is_set:
-                affix.apply_affix(self.player)
-
-    def rand_affix(self):
-        return copy.deepcopy(AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)])
-
-
 class PercentIncrease(Affix):
     def __init__(self, percentValue: float) -> None:
         self.percentValue = percentValue
@@ -73,7 +55,24 @@ class PercentMANAIncrease(PercentIncrease):
         self.is_set = True
 
 
-AFFIX_DIR = [
-    PercentHPIncrease(random.uniform(0, 0.1)),
-    PercentMANAIncrease(random.uniform(0, 0.1)),
-]
+class AffixManager:
+    def __init__(self, player) -> None:
+        self.player = player
+        self.affixes = []
+
+    def gain_affix(self, affix: Affix):
+        self.affixes.append(affix)
+        self.derive_affixes()
+
+    def derive_affixes(self):
+        for affix in self.affixes:
+            if not affix.is_set:
+                affix.apply_affix(self.player)
+
+    def rand_affix(self):
+        AFFIX_DIR = [
+            PercentHPIncrease(random.uniform(0, 0.1)),
+            PercentMANAIncrease(random.uniform(0, 0.1)),
+        ]
+
+        return copy.deepcopy(AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)])

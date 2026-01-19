@@ -355,8 +355,6 @@ class LevelUpEventHandler(AskUserEventHandler):
         console.print(x=x + 1, y=1, string="The tower grants you power")
         console.print(x=x + 1, y=2, string="Select the towers blessing")
 
-        # TODO Implement level up
-
         self.affix = random_affix = self.engine.affixManager.rand_affix()
 
         console.print(
