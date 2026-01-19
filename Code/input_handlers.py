@@ -176,6 +176,8 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
     def on_render(self, console: tcod.console.Console):
         super().on_render(console)
+        AFFIX_DIR_LEN = len(self.engine.affixManager.affixes)
+
         if self.engine.player.x <= 30:
             x = 40
         else:
@@ -188,7 +190,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=27,
+            height=14 + AFFIX_DIR_LEN,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -230,9 +232,17 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
         # TODO dispaly new modifiers
+        for index, player_affix in enumerate(self.engine.affixManager.affixes):
+            console.print(
+                x=x + 1,
+                y=6 + index,
+                text=player_affix.AFFIX_NAME,
+                width=width - 2,
+                height=1,
+            )
         console.draw_rect(
             x=x + 1,
-            y=15,
+            y=6 + AFFIX_DIR_LEN,
             width=width - 2,
             height=1,
             ch=ord("─"),
@@ -241,8 +251,8 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
         console.print(
-            x + 1,
-            15,
+            x=x + 1,
+            y=7 + AFFIX_DIR_LEN,
             text="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
@@ -251,31 +261,31 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         text = "Meele Damage"
         console.print(
             x=x + 1,
-            y=17,
+            y=8 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.power}",
         )
-        text = "Damage Reduction"
+        text = "Defense"
         console.print(
             x=x + 1,
-            y=18,
-            text=f"{text:<20}: {self.engine.player.fighter.damage_reduction}",
+            y=9 + AFFIX_DIR_LEN,
+            text=f"{text:<20}: {self.engine.player.fighter.defense}",
         )
         text = "Spell Damage"
         console.print(
             x=x + 1,
-            y=19,
+            y=10 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.spell_damage_bonus}",
         )
         text = "Price Discount"
         console.print(
             x=x + 1,
-            y=20,
+            y=11 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.price_discount}",
         )
         text = "Attack Count"
         console.print(
             x=x + 1,
-            y=21,
+            y=12 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.attack_count}",
         )
 

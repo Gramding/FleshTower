@@ -49,7 +49,7 @@ class Fighter(BaseComponent):
 
         # DEFENCE
         self.base_defense = base_defense
-        self.defense = 0
+        self.defense = self.base_defense
         self.bonus_defense = 0
         self.damage_reduction_base = 5
         self.damage_reduction = 0
