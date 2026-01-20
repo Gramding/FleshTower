@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 import os
 import copy
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
@@ -8,6 +9,8 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
+from numpy import array_split
+
 from components.settings import (
     CHEATS,
     GENERAL_CHEATS,
@@ -852,6 +855,8 @@ class MainGameEventHandler(EventHandler):
             return GerneralCheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F4 and CHEATS:
             return GerneralCheatActivationActiveHandler(self.engine)
+        elif key == tcod.event.KeySym.F5 and CHEATS:
+            return AffixCheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1225,3 +1230,67 @@ class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
                     self.engine.player.level.xp_to_next_level
                 )
                 return LevelUpEventHandler(engine=self.engine)
+
+
+class AffixCheatScreen(AskUserEventHandler):
+    TITLE = "Affix cheats"
+
+    def on_render(self, console):
+        if self.engine.current_cheat_page > len(self.engine.enemy_chances) - 1:
+            self.engine.current_cheat_page = 0
+        affixesOnPage = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )[self.engine.current_cheat_page]
+
+        super().on_render(console)
+        x = 0
+        y = 0
+        title = f"{self.TITLE} Page {self.engine.current_cheat_page}"
+        width = len(title) + 25
+        pages = []
+        for floor in self.engine.enemy_chances:
+            pages.append(floor)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=3 + len(affixesOnPage),
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        for i, affix_page in enumerate(affixesOnPage):
+            affix_key = chr(ord("a") + i)
+            affixString = f"({affix_key}) {affix_page.AFFIX_NAME}"
+            console.print(x + 1, y + i + 1, affixString)
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+        affixesOnPage = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )
+
+        if not cheatNav(engine=self.engine, key=key, arr=affixesOnPage):
+            if 0 <= index <= 26:
+                try:
+                    affix_selected = affixesOnPage[index]
+                except IndexError:
+                    self.engine.message_log.add_message(
+                        "Invalid input slot.", color.invalid
+                    )
+                    return None
+                return self.on_affix_selected(affix_selected)
+        return super().ev_keydown(event)
+
+
+class AffixCheatActiveHandler(AffixCheatScreen):
+    def on_affix_selected(self, affix: affix.Affix) -> Optional[ActionOrHandler]:
+        self.engine.affixManager.gain_affix(affix)
+        self.engine.message_log.add_message(f"The Tower grants you {affix.AFFIX_NAME}")

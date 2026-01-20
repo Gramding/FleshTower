@@ -8,6 +8,7 @@ from components.settings import PlayerClass
 
 class Affix:
     AFFIX_NAME = ""
+    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self) -> None:
         self.is_set = False
@@ -17,6 +18,16 @@ class Affix:
         raise NotImplementedError()
 
 
+class FlatIncrease(Affix):
+    def __init__(self, flatValue: int, AFFIX_NAME: str) -> None:
+        self.AFFIX_NAME = f"Flat {flatValue} {AFFIX_NAME}"
+        self.flatValue = flatValue
+        super().__init__()
+
+    def apply_affix(self, player):
+        self.is_set = True
+
+
 class PercentIncrease(Affix):
     def __init__(self, percentValue: float, AFFIX_NAME: str) -> None:
         self.AFFIX_NAME = f"{percentValue:.0%} {AFFIX_NAME}"
@@ -24,12 +35,11 @@ class PercentIncrease(Affix):
         super().__init__()
 
     def apply_affix(self, player):
-        raise NotImplementedError()
+        self.is_set = True
 
 
 class PercentHPIncrease(PercentIncrease):
     AFFIX_NAME = "HP increase"
-    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -55,13 +65,11 @@ class PercentMANAIncrease(PercentIncrease):
             player.fighter.max_mana * self.percentValue
         )
         player.fighter.max_mana = increase
-
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentMeeleIncrease(PercentIncrease):
     AFFIX_NAME = "Meele increase"
-    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -71,13 +79,11 @@ class PercentMeeleIncrease(PercentIncrease):
             player.fighter.power * self.percentValue
         )
         player.fighter.power = increase
-
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentDamageReductionIncrease(PercentIncrease):
     AFFIX_NAME = "Damage Reduction increase"
-    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -88,7 +94,7 @@ class PercentDamageReductionIncrease(PercentIncrease):
         )
         player.fighter.defense = increase
 
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentStaminaIncrease(PercentIncrease):
@@ -99,12 +105,69 @@ class PercentStaminaIncrease(PercentIncrease):
         super().__init__(percentValue, self.AFFIX_NAME)
 
     def apply_affix(self, player):
-        increase = player.fighter.defense + math.ceil(
-            player.fighter.defense * self.percentValue
+        increase = player.fighter.max_stamina + math.ceil(
+            player.fighter.max_stamina * self.percentValue
         )
-        player.fighter.defense = increase
+        player.fighter.max_stamina = increase
 
-        self.is_set = True
+        super().apply_affix(player)
+
+
+class FlatHPIncrease(FlatIncrease):
+    AFFIX_NAME = "HP increase"
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.max_hp += self.flatValue
+        super().apply_affix(player)
+
+
+class FlatMANAIncrease(FlatIncrease):
+    AFFIX_NAME = "Mana increase"
+    CLASS_LOCK = PlayerClass.MAGE
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.max_mana += self.flatValue
+        super().apply_affix(player)
+
+
+class FlatMeeleIncrease(FlatIncrease):
+    AFFIX_NAME = "Meele increase"
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.power += self.flatValue
+        super().apply_affix(player)
+
+
+class FlatDamageReductionIncrease(FlatIncrease):
+    AFFIX_NAME = "Damage reduction increase"
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.defense += self.flatValue
+        super().apply_affix(player)
+
+
+class FlatStaminaIncrease(FlatIncrease):
+    AFFIX_NAME = "Stamina increase"
+    CLASS_LOCK = PlayerClass.ROUGE
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.max_stamina += self.flatValue
+        super().apply_affix(player)
 
 
 class AffixManager:
@@ -122,8 +185,8 @@ class AffixManager:
                 affix.apply_affix(self.player)
 
     def rand_affix(self):
+        AFFIX_DIR = self.get_affix_dir()
         while True:
-            AFFIX_DIR = self.get_affix_dir()
             current_affix = AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)]
             if current_affix.CLASS_LOCK == PlayerClass.GENERIC:
                 return current_affix
@@ -136,4 +199,13 @@ class AffixManager:
             PercentMANAIncrease(random.uniform(0.01, 0.1)),
             PercentMeeleIncrease(random.uniform(0.01, 0.1)),
             PercentDamageReductionIncrease(random.uniform(0.01, 0.1)),
+            PercentStaminaIncrease(random.uniform(0.01, 0.1)),
+            FlatHPIncrease(random.randint(1, 5)),
+            FlatMANAIncrease(random.randint(1, 5)),
+            FlatMeeleIncrease(random.randint(1, 5)),
+            FlatDamageReductionIncrease(random.randint(1, 5)),
+            FlatStaminaIncrease(random.randint(1, 5)),
         ]
+
+    def get_sepcific_affix(self, index: int):
+        return self.get_affix_dir()[index]
