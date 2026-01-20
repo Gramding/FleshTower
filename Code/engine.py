@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from components.settings import FOV
+from components.settings import FOV, PlayerClass
 
 import lzma
 import pickle
@@ -65,21 +65,21 @@ class Engine:
         )
         render_functions.render_names_at_mouse_location(console=console, engine=self)
 
-        if self.player.is_mage:
+        if self.player.player_class == PlayerClass.MAGE:
             render_functions.render_mana_bar(
                 console=console,
                 current_value=int(self.player.fighter.mana),
                 maximum_value=self.player.fighter.max_mana,
                 total_width=20,
             )
-        elif self.player.is_rouge:
+        elif self.player.player_class == PlayerClass.ROUGE:
             render_functions.render_stamina_bar(
                 console=console,
                 current_value=self.player.fighter.stamina,
                 maximum_value=self.player.fighter.max_stamina,
                 total_width=20,
             )
-        elif self.player.is_fighter:
+        elif self.player.player_class == PlayerClass.FIGHTER:
             render_functions.render_mass_bar(
                 console=console,
                 current_value=self.player.fighter.mass,

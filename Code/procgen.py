@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Tuple, List, Iterator, Dict, TYPE_CHECKING, Optional, cast
+from components.settings import PlayerClass
 
 from entity import Actor, Item
 from components.perlin import build_map_new
@@ -333,7 +334,10 @@ def place_entities(
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-            if "Mana" in entity.name and not dungeon.engine.player.is_mage:
+            if (
+                "Mana" in entity.name
+                and not dungeon.engine.player.player_class == PlayerClass.MAGE
+            ):
                 entity_factory.health_potion.spawn(dungeon, x, y)
                 continue
             if "Organ" in entity.name and dungeon.vendor_spawned:

@@ -1,6 +1,7 @@
 import math
 import random
 import copy
+from components.settings import PlayerClass
 # To enhance add class wich derives from Affix and remember to also
 # add new class to the AFFIX_DIR
 
@@ -28,6 +29,7 @@ class PercentIncrease(Affix):
 
 class PercentHPIncrease(PercentIncrease):
     AFFIX_NAME = "HP increase"
+    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -43,6 +45,7 @@ class PercentHPIncrease(PercentIncrease):
 
 class PercentMANAIncrease(PercentIncrease):
     AFFIX_NAME = "Mana increase"
+    CLASS_LOCK = PlayerClass.MAGE
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -58,6 +61,7 @@ class PercentMANAIncrease(PercentIncrease):
 
 class PercentMeeleIncrease(PercentIncrease):
     AFFIX_NAME = "Meele increase"
+    CLASS_LOCK = PlayerClass.GENERIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -73,6 +77,23 @@ class PercentMeeleIncrease(PercentIncrease):
 
 class PercentDamageReductionIncrease(PercentIncrease):
     AFFIX_NAME = "Damage Reduction increase"
+    CLASS_LOCK = PlayerClass.GENERIC
+
+    def __init__(self, percentValue: float) -> None:
+        super().__init__(percentValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        increase = player.fighter.defense + math.ceil(
+            player.fighter.defense * self.percentValue
+        )
+        player.fighter.defense = increase
+
+        self.is_set = True
+
+
+class PercentStaminaIncrease(PercentIncrease):
+    AFFIX_NAME = "Stamina increase"
+    CLASS_LOCK = PlayerClass.ROUGE
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -101,8 +122,13 @@ class AffixManager:
                 affix.apply_affix(self.player)
 
     def rand_affix(self):
-        AFFIX_DIR = self.get_affix_dir()
-        return copy.deepcopy(AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)])
+        while True:
+            AFFIX_DIR = self.get_affix_dir()
+            current_affix = AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)]
+            if current_affix.CLASS_LOCK == PlayerClass.GENERIC:
+                return current_affix
+            elif current_affix.CLASS_LOCK == self.player.player_class:
+                return copy.deepcopy(current_affix)
 
     def get_affix_dir(self):
         return [

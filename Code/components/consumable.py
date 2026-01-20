@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
+from components.settings import PlayerClass
 import actions
 import color
 import components.ai
@@ -167,7 +168,7 @@ class ManaConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         amount_recovered = consumer.fighter.heal_mana(self.amount)
-        if self.engine.player.is_mage:
+        if self.engine.player.player_class == PlayerClass.MAGE:
             if amount_recovered > 0:
                 self.engine.message_log.add_message(
                     f"You use a {self.parent.name}, and recover {amount_recovered} Mana!",

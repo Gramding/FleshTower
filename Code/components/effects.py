@@ -1,5 +1,6 @@
 from __future__ import annotations
 from components.affix import PercentHPIncrease
+from components.settings import PlayerClass
 from typing import TYPE_CHECKING, Optional
 import color
 from components.spells import (
@@ -39,7 +40,7 @@ class Effect:
         first: bool = False,
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name[:30])
-        if engine.player.is_fighter:
+        if engine.player.player_class == PlayerClass.FIGHTER:
             increase = random.randint(1, 15)  # Rebalance the amount of mass gained
             # increas player mass level
             if engine.player.fighter.mass + increase <= engine.player.fighter.max_mass:
@@ -265,7 +266,7 @@ class ManaEffect(Effect):
         corpse,
         first=False,
     ):
-        if engine.player.is_mage:
+        if engine.player.player_class == PlayerClass.MAGE:
             engine.player.fighter.heal_mana(corpse.consumable.amount)
             engine.message_log.add_message(f"You gain {corpse.consumable.amount} Mana")
             return super().activate(engine, corpse, True)

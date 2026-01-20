@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
+from components.settings import PlayerClass
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
@@ -53,7 +54,7 @@ class Level(BaseComponent):
     def increase_max_hp(
         self, amount: int = 20, needs_level_up: Optional[bool] = True
     ) -> None:
-        if self.parent.is_mage:
+        if self.parent.player_class == PlayerClass.MAGE:
             amount = int(amount / 2)
 
         self.parent.fighter.max_hp += amount

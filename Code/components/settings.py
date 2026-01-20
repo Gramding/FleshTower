@@ -1,4 +1,6 @@
 from tcod import event
+from enum import auto, Enum
+
 
 CHEATS = True  # True for the ability to open cheats and so on
 GENERAL_CHEATS = {
@@ -74,3 +76,10 @@ KEYBINDS = {
 FOV = 20
 
 TILE_SET = "Res/sprites.png"
+
+
+class PlayerClass(Enum):
+    FIGHTER = auto()
+    MAGE = auto()
+    ROUGE = auto()
+    GENERIC = auto()

@@ -8,7 +8,12 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-from components.settings import CHEATS, GENERAL_CHEATS, GENERAL_CHEAT_ACTIVATIONS
+from components.settings import (
+    CHEATS,
+    GENERAL_CHEATS,
+    GENERAL_CHEAT_ACTIVATIONS,
+    PlayerClass,
+)
 import components.affix as affix
 
 # from procgen import item_chances, enemy_chances
@@ -777,7 +782,7 @@ class MainGameEventHandler(EventHandler):
                 dx, dy = MOVE_KEYS[c_event["ID"]]
                 # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
                 if (
-                    self.engine.player.is_rouge
+                    self.engine.player.player_class == PlayerClass.ROUGE
                     and tcod.event.Modifier(c_event["MOD"]) in modifier
                     and self.engine.player.fighter.stamina >= 2
                 ):
