@@ -15,7 +15,7 @@ class Affix:
         pass
 
     def apply_affix(self, player):
-        raise NotImplementedError()
+        self.is_set = True
 
 
 class FlatIncrease(Affix):
@@ -25,7 +25,7 @@ class FlatIncrease(Affix):
         super().__init__()
 
     def apply_affix(self, player):
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentIncrease(Affix):
@@ -35,7 +35,7 @@ class PercentIncrease(Affix):
         super().__init__()
 
     def apply_affix(self, player):
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentHPIncrease(PercentIncrease):
@@ -181,6 +181,23 @@ class FlatAttacCountIncrease(FlatIncrease):
         super().apply_affix(player)
 
 
+class XPIncrease(Affix):
+    AFFIX_NAME = "Lucky"
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def apply_affix(self, player):
+        player.level.add_xp(
+            random.randint(
+                int(player.level.xp_to_next_level / 2),
+                int(player.level.xp_to_next_level * 2),
+            )
+        )
+
+        super().apply_affix(player)
+
+
 class AffixManager:
     def __init__(self, player) -> None:
         self.player = player
@@ -217,6 +234,7 @@ class AffixManager:
             FlatDamageReductionIncrease(random.randint(1, 5)),
             FlatStaminaIncrease(random.randint(1, 5)),
             FlatAttacCountIncrease(1),
+            XPIncrease(),
         ]
 
     def get_sepcific_affix(self, index: int):
