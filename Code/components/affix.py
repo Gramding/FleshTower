@@ -50,7 +50,7 @@ class PercentHPIncrease(PercentIncrease):
         )
 
         player.fighter.max_hp = increase
-        self.is_set = True
+        super().apply_affix(player)
 
 
 class PercentMANAIncrease(PercentIncrease):
@@ -170,6 +170,17 @@ class FlatStaminaIncrease(FlatIncrease):
         super().apply_affix(player)
 
 
+class FlatAttacCountIncrease(FlatIncrease):
+    AFFIX_NAME = "Attack count increase"
+
+    def __init__(self, flatValue: int) -> None:
+        super().__init__(flatValue, self.AFFIX_NAME)
+
+    def apply_affix(self, player):
+        player.fighter.attack_count += self.flatValue
+        super().apply_affix(player)
+
+
 class AffixManager:
     def __init__(self, player) -> None:
         self.player = player
@@ -205,6 +216,7 @@ class AffixManager:
             FlatMeeleIncrease(random.randint(1, 5)),
             FlatDamageReductionIncrease(random.randint(1, 5)),
             FlatStaminaIncrease(random.randint(1, 5)),
+            FlatAttacCountIncrease(1),
         ]
 
     def get_sepcific_affix(self, index: int):

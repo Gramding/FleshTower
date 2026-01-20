@@ -1272,12 +1272,16 @@ class AffixCheatScreen(AskUserEventHandler):
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
         key = event.sym
         index = key - tcod.event.KeySym.A
-        affixesOnPage = array_split(
+        affixesPages = array_split(
             self.engine.affixManager.get_affix_dir(),
             math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
         )
+        affixesOnPage = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )[self.engine.current_cheat_page]
 
-        if not cheatNav(engine=self.engine, key=key, arr=affixesOnPage):
+        if not cheatNav(engine=self.engine, key=key, arr=affixesPages):
             if 0 <= index <= 26:
                 try:
                     affix_selected = affixesOnPage[index]
