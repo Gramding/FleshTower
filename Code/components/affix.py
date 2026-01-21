@@ -2,11 +2,13 @@ import math
 import random
 import copy
 from components.settings import PlayerClass
-# To enhance add class wich derives from Affix and remember to also
+
+# To enhance add cl
+# ass wich derives from Affix and remember to also
 # add new class to the AFFIX_DIR
 
 
-class Affix:
+class Affix():
     AFFIX_NAME = ""
     CLASS_LOCK = PlayerClass.GENERIC
 
@@ -14,7 +16,7 @@ class Affix:
         self.is_set = False
         pass
 
-    def apply_affix(self, player):
+    def apply_affix(self, engine):
         self.is_set = True
 
 
@@ -24,8 +26,8 @@ class FlatIncrease(Affix):
         self.flatValue = flatValue
         super().__init__()
 
-    def apply_affix(self, player):
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        super().apply_affix(engine)
 
 
 class PercentIncrease(Affix):
@@ -34,8 +36,8 @@ class PercentIncrease(Affix):
         self.percentValue = percentValue
         super().__init__()
 
-    def apply_affix(self, player):
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        super().apply_affix(engine)
 
 
 class PercentHPIncrease(PercentIncrease):
@@ -44,13 +46,13 @@ class PercentHPIncrease(PercentIncrease):
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        increase = player.fighter.max_hp + math.ceil(
-            player.fighter.max_hp * self.percentValue
+    def apply_affix(self, engine):
+        increase = engine.player.fighter.max_hp + math.ceil(
+            engine.player.fighter.max_hp * self.percentValue
         )
 
-        player.fighter.max_hp = increase
-        super().apply_affix(player)
+        engine.player.fighter.max_hp = increase
+        super().apply_affix(engine)
 
 
 class PercentMANAIncrease(PercentIncrease):
@@ -60,12 +62,12 @@ class PercentMANAIncrease(PercentIncrease):
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        increase = player.fighter.max_mana + math.ceil(
-            player.fighter.max_mana * self.percentValue
+    def apply_affix(self, engine):
+        increase = engine.player.fighter.max_mana + math.ceil(
+            engine.player.fighter.max_mana * self.percentValue
         )
-        player.fighter.max_mana = increase
-        super().apply_affix(player)
+        engine.player.fighter.max_mana = increase
+        super().apply_affix(engine)
 
 
 class PercentMeeleIncrease(PercentIncrease):
@@ -74,12 +76,12 @@ class PercentMeeleIncrease(PercentIncrease):
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        increase = player.fighter.power + math.ceil(
-            player.fighter.power * self.percentValue
+    def apply_affix(self, engine):
+        increase = engine.player.fighter.power + math.ceil(
+            engine.player.fighter.power * self.percentValue
         )
-        player.fighter.power = increase
-        super().apply_affix(player)
+        engine.player.fighter.power = increase
+        super().apply_affix(engine)
 
 
 class PercentDamageReductionIncrease(PercentIncrease):
@@ -88,13 +90,13 @@ class PercentDamageReductionIncrease(PercentIncrease):
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        increase = player.fighter.defense + math.ceil(
-            player.fighter.defense * self.percentValue
+    def apply_affix(self, engine):
+        increase = engine.player.fighter.defense + math.ceil(
+            engine.player.fighter.defense * self.percentValue
         )
-        player.fighter.defense = increase
+        engine.player.fighter.defense = increase
 
-        super().apply_affix(player)
+        super().apply_affix(engine)
 
 
 class PercentStaminaIncrease(PercentIncrease):
@@ -104,13 +106,13 @@ class PercentStaminaIncrease(PercentIncrease):
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        increase = player.fighter.max_stamina + math.ceil(
-            player.fighter.max_stamina * self.percentValue
+    def apply_affix(self, engine):
+        increase = engine.player.fighter.max_stamina + math.ceil(
+            engine.player.fighter.max_stamina * self.percentValue
         )
-        player.fighter.max_stamina = increase
+        engine.player.fighter.max_stamina = increase
 
-        super().apply_affix(player)
+        super().apply_affix(engine)
 
 
 class FlatHPIncrease(FlatIncrease):
@@ -119,9 +121,9 @@ class FlatHPIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.max_hp += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.max_hp += self.flatValue
+        super().apply_affix(engine)
 
 
 class FlatMANAIncrease(FlatIncrease):
@@ -131,9 +133,9 @@ class FlatMANAIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.max_mana += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.max_mana += self.flatValue
+        super().apply_affix(engine)
 
 
 class FlatMeeleIncrease(FlatIncrease):
@@ -142,9 +144,9 @@ class FlatMeeleIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.power += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.power += self.flatValue
+        super().apply_affix(engine)
 
 
 class FlatDamageReductionIncrease(FlatIncrease):
@@ -153,9 +155,9 @@ class FlatDamageReductionIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.defense += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.defense += self.flatValue
+        super().apply_affix(engine)
 
 
 class FlatStaminaIncrease(FlatIncrease):
@@ -165,9 +167,9 @@ class FlatStaminaIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.max_stamina += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.max_stamina += self.flatValue
+        super().apply_affix(engine)
 
 
 class FlatAttacCountIncrease(FlatIncrease):
@@ -176,31 +178,47 @@ class FlatAttacCountIncrease(FlatIncrease):
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
 
-    def apply_affix(self, player):
-        player.fighter.attack_count += self.flatValue
-        super().apply_affix(player)
+    def apply_affix(self, engine):
+        engine.player.fighter.attack_count += self.flatValue
+        super().apply_affix(engine)
 
 
 class XPIncrease(Affix):
-    AFFIX_NAME = "Lucky"
+    AFFIX_NAME = "XP Increase"
 
     def __init__(self) -> None:
         super().__init__()
 
-    def apply_affix(self, player):
-        player.level.add_xp(
+    def apply_affix(self, engine):
+        engine.player.level.add_xp(
             random.randint(
-                int(player.level.xp_to_next_level / 2),
-                int(player.level.xp_to_next_level * 2),
+                int(engine.player.level.xp_to_next_level / 2),
+                int(engine.player.level.xp_to_next_level * 2),
             )
         )
 
-        super().apply_affix(player)
+        super().apply_affix(engine)
+
+class LuckyIncrease(Affix):
+    AFFIX_NAME = "Lucky"
+
+    def __init__(self,luckyAmount:int) -> None:
+        self.lukyAmount =luckyAmount
+        super().__init__()
+
+    def apply_affix(self, engine,):
+        super().apply_affix(engine)
+        for i in range(self.lukyAmount):
+            new_affix = engine.affixManager.rand_affix()
+            if not isinstance(new_affix,LuckyIncrease):
+                engine.affixManager.gain_affix(new_affix)
+                
+
 
 
 class AffixManager:
-    def __init__(self, player) -> None:
-        self.player = player
+    def __init__(self, engine) -> None:
+        self.engine = engine
         self.affixes = []
 
     def gain_affix(self, affix: Affix):
@@ -210,7 +228,7 @@ class AffixManager:
     def derive_affixes(self):
         for affix in self.affixes:
             if not affix.is_set:
-                affix.apply_affix(self.player)
+                affix.apply_affix(self.engine)
 
     def rand_affix(self):
         AFFIX_DIR = self.get_affix_dir()
@@ -218,8 +236,8 @@ class AffixManager:
             current_affix = AFFIX_DIR[random.randint(0, len(AFFIX_DIR) - 1)]
             if current_affix.CLASS_LOCK == PlayerClass.GENERIC:
                 return current_affix
-            elif current_affix.CLASS_LOCK == self.player.player_class:
-                return copy.deepcopy(current_affix)
+            elif current_affix.CLASS_LOCK == self.engine.player.player_class:
+                return current_affix
 
     def get_affix_dir(self):
         return [
@@ -235,6 +253,7 @@ class AffixManager:
             FlatStaminaIncrease(random.randint(1, 5)),
             FlatAttacCountIncrease(1),
             XPIncrease(),
+            LuckyIncrease(random.randint(3, 5)),
         ]
 
     def get_sepcific_affix(self, index: int):
