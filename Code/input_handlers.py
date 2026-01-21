@@ -379,6 +379,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x + 1,
             y=4,
             string=random_affix.AFFIX_NAME,
+            fg=random_affix.AFFIX_COLOR.value,
         )
 
     def ev_keydown(self, event):
@@ -1267,7 +1268,7 @@ class AffixCheatScreen(AskUserEventHandler):
         for i, affix_page in enumerate(affixesOnPage):
             affix_key = chr(ord("a") + i)
             affixString = f"({affix_key}) {affix_page.AFFIX_NAME}"
-            console.print(x + 1, y + i + 1, affixString)
+            console.print(x + 1, y + i + 1, text=affixString,fg=affix_page.AFFIX_COLOR.value)
 
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
         key = event.sym

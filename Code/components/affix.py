@@ -1,6 +1,6 @@
 import math
 import random
-import copy
+from color import AffixColor
 from components.settings import PlayerClass
 
 # To enhance add cl
@@ -11,6 +11,7 @@ from components.settings import PlayerClass
 class Affix():
     AFFIX_NAME = ""
     CLASS_LOCK = PlayerClass.GENERIC
+    AFFIX_COLOR = AffixColor.COMMON
 
     def __init__(self) -> None:
         self.is_set = False
@@ -140,6 +141,7 @@ class FlatMANAIncrease(FlatIncrease):
 
 class FlatMeeleIncrease(FlatIncrease):
     AFFIX_NAME = "Meele increase"
+    AFFIX_COLOR = AffixColor.RARE
 
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
@@ -174,6 +176,7 @@ class FlatStaminaIncrease(FlatIncrease):
 
 class FlatAttacCountIncrease(FlatIncrease):
     AFFIX_NAME = "Attack count increase"
+    AFFIX_COLOR = AffixColor.LEGENDARY
 
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
@@ -185,6 +188,7 @@ class FlatAttacCountIncrease(FlatIncrease):
 
 class XPIncrease(Affix):
     AFFIX_NAME = "XP Increase"
+    AFFIX_COLOR = AffixColor.UNCOMMON
 
     def __init__(self) -> None:
         super().__init__()
@@ -201,6 +205,7 @@ class XPIncrease(Affix):
 
 class LuckyIncrease(Affix):
     AFFIX_NAME = "Lucky"
+    AFFIX_COLOR = AffixColor.LEGENDARY
 
     def __init__(self,luckyAmount:int) -> None:
         self.lukyAmount =luckyAmount

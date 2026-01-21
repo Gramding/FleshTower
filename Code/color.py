@@ -1,3 +1,5 @@
+from enum import auto, Enum
+
 white = (0xFF, 0xFF, 0xFF)
 black = (0x0, 0x0, 0x0)
 red = (0xFF, 0x0, 0x0)
@@ -37,3 +39,11 @@ menu_text = white
 mage = (0, 0, 255)
 
 corpse_consumption = (255, 0, 0)
+
+
+class AffixColor(Enum):
+    COMMON = (255,255,255)
+    UNCOMMON = (30,255,0)
+    RARE = (0,112,221)
+    EPIC = (163,53,238)
+    LEGENDARY = (255,128,0)
