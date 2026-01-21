@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from components.settings import FOV
+from components.settings import FOV, PlayerClass
 
 import lzma
 import pickle
@@ -15,6 +15,7 @@ import exceptions
 from game_map import GameMap, GameWorld
 from message_log import MessageLog
 import render_functions
+from components.affix import AffixManager
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -32,6 +33,7 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
+        self.affixManager = AffixManager(self.player)
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
@@ -61,25 +63,23 @@ class Engine:
         render_functions.render_tower_floor(
             console=console, tower_floor=self.game_world.current_floor, location=(0, 49)
         )
-        render_functions.render_names_at_mouse_location(
-            console=console, engine=self
-        )
+        render_functions.render_names_at_mouse_location(console=console, engine=self)
 
-        if self.player.is_mage:
+        if self.player.player_class == PlayerClass.MAGE:
             render_functions.render_mana_bar(
                 console=console,
                 current_value=int(self.player.fighter.mana),
                 maximum_value=self.player.fighter.max_mana,
                 total_width=20,
             )
-        elif self.player.is_rouge:
+        elif self.player.player_class == PlayerClass.ROUGE:
             render_functions.render_stamina_bar(
                 console=console,
                 current_value=self.player.fighter.stamina,
                 maximum_value=self.player.fighter.max_stamina,
                 total_width=20,
             )
-        elif self.player.is_fighter:
+        elif self.player.player_class == PlayerClass.FIGHTER:
             render_functions.render_mass_bar(
                 console=console,
                 current_value=self.player.fighter.mass,

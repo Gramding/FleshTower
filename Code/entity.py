@@ -5,6 +5,7 @@ import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 from render_order import RenderOrder
+from components.settings import PlayerClass
 
 if TYPE_CHECKING:
     from components.ai import BaseAI
@@ -84,7 +85,6 @@ class Entity:
 
 
 class Actor(Entity):
-
     def __init__(
         self,
         *,
@@ -129,6 +129,16 @@ class Actor(Entity):
         self.effect = effect
         self.logbook: LogBook = logbook
         self.currency = 0
+
+    @property
+    def player_class(self):
+        if self.is_rouge:
+            return PlayerClass.ROUGE
+        elif self.is_mage:
+            return PlayerClass.MAGE
+        elif self.is_fighter:
+            return PlayerClass.FIGHTER
+        return ""
 
     @property
     def is_alive(self) -> bool:

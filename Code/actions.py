@@ -4,7 +4,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import color
 import exceptions
 import random
-from components.settings import GENERAL_CHEATS
+from components.settings import GENERAL_CHEATS, PlayerClass
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -170,7 +170,7 @@ class MeleeAction(ActionWithDirection):
     def typal_damage(self) -> None:
         # this function is supposed to represent damages to the class
         # specific functions ie. fighter takes mass damage
-        if self.engine.player.is_fighter:
+        if self.engine.player.player_class == PlayerClass.FIGHTER:
             damage_to_mass_probability = random.randint(0, 100)
             if damage_to_mass_probability <= (
                 10 - self.engine.player.fighter.mass_level
@@ -206,7 +206,7 @@ class BumpAction(ActionWithDirection):
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":
-                if self.entity.is_rouge:
+                if self.entity.player_class == PlayerClass.ROUGE:
                     MovementCheck(dx=self.dx, dy=self.dy, entity=self.entity)
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:

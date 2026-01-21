@@ -1,5 +1,6 @@
 from engine import Engine
 import color
+from components.settings import PlayerClass
 
 
 class Spell:
@@ -127,7 +128,7 @@ class SpellBook:
         self.spells.append(spell)
 
     def learn_spell(self, spell: Spell, engine: Engine) -> bool:
-        if engine.player.is_mage:
+        if engine.player.player_class == PlayerClass.MAGE:
             if len(engine.player.spellbook.spells) > 0:
                 for spellbook_spell in engine.player.spellbook.spells:
                     if spellbook_spell.name == spell.name:

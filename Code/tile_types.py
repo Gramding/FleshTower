@@ -68,3 +68,11 @@ def randWall() -> np.ndarray:
         light=(9000, (255, 255, 255), (0, 0, 0)),
     )
     return wall
+
+
+chest = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(0, (255, 255, 255), (0, 0, 0)),
+    light=(0, (255, 255, 255), (0, 0, 0)),
+)

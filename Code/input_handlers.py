@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 import os
 import copy
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
@@ -8,7 +9,15 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-from components.settings import CHEATS, GENERAL_CHEATS, GENERAL_CHEAT_ACTIVATIONS
+from numpy import array_split
+
+from components.settings import (
+    CHEATS,
+    GENERAL_CHEATS,
+    GENERAL_CHEAT_ACTIVATIONS,
+    PlayerClass,
+)
+import components.affix as affix
 
 # from procgen import item_chances, enemy_chances
 # from components.procgen_chances import item_chances
@@ -20,21 +29,10 @@ if TYPE_CHECKING:
 
 MOVE_KEYS = {
     # Arrow keys.
-    tcod.event.KeySym.UP: (0, -1),
-    tcod.event.KeySym.DOWN: (0, 1),
-    tcod.event.KeySym.LEFT: (-1, 0),
-    tcod.event.KeySym.RIGHT: (1, 0),
-    tcod.event.KeySym.HOME: (-1, -1),
-    tcod.event.KeySym.END: (-1, 1),
-    # Numpad keys.
-    tcod.event.KeySym.KP_1: (-1, 1),
-    tcod.event.KeySym.KP_2: (0, 1),
-    tcod.event.KeySym.KP_3: (1, 1),
-    tcod.event.KeySym.KP_4: (-1, 0),
-    tcod.event.KeySym.KP_6: (1, 0),
-    tcod.event.KeySym.KP_7: (-1, -1),
-    tcod.event.KeySym.KP_8: (0, -1),
-    tcod.event.KeySym.KP_9: (1, -1),
+    100: (0, -1),
+    101: (0, 1),
+    102: (-1, 0),
+    103: (1, 0),
 }
 
 WAIT_KEYS = {
@@ -186,20 +184,21 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
     def on_render(self, console: tcod.console.Console):
         super().on_render(console)
+        AFFIX_DIR_LEN = len(self.engine.affixManager.affixes)
+
         if self.engine.player.x <= 30:
             x = 40
         else:
             x = 0
 
         y = 0
-        self.engine.player.fighter.derive_stats()
         width = len(self.TITLE) + 30
 
         console.draw_frame(
             x=x,
             y=y,
             width=width,
-            height=len(self.engine.player.fighter.stats) + 20,
+            height=14 + AFFIX_DIR_LEN,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -240,115 +239,18 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
-        console.print(
-            x + 1,
-            5,
-            text="┤Vital Aberrations├",
-            alignment=libtcodpy.CENTER,
-            width=width - 2,
-            height=1,
-        )
-
-        # Tendon Mass
-        tm = self.engine.player.fighter.stats["TM"]
-
-        # Nerve Sync
-        ns = self.engine.player.fighter.stats["NS"]
-
-        # Flesh Integrity
-        fi = self.engine.player.fighter.stats["FI"]
-
-        # Cerebral Drift
-        cd = self.engine.player.fighter.stats["CD"]
-
-        # Perceptual Echo
-        pe = self.engine.player.fighter.stats["PE"]
-
-        # Visceral Influence
-        vi = self.engine.player.fighter.stats["VI"]
-        # Descriptors
-        console.print(x=x + 24, y=7, text="Val  | Mod")
-        # STAT
-        text = "Strength"
-        console.print(
-            x=x + 1,
-            y=8,
-            text=f"{text:<23}: {tm} ",
-        )
-        console.print(
-            x=x + 29,
-            y=8,
-            text=f"| {self.engine.player.fighter.get_modifier_value(tm)}",
-        )
-
-        # STAT
-        text = "Dexterity"
-        console.print(
-            x=x + 1,
-            y=9,
-            text=f"{text:<23}: {ns} ",
-        )
-        console.print(
-            x=x + 29,
-            y=9,
-            text=f"| {self.engine.player.fighter.get_modifier_value(ns)}",
-        )
-
-        # STAT
-        text = "Constitution"
-        console.print(
-            x=x + 1,
-            y=10,
-            text=f"{text:<23}: {fi} ",
-        )
-        console.print(
-            x=x + 29,
-            y=10,
-            text=f"| {self.engine.player.fighter.get_modifier_value(fi)}",
-        )
-
-        # STAT
-        text = "Intelligence"
-        console.print(
-            x=x + 1,
-            y=11,
-            text=f"{text:<23}: {cd} ",
-        )
-        console.print(
-            x=x + 29,
-            y=11,
-            text=f"| {self.engine.player.fighter.get_modifier_value(cd)}",
-        )
-
-        # STAT
-        text = "Wisdom"
-        console.print(
-            x=x + 1,
-            y=12,
-            text=f"{text:<23}: {pe} ",
-        )
-        console.print(
-            x=x + 29,
-            y=12,
-            text=f"| {self.engine.player.fighter.get_modifier_value(pe)}",
-        )
-
-        # STAT
-        text = "Charisma"
-        console.print(
-            x=x + 1,
-            y=13,
-            text=f"{text:<23}: {vi} ",
-        )
-        console.print(
-            x=x + 29,
-            y=13,
-            text=f"| {self.engine.player.fighter.get_modifier_value(vi)}",
-        )
-
+        # TODO dispaly new modifiers
+        for index, player_affix in enumerate(self.engine.affixManager.affixes):
+            console.print(
+                x=x + 1,
+                y=6 + index,
+                text=player_affix.AFFIX_NAME,
+                width=width - 2,
+                height=1,
+            )
         console.draw_rect(
             x=x + 1,
-            y=15,
+            y=6 + AFFIX_DIR_LEN,
             width=width - 2,
             height=1,
             ch=ord("─"),
@@ -357,8 +259,8 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
         console.print(
-            x + 1,
-            15,
+            x=x + 1,
+            y=7 + AFFIX_DIR_LEN,
             text="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
@@ -367,31 +269,31 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         text = "Meele Damage"
         console.print(
             x=x + 1,
-            y=17,
+            y=8 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.power}",
         )
-        text = "Damage Reduction"
+        text = "Defense"
         console.print(
             x=x + 1,
-            y=18,
-            text=f"{text:<20}: {self.engine.player.fighter.damage_reduction}",
+            y=9 + AFFIX_DIR_LEN,
+            text=f"{text:<20}: {self.engine.player.fighter.defense}",
         )
         text = "Spell Damage"
         console.print(
             x=x + 1,
-            y=19,
+            y=10 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.spell_damage_bonus}",
         )
         text = "Price Discount"
         console.print(
             x=x + 1,
-            y=20,
+            y=11 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.price_discount}",
         )
         text = "Attack Count"
         console.print(
             x=x + 1,
-            y=21,
+            y=12 + AFFIX_DIR_LEN,
             text=f"{text:<20}: {self.engine.player.fighter.attack_count}",
         )
 
@@ -462,7 +364,7 @@ class LevelUpEventHandler(AskUserEventHandler):
             x=x,
             y=0,
             width=40,
-            height=len(self.engine.player.fighter.stats) + 5,
+            height=13,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
@@ -470,79 +372,20 @@ class LevelUpEventHandler(AskUserEventHandler):
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
         console.print(x=x + 1, y=2, string="Select the towers blessing")
-        tm = self.engine.player.fighter.stats["TM"]
 
-        # Nerve Sync
-        ns = self.engine.player.fighter.stats["NS"]
+        self.affix = random_affix = self.engine.affixManager.rand_affix()
 
-        # Flesh Integrity
-        fi = self.engine.player.fighter.stats["FI"]
-
-        # Cerebral Drift
-        cd = self.engine.player.fighter.stats["CD"]
-
-        # Perceptual Echo
-        pe = self.engine.player.fighter.stats["PE"]
-
-        # Visceral Influence
-        vi = self.engine.player.fighter.stats["VI"]
         console.print(
             x=x + 1,
             y=4,
-            string=f"a) Tendon Mass (current: {tm})",
-        )
-        console.print(
-            x=x + 1,
-            y=5,
-            string=f"b) Nerve Sync (current: {ns})",
-        )
-        console.print(
-            x=x + 1,
-            y=6,
-            string=f"c) Flesh Integrity (current: {fi})",
-        )
-        console.print(
-            x=x + 1,
-            y=7,
-            string=f"d) Cerebral Drift (current: {cd})",
-        )
-        console.print(
-            x=x + 1,
-            y=8,
-            string=f"e) Perceptual Echo (current: {pe})",
-        )
-        console.print(
-            x=x + 1,
-            y=9,
-            string=f"f) Visceral Influence (current: {vi})",
+            string=random_affix.AFFIX_NAME,
         )
 
     def ev_keydown(self, event):
-        player = self.engine.player
-        key = event.sym
-        index = key - tcod.event.KeySym.A
+        self.engine.affixManager.gain_affix(self.affix)
+        self.engine.affixManager.derive_affixes()
+        self.engine.player.level.increase_level()
 
-        if 0 <= index <= 5:
-            if index == 0:
-                player.fighter.bonus_stats["TM"] += 1
-            elif index == 1:
-                player.fighter.bonus_stats["NS"] += 1
-            elif index == 2:
-                player.fighter.bonus_stats["FI"] += 1
-            elif index == 3:
-                player.fighter.bonus_stats["CD"] += 1
-            elif index == 4:
-                player.fighter.bonus_stats["PE"] += 1
-            elif index == 5:
-                player.fighter.bonus_stats["VI"] += 1
-
-            self.engine.player.level.increase_level()
-            self.engine.player.fighter.derive_stats(True)
-
-        else:
-            self.engine.message_log.add_message("Invalide selection", color.invalid)
-
-            return None
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(self, event):
@@ -885,6 +728,18 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+def get_event_by_id(id: int):
+    from components.settings import KEYBINDS
+
+    currentKey = {}
+
+    for section in KEYBINDS:
+        for key in KEYBINDS[section]:
+            if KEYBINDS[section][key]["ID"] == id:
+                currentKey = KEYBINDS[section][key]
+    return currentKey
+
+
 class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
@@ -893,65 +748,106 @@ class MainGameEventHandler(EventHandler):
         modifier = event.mod
 
         player = self.engine.player
-
-        if key == tcod.event.KeySym.PERIOD and modifier & (
-            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        c_event = get_event_by_id(1)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
         ):
             return actions.TakeStairsAction(player)
-
-        if key == tcod.event.KeySym.C and modifier & (
-            tcod.event.KeySym.LSHIFT | tcod.event.KeySym.RSHIFT
+        c_event = get_event_by_id(2)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
         ):
             return actions.ConsumeCorpseAction(player)
-
-        if key == tcod.event.KeySym.L:
+        c_event = get_event_by_id(11)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return ConsumptionScreenEventHandler(self.engine)
 
-        if key == tcod.event.KeySym.P and self.engine.player.is_mage:
+        c_event = get_event_by_id(10)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return SpellBookActivateHandler(self.engine)
         target = get_target_vendor(engine=self.engine)
-        if key == tcod.event.KeySym.T and target and "Organ" in target.name:
+        c_event = get_event_by_id(3)
+        if (
+            key == tcod.event.KeySym(c_event["KEY"])
+            and modifier == tcod.event.Modifier(c_event["MOD"])
+            and target
+            and "Organ" in target.name
+        ):
             return ShopActivateHandler(engine=self.engine, target=target)
 
-        if key in MOVE_KEYS:
-            dx, dy = MOVE_KEYS[key]
-            # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
-            if (
-                self.engine.player.is_rouge
-                and tcod.event.Modifier.LSHIFT in modifier
-                and self.engine.player.fighter.stamina >= 2
-            ):
-                dx = dx * 2
-                dy = dy * 2
-                # stamina is now handlede by the bump action
-                # self.engine.player.fighter.stamina -= 2
-            elif (
-                self.engine.player.fighter.stamina
-                < self.engine.player.fighter.max_stamina
-            ):
-                # if player is not sprinting they regain 1 stamina per movement
-                self.engine.player.fighter.stamina += 1
-            action = BumpAction(player, dx, dy)
-        elif key in WAIT_KEYS:
-            action = WaitAction(player)
+        for movement_id in range(100, 104):
+            c_event = get_event_by_id(movement_id)
+            if c_event["ID"] in MOVE_KEYS and key == c_event["KEY"]:
+                dx, dy = MOVE_KEYS[c_event["ID"]]
+                # if player ist rouge they can sprint this consumes stamina. in order to sprint the input is multiplied by 2
+                if (
+                    self.engine.player.player_class == PlayerClass.ROUGE
+                    and tcod.event.Modifier(c_event["MOD"]) in modifier
+                    and self.engine.player.fighter.stamina >= 2
+                ):
+                    dx = dx * 2
+                    dy = dy * 2
+                    # stamina is now handlede by the bump action
+                    # self.engine.player.fighter.stamina -= 2
+                elif (
+                    self.engine.player.fighter.stamina
+                    < self.engine.player.fighter.max_stamina
+                ):
+                    # if player is not sprinting they regain 1 stamina per movement
+                    self.engine.player.fighter.stamina += 1
+                return BumpAction(player, dx, dy)
+            elif key in WAIT_KEYS:
+                return WaitAction(player)
 
-        elif key == tcod.event.KeySym.ESCAPE:
+        c_event = get_event_by_id(5)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             raise SystemExit()
-        elif key == tcod.event.KeySym.V:
+
+        c_event = get_event_by_id(12)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return HistoryViewer(self.engine)
-        elif key == tcod.event.KeySym.G:
+
+        c_event = get_event_by_id(4)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             action = PickupAction(player)
-        elif key == tcod.event.KeySym.I:
+
+        c_event = get_event_by_id(6)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return InventoryActivateHandler(self.engine)
-        elif key == tcod.event.KeySym.D:
+
+        c_event = get_event_by_id(7)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return InventoryDropHandler(self.engine)
-        elif key == tcod.event.KeySym.C:
+
+        c_event = get_event_by_id(8)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return CharacterScreenEventHandler(self.engine)
-        elif key == tcod.event.KeySym.SLASH:
+        if key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)
-        elif key == tcod.event.KeySym.E:
+
+        c_event = get_event_by_id(9)
+        if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
+            c_event["MOD"]
+        ):
             return EquipmentScreen(self.engine)
-        elif key == tcod.event.KeySym.F1 and CHEATS:
+
+        if key == tcod.event.KeySym.F1 and CHEATS:
             return CheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F2 and CHEATS:
             return EnemyCheatActiveHandler(self.engine)
@@ -959,6 +855,8 @@ class MainGameEventHandler(EventHandler):
             return GerneralCheatActiveHandler(self.engine)
         elif key == tcod.event.KeySym.F4 and CHEATS:
             return GerneralCheatActivationActiveHandler(self.engine)
+        elif key == tcod.event.KeySym.F5 and CHEATS:
+            return AffixCheatActiveHandler(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1071,14 +969,6 @@ class EquipmentScreen(AskUserEventHandler):
                         line = line + f" Attack: {slot.equippable.power_bonus}"
                     console.print(x=x + 13, y=y, string=line)
                     x += 13
-                    for bonus in slot.equippable.stat_bonus:
-                        console.print(
-                            x=x,
-                            y=y + 1,
-                            string=f"{bonus}:{slot.equippable.stat_bonus[bonus]}",
-                        )
-                        x += 5
-
                     x = x_save
 
                 y += 2
@@ -1340,3 +1230,71 @@ class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
                     self.engine.player.level.xp_to_next_level
                 )
                 return LevelUpEventHandler(engine=self.engine)
+
+
+class AffixCheatScreen(AskUserEventHandler):
+    TITLE = "Affix cheats"
+
+    def on_render(self, console):
+        if self.engine.current_cheat_page > len(self.engine.enemy_chances) - 1:
+            self.engine.current_cheat_page = 0
+        affixesOnPage = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )[self.engine.current_cheat_page]
+
+        super().on_render(console)
+        x = 0
+        y = 0
+        title = f"{self.TITLE} Page {self.engine.current_cheat_page}"
+        width = len(title) + 25
+        pages = []
+        for floor in self.engine.enemy_chances:
+            pages.append(floor)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=3 + len(affixesOnPage),
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+        # this increment is for not writin in title line
+        y += 1
+        for i, affix_page in enumerate(affixesOnPage):
+            affix_key = chr(ord("a") + i)
+            affixString = f"({affix_key}) {affix_page.AFFIX_NAME}"
+            console.print(x + 1, y + i + 1, affixString)
+
+    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.A
+        affixesPages = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )
+        affixesOnPage = array_split(
+            self.engine.affixManager.get_affix_dir(),
+            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
+        )[self.engine.current_cheat_page]
+
+        if not cheatNav(engine=self.engine, key=key, arr=affixesPages):
+            if 0 <= index <= 26:
+                try:
+                    affix_selected = affixesOnPage[index]
+                except IndexError:
+                    self.engine.message_log.add_message(
+                        "Invalid input slot.", color.invalid
+                    )
+                    return None
+                return self.on_affix_selected(affix_selected)
+        return super().ev_keydown(event)
+
+
+class AffixCheatActiveHandler(AffixCheatScreen):
+    def on_affix_selected(self, affix: affix.Affix) -> Optional[ActionOrHandler]:
+        self.engine.affixManager.gain_affix(affix)
+        self.engine.message_log.add_message(f"The Tower grants you {affix.AFFIX_NAME}")

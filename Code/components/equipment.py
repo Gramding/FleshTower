@@ -84,22 +84,6 @@ class Equipment(BaseComponent):
 
         return bonus
 
-    def stat_bonus(self, action_type, slot_give):
-        multiplyer = 1 if action_type == "+" else -1
-        # if not self.check_relevant_equip(equip, slot_give):
-        slot = getattr(self, slot_give)
-        for i in slot.equippable.stat_bonus:
-            self.engine.player.fighter.bonus_stats[i] += (
-                multiplyer * slot.equippable.stat_bonus[i]
-            )
-        self.engine.player.fighter.bonus_power += (
-            multiplyer * slot.equippable.power_bonus
-        )
-        self.engine.player.fighter.bonus_defense += (
-            multiplyer * slot.equippable.defense_bonus
-        )
-        self.engine.player.fighter.derive_stats()
-
     def item_is_equipped(self, item: Item) -> bool:
         # new logic allows for dynamic check if any slot is currently equipped
         for i in self.__dict__:
@@ -121,7 +105,6 @@ class Equipment(BaseComponent):
             self.unequip_from_slot(slot, add_message)
 
         setattr(self, slot, item)
-        self.stat_bonus("+", slot)
 
         if add_message:
             self.equip_message(item.name)
@@ -133,7 +116,6 @@ class Equipment(BaseComponent):
             self.unequip_message(current_item.name)
         # stats need to be done before item is removed.
         # to remove stats stats need to be known :D
-        self.stat_bonus("-", slot)
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
