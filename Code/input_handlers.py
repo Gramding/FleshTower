@@ -751,6 +751,8 @@ class MainGameEventHandler(EventHandler):
 
         if modifier == tcod.event.Modifier.NUM:
             modifier = tcod.event.Modifier.NONE
+        if modifier == tcod.event.Modifier(4097):
+            modifier = tcod.event.Modifier.LSHIFT
 
         player = self.engine.player
         c_event = get_event_by_id(1)

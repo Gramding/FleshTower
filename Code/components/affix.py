@@ -8,7 +8,7 @@ from components.settings import PlayerClass
 # add new class to the AFFIX_DIR
 
 
-class Affix():
+class Affix:
     AFFIX_NAME = ""
     CLASS_LOCK = PlayerClass.GENERIC
     AFFIX_COLOR = AffixColor.COMMON
@@ -73,6 +73,7 @@ class PercentMANAIncrease(PercentIncrease):
 
 class PercentMeeleIncrease(PercentIncrease):
     AFFIX_NAME = "Meele increase"
+    AFFIX_COLOR = AffixColor.EPIC
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -87,6 +88,7 @@ class PercentMeeleIncrease(PercentIncrease):
 
 class PercentDamageReductionIncrease(PercentIncrease):
     AFFIX_NAME = "Damage Reduction increase"
+    AFFIX_COLOR = AffixColor.RARE
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -103,6 +105,7 @@ class PercentDamageReductionIncrease(PercentIncrease):
 class PercentStaminaIncrease(PercentIncrease):
     AFFIX_NAME = "Stamina increase"
     CLASS_LOCK = PlayerClass.ROUGE
+    AFFIX_COLOR = AffixColor.UNCOMMON
 
     def __init__(self, percentValue: float) -> None:
         super().__init__(percentValue, self.AFFIX_NAME)
@@ -130,6 +133,7 @@ class FlatHPIncrease(FlatIncrease):
 class FlatMANAIncrease(FlatIncrease):
     AFFIX_NAME = "Mana increase"
     CLASS_LOCK = PlayerClass.MAGE
+    AFFIX_COLOR = AffixColor.UNCOMMON
 
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
@@ -153,6 +157,7 @@ class FlatMeeleIncrease(FlatIncrease):
 
 class FlatDamageReductionIncrease(FlatIncrease):
     AFFIX_NAME = "Damage reduction increase"
+    AFFIX_COLOR = AffixColor.RARE
 
     def __init__(self, flatValue: int) -> None:
         super().__init__(flatValue, self.AFFIX_NAME)
@@ -203,22 +208,24 @@ class XPIncrease(Affix):
 
         super().apply_affix(engine)
 
+
 class LuckyIncrease(Affix):
     AFFIX_NAME = "Lucky"
     AFFIX_COLOR = AffixColor.LEGENDARY
 
-    def __init__(self,luckyAmount:int) -> None:
-        self.lukyAmount =luckyAmount
+    def __init__(self, luckyAmount: int) -> None:
+        self.lukyAmount = luckyAmount
         super().__init__()
 
-    def apply_affix(self, engine,):
+    def apply_affix(
+        self,
+        engine,
+    ):
         super().apply_affix(engine)
         for i in range(self.lukyAmount):
             new_affix = engine.affixManager.rand_affix()
-            if not isinstance(new_affix,LuckyIncrease):
+            if not isinstance(new_affix, LuckyIncrease):
                 engine.affixManager.gain_affix(new_affix)
-                
-
 
 
 class AffixManager:
