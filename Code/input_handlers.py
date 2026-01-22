@@ -747,6 +747,10 @@ class MainGameEventHandler(EventHandler):
 
         key = event.sym
         modifier = event.mod
+        # print(f"Key:{key}\nMod:{modifier}")
+
+        if modifier == tcod.event.Modifier.NUM:
+            modifier = tcod.event.Modifier.NONE
 
         player = self.engine.player
         c_event = get_event_by_id(1)
@@ -1268,7 +1272,9 @@ class AffixCheatScreen(AskUserEventHandler):
         for i, affix_page in enumerate(affixesOnPage):
             affix_key = chr(ord("a") + i)
             affixString = f"({affix_key}) {affix_page.AFFIX_NAME}"
-            console.print(x + 1, y + i + 1, text=affixString,fg=affix_page.AFFIX_COLOR.value)
+            console.print(
+                x + 1, y + i + 1, text=affixString, fg=affix_page.AFFIX_COLOR.value
+            )
 
     def ev_keydown(self, event) -> Optional[ActionOrHandler]:
         key = event.sym
