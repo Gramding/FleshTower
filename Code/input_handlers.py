@@ -182,9 +182,15 @@ class AskUserEventHandler(EventHandler):
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Stats"
 
+    def __init__(self, engine):
+        super().__init__(engine)
+        self.log_lenght = len(engine.affixManager.message_log.messages)
+        self.cursor = self.log_lenght - 1
+
     def on_render(self, console: tcod.console.Console):
         super().on_render(console)
         AFFIX_DIR_LEN = len(self.engine.affixManager.affixes)
+        affix_max_len = console.height - 26
 
         if self.engine.player.x <= 30:
             x = 40
@@ -198,7 +204,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=14 + AFFIX_DIR_LEN,
+            height=14 + affix_max_len,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -240,17 +246,27 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
         # TODO dispaly new modifiers
-        for index, player_affix in enumerate(self.engine.affixManager.affixes):
-            console.print(
-                x=x + 1,
-                y=6 + index,
-                text=player_affix.AFFIX_NAME,
-                width=width - 2,
-                height=1,
-            )
+        # for index, player_affix in enumerate(self.engine.affixManager.affixes):
+        #     console.print(
+        #         x=x + 1,
+        #         y=6 + index,
+        #         text=player_affix.AFFIX_NAME,
+        #         width=width - 2,
+        #         height=1,
+        #     )
+
+        self.engine.affixManager.message_log.render_messages(
+            console,
+            1,
+            6,
+            console.width - 2,
+            24,
+            self.engine.affixManager.message_log.messages[: self.cursor + 1],
+        )
+
         console.draw_rect(
             x=x + 1,
-            y=6 + AFFIX_DIR_LEN,
+            y=6 + affix_max_len,
             width=width - 2,
             height=1,
             ch=ord("─"),
@@ -260,7 +276,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
         console.print(
             x=x + 1,
-            y=7 + AFFIX_DIR_LEN,
+            y=7 + affix_max_len,
             text="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
@@ -269,45 +285,50 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         text = "Meele Damage"
         console.print(
             x=x + 1,
-            y=8 + AFFIX_DIR_LEN,
+            y=8 + affix_max_len,
             text=f"{text:<20}: {self.engine.player.fighter.power}",
         )
         text = "Defense"
         console.print(
             x=x + 1,
-            y=9 + AFFIX_DIR_LEN,
+            y=9 + affix_max_len,
             text=f"{text:<20}: {self.engine.player.fighter.defense}",
         )
         text = "Spell Damage"
         console.print(
             x=x + 1,
-            y=10 + AFFIX_DIR_LEN,
+            y=10 + affix_max_len,
             text=f"{text:<20}: {self.engine.player.fighter.spell_damage_bonus}",
         )
         text = "Price Discount"
         console.print(
             x=x + 1,
-            y=11 + AFFIX_DIR_LEN,
+            y=11 + affix_max_len,
             text=f"{text:<20}: {self.engine.player.fighter.price_discount}",
         )
         text = "Attack Count"
         console.print(
             x=x + 1,
-            y=12 + AFFIX_DIR_LEN,
+            y=12 + affix_max_len,
             text=f"{text:<20}: {self.engine.player.fighter.attack_count}",
         )
 
     def ev_keydown(self, event):
-        key = event.sym
-        mod = event.mod
-        if key == tcod.event.KeySym.E and mod == tcod.event.Modifier.LCTRL:
-            for i in self.engine.player.equipment.__dict__:
-                if "_" not in i and "parent" not in i:
-                    slot = getattr(self.engine.player.equipment, i)
-                    if slot:
-                        self.engine.player.equipment.unequip_from_slot(i, True)
-
-        return super().ev_keydown(event)
+        if event.sym in CURSOR_Y_KEYS:
+            adjust = CURSOR_Y_KEYS[event.sym]
+            if adjust < 0 and self.cursor == 0:
+                self.cursor = self.log_lenght - 1
+            elif adjust > 0 and self.cursor == self.log_lenght - 1:
+                self.cursor = 0
+            else:
+                self.cursor = max(0, min(self.cursor + adjust, self.log_lenght - 1))
+        elif event.sym == tcod.event.KeySym.HOME:
+            self.cursor = 0
+        elif event.sym == tcod.event.KeySym.END:
+            self.cursor = self.log_lenght - 1
+        else:
+            return MainGameEventHandler(self.engine)
+        return None
 
 
 class ConsumptionScreenEventHandler(AskUserEventHandler):

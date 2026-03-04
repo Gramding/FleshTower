@@ -2,6 +2,7 @@ import math
 import random
 from color import AffixColor
 from components.settings import PlayerClass
+from message_log import MessageLog
 
 # To enhance add cl
 # ass wich derives from Affix and remember to also
@@ -232,9 +233,11 @@ class AffixManager:
     def __init__(self, engine) -> None:
         self.engine = engine
         self.affixes = []
+        self.message_log = MessageLog()
 
     def gain_affix(self, affix: Affix):
         self.affixes.append(affix)
+        self.message_log.add_message(text=affix.AFFIX_NAME)
         self.derive_affixes()
 
     def derive_affixes(self):

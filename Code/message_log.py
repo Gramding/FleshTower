@@ -70,3 +70,21 @@ class MessageLog:
                 y_offset -= 1
                 if y_offset < 0:
                     return
+
+    @classmethod
+    def render_messages_non_reversed(
+        cls,
+        console: tcod.console.Console,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        messages: Reversible[Message],
+    ) -> None:
+        y_offset = y
+        for message in messages:
+            for line in list(cls.wrap(message.full_text, width)):
+                console.print(x=x, y=y + y_offset, text=line, fg=message.fg)
+                y_offset += 1
+                if y_offset > height:
+                    return
