@@ -245,15 +245,6 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
             bg_blend=libtcodpy.BKGND_MULTIPLY,
         )
-        # TODO dispaly new modifiers
-        # for index, player_affix in enumerate(self.engine.affixManager.affixes):
-        #     console.print(
-        #         x=x + 1,
-        #         y=6 + index,
-        #         text=player_affix.AFFIX_NAME,
-        #         width=width - 2,
-        #         height=1,
-        #     )
 
         self.engine.affixManager.message_log.render_messages(
             console,
