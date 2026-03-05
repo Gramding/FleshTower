@@ -255,6 +255,15 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             self.engine.affixManager.message_log.messages[: self.cursor + 1],
         )
 
+        console.print(
+            x=x + 1,
+            y=5,
+            text="┤Affixes├",
+            alignment=libtcodpy.CENTER,
+            width=width - 2,
+            height=1,
+        )
+
         console.draw_rect(
             x=x + 1,
             y=6 + affix_max_len,
@@ -267,7 +276,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
         console.print(
             x=x + 1,
-            y=7 + affix_max_len,
+            y=6 + affix_max_len,
             text="┤Behavioral Deviations├",
             alignment=libtcodpy.CENTER,
             width=width - 2,
