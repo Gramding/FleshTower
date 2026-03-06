@@ -99,6 +99,8 @@ class Fighter(BaseComponent):
         if self.engine.player is self.parent:
             death_message = "Your flesh becomes part of the tower"
             death_message_color = color.player_die
+            self.engine.scoreboard.add_score(self.engine.player.level.xp_given)
+            self.engine.scoreboard.save()
         else:
             death_message = f"{self.parent.name} returns to the tower"
             death_message_color = color.enemy_die

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from components.settings import FOV, PlayerClass
+from components.scoreboard import Scoreboard
 
 import lzma
 import pickle
@@ -34,6 +35,7 @@ class Engine:
         self.mouse_location = (0, 0)
         self.player = player
         self.affixManager = AffixManager(self)
+        self.scoreboard = Scoreboard.load_scoreboard()
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:

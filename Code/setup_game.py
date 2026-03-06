@@ -80,6 +80,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             "[N] New try?",
             "[C] Continue last game",
             "[K] Keybinds",
+            "[S] Scoreboard",
             "[Q] Quit",
         ]):
             console.print(
@@ -123,6 +124,19 @@ class MainMenu(input_handlers.BaseEventHandler):
                     text = f"{text}{bind}:{KEYBINDS[section][bind]['NAME']}\n"
                 text = f"{text}\n\n\n"
 
+            return input_handlers.PopupMessage(
+                self, text, halved=False, alignment=libtcodpy.CENTER
+            )
+        elif event.sym == tcod.event.KeySym.S:
+            text = ""
+            from components.scoreboard import Scoreboard
+
+            board = Scoreboard.load_scoreboard()
+            sorted_scores = dict(
+                reversed(sorted(board.scores.items(), key=lambda item: item[1]))
+            )
+            for key in sorted_scores.keys():
+                text = f"{text}{key} : {sorted_scores[key]}\n"
             return input_handlers.PopupMessage(
                 self, text, halved=False, alignment=libtcodpy.CENTER
             )

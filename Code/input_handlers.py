@@ -1258,6 +1258,8 @@ class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
                     self.engine.player.level.xp_to_next_level
                 )
                 return LevelUpEventHandler(engine=self.engine)
+            case "die":
+                self.engine.player.fighter.die()
 
 
 class AffixCheatScreen(AskUserEventHandler):

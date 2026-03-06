@@ -14,6 +14,7 @@ GENERAL_CHEAT_ACTIVATIONS = [
     "current_floor_+",
     "current_floor_-",
     "level_up",
+    "die",
 ]
 
 
@@ -22,9 +23,24 @@ GENERAL_CHEAT_ACTIVATIONS = [
 
 KEYBINDS = {
     "Movement": {
-        "UP": {"NAME": "Move up", "ID": 100, "KEY": event.KeySym.UP, "MOD": event.Modifier.LSHIFT},
-        "DOWN": {"NAME": "Move down", "ID": 101, "KEY": event.KeySym.DOWN, "MOD": event.Modifier.LSHIFT},
-        "LEFT": {"NAME": "Move left", "ID": 102, "KEY": event.KeySym.LEFT, "MOD": event.Modifier.LSHIFT},
+        "UP": {
+            "NAME": "Move up",
+            "ID": 100,
+            "KEY": event.KeySym.UP,
+            "MOD": event.Modifier.LSHIFT,
+        },
+        "DOWN": {
+            "NAME": "Move down",
+            "ID": 101,
+            "KEY": event.KeySym.DOWN,
+            "MOD": event.Modifier.LSHIFT,
+        },
+        "LEFT": {
+            "NAME": "Move left",
+            "ID": 102,
+            "KEY": event.KeySym.LEFT,
+            "MOD": event.Modifier.LSHIFT,
+        },
         "RIGHT": {
             "NAME": "Move right",
             "ID": 103,
@@ -45,8 +61,18 @@ KEYBINDS = {
             "KEY": event.KeySym.C,
             "MOD": event.Modifier.LSHIFT,
         },
-        "T": {"NAME": "Trade with vendor", "ID": 3, "KEY": event.KeySym.T, "MOD": event.Modifier.NONE},
-        "G": {"NAME": "Pickup stuff", "ID": 4, "KEY": event.KeySym.G, "MOD": event.Modifier.NONE},
+        "T": {
+            "NAME": "Trade with vendor",
+            "ID": 3,
+            "KEY": event.KeySym.T,
+            "MOD": event.Modifier.NONE,
+        },
+        "G": {
+            "NAME": "Pickup stuff",
+            "ID": 4,
+            "KEY": event.KeySym.G,
+            "MOD": event.Modifier.NONE,
+        },
     },
     "System": {
         "ESCAPE": {
@@ -57,18 +83,48 @@ KEYBINDS = {
         },
     },
     "Menues": {
-        "I": {"NAME": "Inventory", "ID": 6, "KEY": event.KeySym.I, "MOD": event.Modifier.NONE},
+        "I": {
+            "NAME": "Inventory",
+            "ID": 6,
+            "KEY": event.KeySym.I,
+            "MOD": event.Modifier.NONE,
+        },
         "D": {
             "NAME": "Drop from Inventory",
             "ID": 7,
             "KEY": event.KeySym.D,
             "MOD": event.Modifier.NONE,
         },
-        "C": {"NAME": "Character sheet", "ID": 8, "KEY": event.KeySym.C, "MOD": event.Modifier.NONE},
-        "E": {"NAME": "Equipments", "ID": 9, "KEY": event.KeySym.E, "MOD": event.Modifier.NONE},
-        "P": {"NAME": "Spellbook", "ID": 10, "KEY": event.KeySym.P, "MOD": event.Modifier.NONE},
-        "L": {"NAME": "Consumption log", "ID": 11, "KEY": event.KeySym.L, "MOD": event.Modifier.NONE},
-        "V": {"NAME": "Game history", "ID": 12, "KEY": event.KeySym.V, "MOD": event.Modifier.NONE},
+        "C": {
+            "NAME": "Character sheet",
+            "ID": 8,
+            "KEY": event.KeySym.C,
+            "MOD": event.Modifier.NONE,
+        },
+        "E": {
+            "NAME": "Equipments",
+            "ID": 9,
+            "KEY": event.KeySym.E,
+            "MOD": event.Modifier.NONE,
+        },
+        "P": {
+            "NAME": "Spellbook",
+            "ID": 10,
+            "KEY": event.KeySym.P,
+            "MOD": event.Modifier.NONE,
+        },
+        "L": {
+            "NAME": "Consumption log",
+            "ID": 11,
+            "KEY": event.KeySym.L,
+            "MOD": event.Modifier.NONE,
+        },
+        "V": {
+            "NAME": "Game history",
+            "ID": 12,
+            "KEY": event.KeySym.V,
+            "MOD": event.Modifier.NONE,
+        },
     },
 }
 

@@ -39,6 +39,7 @@ class Level(BaseComponent):
             return
 
         self.current_xp += xp
+        self.xp_given += xp
         self.engine.message_log.add_message(f"You gain {xp} XP")
 
         if self.requires_level_up:
