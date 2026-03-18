@@ -248,7 +248,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
         self.engine.affixManager.message_log.render_messages(
             console,
-            1,
+            x + 1,
             6,
             console.width - 2,
             24,
@@ -392,9 +392,9 @@ class LevelUpEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
-        console.print(x=x + 1, y=2, string="Select the towers blessing")
 
         self.affix = random_affix = self.engine.affixManager.rand_affix()
+        self.engine.player.fighter.reset_self()
 
         console.print(
             x=x + 1,

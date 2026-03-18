@@ -16,7 +16,7 @@ class Scoreboard:
     def is_score_relevant(self, new_score) -> bool:
         score_to_replace = 0
         for score in self.scores:
-            if new_score >= self.scores[score] and self.scores[score] >= score_to_replace:
+            if new_score >= self.scores[score] and self.scores[score] >= self.scores[score_to_replace]:
                 score_to_replace = score
         if len(self.scores) < 1:
             return True
@@ -29,11 +29,6 @@ class Scoreboard:
                 return True
             else:
                 return False
-
-        
-
-        
-
 
     def save(self):
         save_data = lzma.compress(pickle.dumps(self))

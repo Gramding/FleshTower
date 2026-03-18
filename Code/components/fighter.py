@@ -191,3 +191,9 @@ class Fighter(BaseComponent):
             )
             for i in range(death_amount):
                 corpse_fly.spawn(self.engine.game_map, x=self.parent.x, y=self.parent.y)
+
+    def reset_self(self):
+        self.hp = self.max_hp
+        self.mana = self.max_mana
+        self.stamina = self.max_stamina
+        self.engine.message_log.add_message("The tower grants you respite")
