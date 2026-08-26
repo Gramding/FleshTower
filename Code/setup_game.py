@@ -72,8 +72,8 @@ class MainMenu(input_handlers.BaseEventHandler):
             "[S] Scoreboard",
             "[Q] Quit",
         ]
-        if DEV_MODE:
-            menue_text.append("[L] Map Editor")
+        # if DEV_MODE:
+        #     menue_text.append("[L] Map Editor")
 
         console.draw_semigraphics(background_image, 0, 0)
 
@@ -144,5 +144,5 @@ class MainMenu(input_handlers.BaseEventHandler):
             return input_handlers.PopupMessage(
                 self, text, halved=False, alignment=libtcodpy.CENTER
             )
-        elif DEV_MODE and event.sym == tcod.event.KeySym.L:
-            return input_handlers.LevelEditorHandler(self)
+        # elif DEV_MODE and event.sym == tcod.event.KeySym.L:
+        #     return input_handlers.LevelEditorHandler(self)

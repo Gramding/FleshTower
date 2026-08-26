@@ -1333,29 +1333,30 @@ class AffixCheatActiveHandler(AffixCheatScreen):
 
 
 
-class LevelEditorHandler(BaseEventHandler):
-    def __init__(
-            self, parent_handler: BaseEventHandler
-        ):
-            self.parent = parent_handler
-            self.mouse_location = (0, 0)
-            self.console = []
+# class LevelEditorHandler(BaseEventHandler):
+#     def __init__(
+#             self, parent_handler: BaseEventHandler
+#         ):
+#             self.parent = parent_handler
+#             self.mouse_location = (0, 0)
+#             self.console = []
 
-    def on_render(self, console):
-        self.console = console
+#     def on_render(self, console : tcod.console.Console):
+#         console.print
         
 
-    def ev_keydown(self, event):
-        #TODO Impl inputs for user and stuff
-        key = event.sym
-        if key == tcod.event.KeySym.ESCAPE:
-            return self.parent
-        elif key == tcod.event.KeySym.SPACE:
-            self.console.print(1, 1, "Test")
-            return self
+#     def ev_keydown(self, event):
+#         #TODO Impl inputs for user and stuff
+#         key = event.sym
+#         if key == tcod.event.KeySym.ESCAPE:
+#             return self.parent
+#         elif key == tcod.event.KeySym.SPACE:
+#             self.console.print(1, 1, "Test")
+#             self.on_render(self.console)
+#             return self
         
 
-    def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
-        self.mouse_location = int(event.tile.x), int(event.tile.y)
+#     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
+#         self.mouse_location = int(event.tile.x), int(event.tile.y)
 
 
