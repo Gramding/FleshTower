@@ -3,6 +3,7 @@ from enum import auto, Enum
 
 
 CHEATS = True  # True for the ability to open cheats and so on
+DEV_MODE = False
 GENERAL_CHEATS = {
     "god_mode": False,
     "inf_mana": False,

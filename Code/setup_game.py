@@ -18,7 +18,7 @@ import entity_factory
 import input_handlers
 from game_map import GameWorld
 
-from components.settings import KEYBINDS
+from components.settings import KEYBINDS, DEV_MODE
 
 background_image = np.asarray(Image.open("Res/main_menu.png").convert("RGB"))[:, :, :3]
 
@@ -65,6 +65,16 @@ def load_game(filename: str) -> Engine:
 
 class MainMenu(input_handlers.BaseEventHandler):
     def on_render(self, console):
+        menue_text = [
+            "[N] New try?",
+            "[C] Continue last game",
+            "[K] Keybinds",
+            "[S] Scoreboard",
+            "[Q] Quit",
+        ]
+        if DEV_MODE:
+            menue_text.append("[L] Map Editor")
+
         console.draw_semigraphics(background_image, 0, 0)
 
         console.print(
@@ -76,13 +86,7 @@ class MainMenu(input_handlers.BaseEventHandler):
         )
 
         menu_width = 24
-        for i, text in enumerate([
-            "[N] New try?",
-            "[C] Continue last game",
-            "[K] Keybinds",
-            "[S] Scoreboard",
-            "[Q] Quit",
-        ]):
+        for i, text in enumerate(menue_text):
             console.print(
                 console.width // 2,
                 console.height // 2 - 2 + i,
@@ -140,3 +144,5 @@ class MainMenu(input_handlers.BaseEventHandler):
             return input_handlers.PopupMessage(
                 self, text, halved=False, alignment=libtcodpy.CENTER
             )
+        elif DEV_MODE and event.sym == tcod.event.KeySym.L:
+            return input_handlers.LevelEditorHandler(self)
