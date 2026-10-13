@@ -144,3 +144,23 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
 
     return dungeon, missing
 
+def new_custom_game(level:CustomLevel) -> Engine:
+    import procgen
+    from setup_game import create_engine
+
+    engine = create_engine(current_floor=0)
+    engine.item_chances = procgen.item_chances
+    engine.enemy_chances = procgen.enemy_chances
+    engine.game_map, missing = build_game_map(level,engine)
+    engine.update_fov()
+
+    engine.message_log.add_message("Flesh Tower", color.welcome_text)
+    engine.message_log.add_message(f"You awaken in {level.name}")
+    if missing:
+        engine.message_log.add_message(
+            f"{missing} entities of this level no longer exist", color.impossible
+        )
+    if level.stairs_location is None:
+        engine.message_log.add_message("There are no stairs in this level", color.impossible)
+
+    return engine
