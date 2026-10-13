@@ -21,7 +21,7 @@ GENERAL_CHEAT_ACTIVATIONS = [
 
 # Level Editor stuff
 LEVEL_EDITOR = True
-LEVEL_DIR = "./Levels"
+LEVEL_DIR = "Levels"
 LEVEL_EXTENSION = ".lvl"
 LEVEL_WIDTH = 200
 LEVEL_HEIGHT = 100

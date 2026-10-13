@@ -150,5 +150,5 @@ class MainMenu(input_handlers.BaseEventHandler):
                 self, text, halved=False, alignment=libtcodpy.CENTER
             )
         elif LEVEL_EDITOR and event.sym == tcod.event.KeySym.L:
-             #TODO
-             pass
+             from level_editor import LevelMenu
+             return LevelMenu(self)

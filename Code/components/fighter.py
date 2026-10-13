@@ -11,6 +11,8 @@ import math
 from components.consumption import ConsumptionFactory
 from components.settings import GENERAL_CHEATS
 
+from components.tileset import SPRITE_REMAINS
+
 if TYPE_CHECKING:
     from entity import Actor
 
@@ -105,8 +107,8 @@ class Fighter(BaseComponent):
             death_message = f"{self.parent.name} returns to the tower"
             death_message_color = color.enemy_die
 
-        self.parent.char = "%"
-        self.parent.color = (191, 0, 0)
+        self.parent.char = chr(SPRITE_REMAINS)
+        self.parent.color = (255, 255, 255)
         self.parent.blocks_movement = False
         self.parent.ai = None
         self.parent.name = f"remains of {self.parent.name}"
