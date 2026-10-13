@@ -106,3 +106,18 @@ def load_level(filename: str) -> CustomLevel:
         level = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(level, CustomLevel)
     return level
+
+def list_levels() -> List[Tuple[str,str]]:
+    if not os.path.isdir(LEVEL_DIR):
+        return
+    files = [
+        os.path.join(LEVEL_DIR, f)
+        for f in os.listdir(LEVEL_DIR)
+        if f.endswith(LEVEL_EXTENSION)
+    ]
+    files.sort(key=os.path.getmtime, reverse=True)
+    results = []
+    for filename in files:
+        display = os.path.basename(filename)[: -len(LEVEL_EXTENSION)].replace(" ","_")
+        results.append((display),(filename))
+    return results
