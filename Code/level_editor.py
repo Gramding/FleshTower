@@ -121,3 +121,26 @@ def list_levels() -> List[Tuple[str,str]]:
         display = os.path.basename(filename)[: -len(LEVEL_EXTENSION)].replace(" ","_")
         results.append((display),(filename))
     return results
+
+def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
+    from game_map import GameMap
+
+    player = engine.player
+    dungeon = GameMap(engine, level.width, level.height, entities=[player])
+    dungeon.tiles[level.tiles == TILE_FLOOR] = tile_types.randFloor()
+    dungeon.tiles[level.tiles == TILE_STAIRS] = tile_types.stairs_up
+
+    stairs = level.stairs_location
+    dungeon.upstairs_location = stairs if stairs else (-1,-1)
+
+    player.place(*level.player_start, dungeon)
+
+    missing = 0
+    for (x, y), attr in level.entities.items():
+        prototype = getattr(entity_factory, attr, None)
+        if not isinstance(prototype, (Actor, Item)):
+            missing += 1
+            continue
+
+    return dungeon, missing
+
