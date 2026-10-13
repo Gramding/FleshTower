@@ -14,6 +14,26 @@ from components.level import Level
 from components.spells import SpellBook
 from components.effects import *
 
+from typing import Dict, List, Tuple
+
+
+def short_name(entity) -> str:
+    return entity.name.split(" ")[0].strip(" -")
+
+def build_palette() -> Dict[str, List[Tuple[str, object]]]:
+    monster = []
+    items = []
+    for attr, value in list(globals().items()):
+        if attr == "player":
+            continue
+        if isinstance(value, Actor):
+            monster.append((attr,value))
+        elif isinstance(value, Item):
+            items.append((attr, value))
+    return {"Monsters": monster, "Items":items}
+    
+
+
 player = Actor(
     char="@",
     color=(255, 255, 255),
