@@ -19,6 +19,15 @@ GENERAL_CHEAT_ACTIVATIONS = [
 ]
 
 
+# Level Editor stuff
+LEVEL_EDITOR = True
+LEVEL_DIR = "./Levels"
+LEVEL_EXTENSION = ".lvl"
+LEVEL_WIDTH = 200
+LEVEL_HEIGHT = 100
+
+
+
 # DONT CHANGE THE ID of the bind this is what determins what happens
 # All here keys can be freely changed to whatever the KeySym allows
 

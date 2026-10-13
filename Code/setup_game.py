@@ -18,12 +18,21 @@ import entity_factory
 import input_handlers
 from game_map import GameWorld
 
-from components.settings import KEYBINDS, DEV_MODE
+from components.settings import KEYBINDS, LEVEL_EDITOR
 
 background_image = np.asarray(Image.open("Res/main_menu.png").convert("RGB"))[:, :, :3]
 
 
 def new_game() -> Engine:
+    engine = create_engine()
+    engine.game_world.generate_floor()
+    engine.update_fov()
+
+    engine.message_log.add_message("Flesh Tower", color.welcome_text)
+
+    return engine
+
+def create_engine(current_floor: int = -1) -> Engine:
     map_width = 200
     map_height = 100
 
@@ -48,12 +57,8 @@ def new_game() -> Engine:
         viewport_height=viewport_height,
         viewport_width=viewport_width,
     )
-    engine.game_world.generate_floor()
-    engine.update_fov()
-
-    engine.message_log.add_message("Flesh Tower", color.welcome_text)
-
     return engine
+    
 
 
 def load_game(filename: str) -> Engine:
@@ -72,8 +77,8 @@ class MainMenu(input_handlers.BaseEventHandler):
             "[S] Scoreboard",
             "[Q] Quit",
         ]
-        # if DEV_MODE:
-        #     menue_text.append("[L] Map Editor")
+        if LEVEL_EDITOR:
+             menue_text.append("[L] Map Editor")
 
         console.draw_semigraphics(background_image, 0, 0)
 
@@ -144,5 +149,6 @@ class MainMenu(input_handlers.BaseEventHandler):
             return input_handlers.PopupMessage(
                 self, text, halved=False, alignment=libtcodpy.CENTER
             )
-        # elif DEV_MODE and event.sym == tcod.event.KeySym.L:
-        #     return input_handlers.LevelEditorHandler(self)
+        elif LEVEL_EDITOR and event.sym == tcod.event.KeySym.L:
+             #TODO
+             pass
