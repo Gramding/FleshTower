@@ -124,8 +124,17 @@ class MainMenu(input_handlers.BaseEventHandler):
                     alignment=libtcodpy.CENTER,
                 )
         elif event.sym == tcod.event.KeySym.N:
-            #return input_handlers.PopupToConfirm
-            return input_handlers.MainGameEventHandler(new_game())
+           from campaign import CampaignMenu
+           return input_handlers.ChoicePopup(
+            self,
+            "New try",
+            [
+                (tcod.event.KeySym.R, "Random tower",
+                lambda: input_handlers.MainGameEventHandler(new_game())),
+                (tcod.event.KeySym.C, "Campaign",
+                lambda: CampaignMenu(self)),
+            ],
+        )
         elif event.sym == tcod.event.KeySym.K:
             text = ""
             for section in KEYBINDS:

@@ -1472,3 +1472,26 @@ def check_name(name: str) -> str:
     if not NAME_PATTERN.match(name):
         return "Use letters, numbers, space, - and _"
     return ""
+
+class ChoicePopup(BaseEventHandler):
+
+    def __init__(self, parent, title, options):
+        self.parent = parent
+        self.title = title
+        self.options = options
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        width = max(len(self.title), *(len(label) + 4 for _, label, _ in self.options)) + 4
+        x, y = draw_box(console, width, len(self.options) + 4, self.title)
+        for i, (key, label, _) in enumerate(self.options):
+            console.print(x + 2, y + 2 + i, f"[{chr(key).upper()}] {label}")
+
+    def ev_keydown(self, event):
+        if event.sym == tcod.event.KeySym.ESCAPE:
+            return self.parent
+        for key, _, callback in self.options:
+            if event.sym == key:
+                return callback()
+        return None
