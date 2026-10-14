@@ -13,23 +13,6 @@ from entity import Actor, Item
 from components.level import Level
 from components.spells import SpellBook
 from components.effects import *
-from components.tileset import (
-    SPRITE_PLAYER,
-    SPRITE_RAT,
-    SPRITE_ZOMBIE,
-    SPRITE_TROLL,
-    SPRITE_CORPSE_FLY,
-    SPRITE_EYE_SCREAMER,
-    SPRITE_VISCERA_HOUND,
-    SPRITE_VICERA_SPAWN,
-    SPRITE_VENDOR,
-    SPRITE_FLESH_GOLEM,
-    SPRITE_HEALTH_POTION,
-    SPRITE_LARGE_HEALTH_POTION,
-    SPRITE_MANA_POTION,
-    SPRITE_SCROLL,
-    SPRITE_REMAINS,
-)
 
 from typing import Dict, List, Tuple
 
@@ -52,7 +35,7 @@ def build_palette() -> Dict[str, List[Tuple[str, object]]]:
 
 
 player = Actor(
-    char=chr(SPRITE_PLAYER),
+    char="@",
     color=(255, 255, 255),
     name="Player",
     ai_cls=HostileEnemy,
@@ -70,8 +53,8 @@ player = Actor(
 )
 
 rat = Actor(
-    char=chr(SPRITE_RAT),
-    color=(255, 255, 255),
+    char="r",
+    color=(88, 57, 39),
     name="Rat",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -123,8 +106,8 @@ orc = Actor(
     effect=OrcEffect(),
 )
 troll = Actor(
-    char=chr(SPRITE_TROLL),
-    color=(255, 255, 255),
+    char="t",
+    color=(0, 127, 0),
     name="Troll",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -141,8 +124,8 @@ troll = Actor(
 )
 
 zombie = Actor(
-    char=chr(SPRITE_ZOMBIE),
-    color=(255, 255, 255),
+    char="z",
+    color=(52, 71, 54),
     name="Zombie",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -159,8 +142,8 @@ zombie = Actor(
 )
 
 vicera_spawn = Actor(
-    char=chr(SPRITE_VICERA_SPAWN),
-    color=(255, 255, 255),
+    char="v",
+    color=(100, 0, 0),
     name="Vicera spawn",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -213,8 +196,8 @@ bloated_corpse_fly = Actor(
 )
 
 corpse_fly = Actor(
-    char=chr(SPRITE_CORPSE_FLY),
-    color=(255, 255, 255),
+    char="b",
+    color=(100, 100, 10),
     name="Corpse Fly",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -232,8 +215,8 @@ corpse_fly = Actor(
 
 
 flesh_golem = Actor(
-    char=chr(SPRITE_FLESH_GOLEM),
-    color=(255, 255, 255),
+    char="G",
+    color=(128, 127, 0),
     name="Flesh Golem",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -268,8 +251,8 @@ lvl5_boss = Actor(
 )
 
 vendor = Actor(
-    char=chr(SPRITE_VENDOR),
-    color=(255, 255, 255),
+    char="s",
+    color=(179, 184, 55),
     name="Organ trader",
     ai_cls=Vendor,
     equipment=Equipment(),
@@ -419,8 +402,8 @@ marrow_drinker = Actor(
 
 
 eye_screamer = Actor(
-    char=chr(SPRITE_EYE_SCREAMER),
-    color=(255, 255, 255),
+    char="e",
+    color=(173, 216, 230),
     name="Eye Screamer",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -457,8 +440,8 @@ gnashing_swarm = Actor(
 
 
 viscera_hound = Actor(
-    char=chr(SPRITE_VISCERA_HOUND),
-    color=(255, 255, 255),
+    char="H",
+    color=(139, 0, 0),
     name="Viscera Hound",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
@@ -476,8 +459,8 @@ viscera_hound = Actor(
 
 
 health_potion = Item(
-    char=chr(SPRITE_HEALTH_POTION),
-    color=(255, 255, 255),
+    char="!",
+    color=(127, 0, 255),
     name="Health Potion",
     consumable=consumable.HealingConsumable(amount=15),
     effect=HealthEffect(),
@@ -485,8 +468,8 @@ health_potion = Item(
 )
 
 large_health_potion = Item(
-    char=chr(SPRITE_LARGE_HEALTH_POTION),
-    color=(255, 255, 255),
+    char="!",
+    color=(255, 0, 127),
     name="Large Health Potion",
     consumable=consumable.HealingConsumable(amount=30),
     effect=HealthEffect(),
@@ -494,8 +477,8 @@ large_health_potion = Item(
 )
 
 mana_potion = Item(
-    char=chr(SPRITE_MANA_POTION),
-    color=(255, 255, 255),
+    char="!",
+    color=(0, 0, 255),
     name="Mutagen Potion",
     consumable=consumable.ManaConsumable(amount=10),
     effect=ManaEffect(),
@@ -503,8 +486,8 @@ mana_potion = Item(
 )
 
 lightning_scroll = Item(
-    char=chr(SPRITE_SCROLL),
-    color=(255, 255, 255),
+    char="~",
+    color=(255, 255, 0),
     name="Scroll of Lightning",
     consumable=consumable.LightningDamageConsumable(damage=20, maximum_range=5),
     effect=LightningEffect(),
@@ -540,8 +523,8 @@ healing_scrollIII = Item(
 )
 
 confusion_scroll = Item(
-    char=chr(SPRITE_SCROLL),
-    color=(255, 255, 255),
+    char="~",
+    color=(207, 63, 255),
     name="Scroll of Confusion",
     consumable=consumable.ConfusionConsumable(number_of_turns=10),
     effect=ConfusionEffect(),
@@ -549,8 +532,8 @@ confusion_scroll = Item(
 )
 
 fireball_scroll = Item(
-    char=chr(SPRITE_SCROLL),
-    color=(255, 255, 255),
+    char="~",
+    color=(255, 0, 0),
     name="Scroll of Fireball",
     consumable=consumable.FireballDamageConsumable(damage=12, radius=3),
     effect=FireballEffect(),
@@ -1316,16 +1299,16 @@ chain_mail = Item(
 )
 
 gorebound = Item(
-    char=chr(SPRITE_REMAINS),
-    color=(255, 255, 255),
+    char="@",
+    color=(255, 0, 0),
     name="- Gorebound -                  The Gorebound is an abomination that feeds to grow.          They do not wear armor. They become it.",
     effect=GoreboundEffect(),
     price=100,
 )
 
 helixbound = Item(
-    char=chr(SPRITE_REMAINS),
-    color=(255, 255, 255),
+    char="@",
+    color=(0, 0, 255),
     name="- Helixbound -                  The Helixbound is a vessel of unstable genetic recursion—a caster whose power is drawn not from words or will, but from rewriting their own biology.",
     effect=Lvl5BossEffect(),
     price=100,

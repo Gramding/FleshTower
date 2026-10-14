@@ -1,7 +1,9 @@
+from __future__ import annotations
+import copy
 import lzma
 import os
 import pickle
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 from components.settings import CAMPAIGN_DIR, CAMPAIGN_EXTENSTION
 
 import input_handlers
@@ -12,6 +14,10 @@ from tcod import libtcodpy
 
 from level_editor import CustomLevel, load_level
 from level_editor import list_levels
+
+if TYPE_CHECKING:
+    from engine import Engine
+    from game_map import GameMap
 
 
 # screen layout of the campaign select screen (screen is 80x50)
@@ -95,22 +101,20 @@ class CampaignMenu(input_handlers.BaseEventHandler):
         elif key == tcod.event.KeySym.DOWN and self.campaigns:
             self.selected = (self.selected + 1) % len(self.campaigns)
         elif key == tcod.event.KeySym.N:
-            #return CampaignEditor(self, Campaign())
-            pass
+            return CampaignEditor(self, Campaign())
         elif self.current() is None:
             return None
         elif key in input_handlers.CONFIRM_KEYS or key == tcod.event.KeySym.P:
             try:
-                #return input_handlers.MainGameEventHandler(new_custom_game(self.load_current()))
-                #TODO
-                pass
+                return input_handlers.MainGameEventHandler(
+                    new_campaign_game(self.load_current())
+                )
             except Exception as exc:
                 traceback.print_exc()
                 return self.popup(f"Failed to load:\n{exc}")
         elif key == tcod.event.KeySym.E:
             try:
-                #return CampaignEditor(self, self.load_current())
-                pass
+                return CampaignEditor(self, self.load_current())
             except Exception as exc:
                 traceback.print_exc()
                 return self.popup(f"Failed to load:\n{exc}")
@@ -181,3 +185,165 @@ def load_campaign(filename: str) -> Campaign:
 
 def campaign_filename(name: str) -> str:
     return os.path.join(CAMPAIGN_DIR, name.strip().replace(" ", "_") + CAMPAIGN_EXTENSTION)
+
+class CampaignEditor(input_handlers.BaseEventHandler):
+    def __init__(self, campaign_menu: CampaignMenu, campaign: Campaign):
+        self.campaign_menu = campaign_menu
+        self.campaign = campaign
+        self.available = list_levels()  # (display, filename)
+        self.focus = 0  # 0 = level list, 1 = campaign order
+        self.cursor = [0, 0]
+        self.dirty = False
+        self.status = "Enter adds a level"
+
+    def column(self, index: int) -> List[str]:
+        if index == 0:
+            return [display for display, _ in self.available]
+        return [level.name for level in self.campaign.levels]
+
+    def clamp(self) -> None:
+        for i in (0, 1):
+            size = len(self.column(i))
+            self.cursor[i] = max(0, min(self.cursor[i], size - 1))
+
+    def add_selected(self) -> None:
+        if not self.available:
+            return
+        display, filename = self.available[self.cursor[0]]
+        level = load_level(filename)
+        if level.stairs_location is None:
+            self.status = f"{display} has no stairs"
+            return
+        self.campaign.levels.append(level)
+        self.cursor[1] = len(self.campaign.levels) - 1
+        self.dirty = True
+        self.status = f"Added {display}"
+
+    def remove_selected(self) -> None:
+        if not self.campaign.levels:
+            return
+        removed = self.campaign.levels.pop(self.cursor[1])
+        self.dirty = True
+        self.status = f"Removed {removed.name}"
+        self.clamp()
+
+    def move_selected(self, step: int) -> None:
+        levels = self.campaign.levels
+        i = self.cursor[1]
+        j = i + step
+        if 0 <= i < len(levels) and 0 <= j < len(levels):
+            levels[i], levels[j] = levels[j], levels[i]
+            self.cursor[1] = j
+            self.dirty = True
+
+    def ask_save(self):
+        def submit(name: str):
+            problem = input_handlers.check_name(name)
+            if problem:
+                prompt.error = problem
+                return None
+            if not self.campaign.levels:
+                prompt.error = "Add at least one level"
+                return None
+            filename = campaign_filename(name)
+            own_file = self.campaign.name and filename == campaign_filename(self.campaign.name)
+            if os.path.exists(filename) and not own_file:
+                return input_handlers.PopupToConfirm(
+                    self, f"Overwrite {name}?", lambda: self.save_as(name)
+                )
+            return self.save_as(name)
+
+        prompt = input_handlers.TextPrompt(self, "Save campaign as", self.campaign.name, submit)
+        return prompt
+
+    def save_as(self, name: str):
+        os.makedirs(CAMPAIGN_DIR, exist_ok=True)
+        self.campaign.name = name
+        self.campaign.save_as(campaign_filename(name))
+        self.dirty = False
+        self.status = f"Saved {name}"
+        self.campaign_menu.refresh()
+        return self
+
+    def leave(self):
+        self.campaign_menu.refresh()
+        return self.campaign_menu
+
+    def ev_keydown(self, event):
+        key = event.sym
+        k = tcod.event.KeySym
+        shift = event.mod & tcod.event.Modifier.SHIFT
+
+        if key == k.ESCAPE:
+            if self.dirty:
+                return input_handlers.PopupToConfirm(self, "Leave without saving?", self.leave)
+            return self.leave()
+        if key in (k.TAB, k.LEFT, k.RIGHT):
+            self.focus = 1 - self.focus
+        elif key in (k.UP, k.DOWN):
+            step = -1 if key == k.UP else 1
+            if shift and self.focus == 1:
+                self.move_selected(step)
+            else:
+                self.cursor[self.focus] += step
+        elif key in input_handlers.CONFIRM_KEYS and self.focus == 0:
+            self.add_selected()
+        elif key in (k.DELETE, k.BACKSPACE) and self.focus == 1:
+            self.remove_selected()
+        elif key == k.S:
+            return self.ask_save()
+        self.clamp()
+        return None
+
+    def on_render(self, console):
+        self.campaign_menu.on_render(console)
+        input_handlers.dim(console)
+        width, height = 70, 36
+        title = (self.campaign.name or "<unnamed>") + ("*" if self.dirty else "")
+        x, y = input_handlers.draw_box(console, width, height, f"Campaign: {title}")
+
+        col_width = (width - 6) // 2
+        visible_rows = height - 11
+        headers = ["Levels", "Campaign order"]
+        for col in (0, 1):
+            cx = x + 2 + col * (col_width + 2)
+            header_fg = color.menu_title if col == self.focus else color.impossible
+            console.print(cx, y + 2, headers[col], fg=header_fg)
+
+            items = self.column(col)
+            if not items:
+                empty = "No levels saved" if col == 0 else "Empty"
+                console.print(cx, y + 4, empty, fg=color.impossible)
+            first = max(0, self.cursor[col] - visible_rows + 1)
+            for row, name in enumerate(items[first : first + visible_rows]):
+                index = first + row
+                label = f"{index + 1}. {name}" if col == 1 else name
+                text = f" {label}"[:col_width].ljust(col_width)
+                if col == self.focus and index == self.cursor[col]:
+                    console.print(cx, y + 4 + row, text, fg=color.menu_title, bg=PANEL_HIGHLIGHT)
+                else:
+                    console.print(cx, y + 4 + row, text, fg=color.menu_text)
+
+        help_y = y + height - 6
+        console.print(x + 2, help_y, "Tab/Left/Right switch    [Enter] add level", fg=color.menu_text)
+        console.print(x + 2, help_y + 1, "Shift+Up/Down reorder    [Del] remove", fg=color.menu_text)
+        console.print(x + 2, help_y + 2, "[S] save                 [Esc] back", fg=color.menu_text)
+        console.print(x + 2, help_y + 4, self.status[: width - 4], fg=color.menu_title)
+
+
+def new_campaign_game(campaign: Campaign) -> Engine:
+    import procgen
+    from setup_game import create_engine
+
+    campaign = copy.deepcopy(campaign)
+    campaign.current = -1
+
+    engine = create_engine()
+    engine.item_chances = procgen.item_chances
+    engine.enemy_chances = procgen.enemy_chances
+    engine.game_world.campaign = campaign
+    engine.game_world.generate_floor()
+    engine.update_fov()
+
+    engine.message_log.add_message(campaign.name, color.welcome_text)
+    return engine

@@ -128,6 +128,8 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
+            if getattr(self.engine.game_world, "campaign_complete", False):
+                return CampaignVictoryHandler(self.engine)
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)
@@ -1494,4 +1496,38 @@ class ChoicePopup(BaseEventHandler):
         for key, _, callback in self.options:
             if event.sym == key:
                 return callback()
+        return None
+
+class CampaignVictoryHandler(BaseEventHandler):
+    def __init__(self, engine: Engine):
+        self.engine = engine
+        # the run is over: record it like a death does, and drop the save
+        engine.scoreboard.add_score(engine.player.level.xp_given)
+        engine.scoreboard.save()
+        if os.path.exists("savegame.sav"):
+            os.remove("savegame.sav")
+
+    def on_render(self, console):
+        self.engine.render(console)
+        dim(console)
+        campaign = self.engine.game_world.campaign
+        name = campaign.name if campaign else "the campaign"
+        lines = [
+            f"{name} is conquered.",
+            "",
+            f"Floors climbed: {self.engine.game_world.current_floor + 1}",
+            f"Level: {self.engine.player.level.current_level}",
+            "",
+            "[Enter] return to the main menu",
+        ]
+        width = max(len(line) for line in lines) + 6
+        x, y = draw_box(console, width, len(lines) + 4, "The flesh yields")
+        for i, line in enumerate(lines):
+            console.print(x + 3, y + 2 + i, line, fg=color.menu_title if i == 0 else color.menu_text)
+
+    def ev_keydown(self, event):
+        if event.sym in CONFIRM_KEYS or event.sym == tcod.event.KeySym.ESCAPE:
+            from setup_game import MainMenu
+
+            return MainMenu()
         return None

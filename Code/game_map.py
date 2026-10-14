@@ -146,7 +146,8 @@ class GameWorld:
         viewport_height: int = 0,
     ):
         self.engine = engine
-
+        self.campaign = None
+        self.campaign_complete = False
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
 
@@ -167,6 +168,18 @@ class GameWorld:
         from procgen import generate_boss_room
 
         self.current_floor += 1
+        campaign = getattr(self, "campaign", None)
+        if campaign is not None:
+            level = campaign.next_level()
+            if level is not None:
+                from level_editor import build_game_map
+
+                self.engine.game_map, _ = build_game_map(level, self.engine)
+                return
+            # no levels left: stay where we are, the handler shows the victory screen
+            self.current_floor -= 1
+            self.campaign_complete = True
+            return
         shop_chance = random.randint(0, 100)
         # self.randSizes()
         # Small description
