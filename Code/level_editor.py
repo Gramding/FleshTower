@@ -181,17 +181,9 @@ def event_tile(event) -> Optional[Tuple[int,int]]:
         return None
     return int(tile[0]), int(tile[1])
 
-def dim(console: tcod.console.Console) ->None:
-    console.rgb["fg"] //= 4
-    console.rgb["bg"] //= 4
 
-def draw_box(console, width:int, height: int, title:str) -> Tuple[int,int]:
-    x = (console.width - width) // 2
-    y = (console.height - height) // 2
-    console.draw_frame(
-        x=x, y=y, width=width, height = height, title = title, clear = True, fg=color.white, bg=color.black
-    )
-    return x,y
+
+
 
 def key_to_char(event) -> Optional[str]:
     sym = int(event.sym)
@@ -223,9 +215,9 @@ class TextPrompt(input_handlers.BaseEventHandler):
 
     def on_render(self, console):
         self.parent.on_render(console)
-        dim(console)
+        input_handlers.dim(console)
         width = NAME_MAX_LENGTH + 8
-        x, y = draw_box(console, width, 7, self.title)
+        x, y = input_handlers.draw_box(console, width, 7, self.title)
         console.print(x + 2, y + 2, (self.text + "_").ljust(NAME_MAX_LENGTH + 1),
                       fg=color.menu_title, bg=(40, 10, 10))
         console.print(x + 2, y + 4, "[Enter] ok  [Esc] cancel", fg=color.impossible)
@@ -249,32 +241,6 @@ class TextPrompt(input_handlers.BaseEventHandler):
         return None
 
 
-class PopupToConfirm(input_handlers.BaseEventHandler):
-    def __init__(
-        self,
-        parent: input_handlers.BaseEventHandler,
-        text: str,
-        on_yes: Callable[[], input_handlers.BaseEventHandler],
-    ):
-        self.parent = parent
-        self.text = text
-        self.on_yes = on_yes
-
-    def on_render(self, console):
-        self.parent.on_render(console)
-        dim(console)
-        width = max(len(self.text), 20) + 4
-        x, y = draw_box(console, width, 5, "Sure?")
-        console.print(x + 2, y + 1, self.text)
-        console.print(x + 2, y + 3, "[Y] yes  [N] no", fg=color.impossible)
-
-    def ev_keydown(self, event):
-        if event.sym == tcod.event.KeySym.Y:
-            return self.on_yes()
-        if event.sym in (tcod.event.KeySym.N, tcod.event.KeySym.ESCAPE):
-            return self.parent
-        return None
-
 
 class LevelMenu(input_handlers.BaseEventHandler):
     def __init__(self, main_menu: input_handlers.BaseEventHandler):
@@ -291,9 +257,9 @@ class LevelMenu(input_handlers.BaseEventHandler):
 
     def on_render(self, console):
         self.main_menu.on_render(console)
-        dim(console)
+        input_handlers.dim(console)
         width, height = 60,30
-        x,y = draw_box(console,width,height,"Custom Level Select")
+        x,y = input_handlers.draw_box(console,width,height,"Custom Level Select")
         visible_rows = height - 9
         if not self.levels:
             console.print(x + 2 , y + 2, "No custom levels", fg=color.impossible)
@@ -355,7 +321,7 @@ class LevelMenu(input_handlers.BaseEventHandler):
                 self.refresh()
                 return self
 
-            return PopupToConfirm(self, f"Delete {display}?", delete)
+            return input_handlers.PopupToConfirm(self, f"Delete {display}?", delete)
         elif key == tcod.event.KeySym.R:
             display, filename = self.current()
             return TextPrompt(self, "Rename level", display, self.rename)
@@ -541,7 +507,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             filename = level_file_name(name)
             same_file = self.level.name and filename == level_file_name(self.level.name)
             if os.path.exists(filename) and not same_file:
-                return PopupToConfirm(
+                return input_handlers.PopupToConfirm(
                     self, f"Overwrite {name}?", lambda: self.save_as(name, then_leave)
                 )
             return self.save_as(name, then_leave)
@@ -654,7 +620,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return self.ask_save()
         elif key == k.ESCAPE:
             if self.dirty:
-                return PopupToConfirm(self, "Leave without saving?", self.leave)
+                return input_handlers.PopupToConfirm(self, "Leave without saving?", self.leave)
             return self.leave()
         self.clamp_camera()
         self.apply_at_mouse()

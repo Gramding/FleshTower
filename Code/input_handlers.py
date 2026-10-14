@@ -1360,3 +1360,41 @@ class AffixCheatActiveHandler(AffixCheatScreen):
 #         self.mouse_location = int(event.tile.x), int(event.tile.y)
 
 
+class PopupToConfirm(BaseEventHandler):
+    def __init__(
+        self,
+        parent: BaseEventHandler,
+        text: str,
+        on_yes: Callable[[], BaseEventHandler],
+    ):
+        self.parent = parent
+        self.text = text
+        self.on_yes = on_yes
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        width = max(len(self.text), 20) + 4
+        x, y = draw_box(console, width, 5, "Sure?")
+        console.print(x + 2, y + 1, self.text)
+        console.print(x + 2, y + 3, "[Y] yes  [N] no", fg=color.impossible)
+
+    def ev_keydown(self, event):
+        if event.sym == tcod.event.KeySym.Y:
+            return self.on_yes()
+        if event.sym in (tcod.event.KeySym.N, tcod.event.KeySym.ESCAPE):
+            return self.parent
+        return None
+
+
+def draw_box(console, width:int, height: int, title:str) -> Tuple[int,int]:
+    x = (console.width - width) // 2
+    y = (console.height - height) // 2
+    console.draw_frame(
+        x=x, y=y, width=width, height = height, title = title, clear = True, fg=color.white, bg=color.black
+    )
+    return x,y
+
+def dim(console: tcod.console.Console) ->None:
+    console.rgb["fg"] //= 4
+    console.rgb["bg"] //= 4
