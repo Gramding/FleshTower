@@ -26,6 +26,10 @@ LEVEL_EXTENSION = ".lvl"
 LEVEL_WIDTH = 200
 LEVEL_HEIGHT = 100
 
+# Campaign Stuff
+CAMPAIGN_DIR = "Campaigns"
+CAMPAIGN_EXTENSTION = ".cmp"
+
 
 
 # DONT CHANGE THE ID of the bind this is what determins what happens

@@ -124,6 +124,7 @@ class MainMenu(input_handlers.BaseEventHandler):
                     alignment=libtcodpy.CENTER,
                 )
         elif event.sym == tcod.event.KeySym.N:
+            #return input_handlers.PopupToConfirm
             return input_handlers.MainGameEventHandler(new_game())
         elif event.sym == tcod.event.KeySym.K:
             text = ""

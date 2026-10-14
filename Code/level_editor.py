@@ -56,12 +56,13 @@ VIEW_WIDTH = 60
 VIEW_HEIGHT = 50
 PANEL_X = VIEW_WIDTH
 PANEL_WIDTH = 20
+PANEL_HIGHLIGHT = (90, 20, 20)
 PALETTE_ROWS = 16
 
 CURSOR_BG = (150, 40, 40)
 RECT_BG = (90, 30, 90)
 START_BG = (40, 90, 40)
-PANEL_HIGHLIGHT = (90, 20, 20)
+
 
 SHIFT = tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
 CTRL = tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL
@@ -182,66 +183,6 @@ def event_tile(event) -> Optional[Tuple[int,int]]:
     return int(tile[0]), int(tile[1])
 
 
-
-
-
-def key_to_char(event) -> Optional[str]:
-    sym = int(event.sym)
-    shifted = bool(event.mod & SHIFT)
-    if ord("a") <= sym <= ord("z"):
-        char = chr(sym)
-        return char.upper() if shifted else char
-    if ord("0") <= sym <= ord("9") and not shifted:
-        return chr(sym)
-    if sym == int(tcod.event.KeySym.SPACE):
-        return " "
-    if sym == int(tcod.event.KeySym.MINUS):
-        return "_" if shifted else "-"
-    return None
-
-class TextPrompt(input_handlers.BaseEventHandler):
-    def __init__(
-        self,
-        parent: input_handlers.BaseEventHandler,
-        title: str,
-        text: str,
-        on_submit: Callable[[str], Optional[input_handlers.BaseEventHandler]],
-    ):
-        self.parent = parent
-        self.title = title
-        self.text = text
-        self.on_submit = on_submit
-        self.error = ""
-
-    def on_render(self, console):
-        self.parent.on_render(console)
-        input_handlers.dim(console)
-        width = NAME_MAX_LENGTH + 8
-        x, y = input_handlers.draw_box(console, width, 7, self.title)
-        console.print(x + 2, y + 2, (self.text + "_").ljust(NAME_MAX_LENGTH + 1),
-                      fg=color.menu_title, bg=(40, 10, 10))
-        console.print(x + 2, y + 4, "[Enter] ok  [Esc] cancel", fg=color.impossible)
-        if self.error:
-            console.print(x + 2, y + 5, self.error[: width - 4], fg=color.error)
-
-    def ev_keydown(self, event):
-        key = event.sym
-        if key == tcod.event.KeySym.ESCAPE:
-            return self.parent
-        if key in input_handlers.CONFIRM_KEYS:
-            return self.on_submit(self.text.strip())
-        if key == tcod.event.KeySym.BACKSPACE:
-            self.text = self.text[:-1]
-            self.error = ""
-            return None
-        char = key_to_char(event)
-        if char and len(self.text) < NAME_MAX_LENGTH:
-            self.text += char
-            self.error = ""
-        return None
-
-
-
 class LevelMenu(input_handlers.BaseEventHandler):
     def __init__(self, main_menu: input_handlers.BaseEventHandler):
         self.main_menu = main_menu
@@ -324,12 +265,12 @@ class LevelMenu(input_handlers.BaseEventHandler):
             return input_handlers.PopupToConfirm(self, f"Delete {display}?", delete)
         elif key == tcod.event.KeySym.R:
             display, filename = self.current()
-            return TextPrompt(self, "Rename level", display, self.rename)
+            return input_handlers.TextPrompt(self, "Rename level", display, self.rename)
         return None
 
     def rename(self, new_name: str):
         display, filename = self.current()
-        problem = check_name(new_name)
+        problem = input_handlers.check_name(new_name)
         if problem:
             return self.popup(problem)
         new_filename = level_file_name(new_name)
@@ -342,15 +283,6 @@ class LevelMenu(input_handlers.BaseEventHandler):
             os.remove(filename)
         self.refresh()
         return self
-
-
-def check_name(name: str) -> str:
-    if not name:
-        return "The level needs a name"
-    if not NAME_PATTERN.match(name):
-        return "Use letters, numbers, space, - and _"
-    return ""
-
 
 
 class LevelEditor(input_handlers.BaseEventHandler):
@@ -500,7 +432,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
     def ask_save(self, then_leave: bool = False):
         def submit(name: str):
-            problem = check_name(name)
+            problem = input_handlers.check_name(name)
             if problem:
                 prompt.error = problem
                 return None
@@ -512,7 +444,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 )
             return self.save_as(name, then_leave)
 
-        prompt = TextPrompt(self, "Save level as", self.level.name, submit)
+        prompt = input_handlers.TextPrompt(self, "Save level as", self.level.name, submit)
         return prompt
 
     def save_as(self, name: str, then_leave: bool = False):

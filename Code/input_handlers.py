@@ -1358,7 +1358,59 @@ class AffixCheatActiveHandler(AffixCheatScreen):
 
 #     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
 #         self.mouse_location = int(event.tile.x), int(event.tile.y)
+import re
+NAME_MAX_LENGTH = 24
+VIEW_WIDTH = 60
+VIEW_HEIGHT = 50
+PANEL_X = VIEW_WIDTH
+PANEL_WIDTH = 20
+PANEL_HIGHLIGHT = (90, 20, 20)
+PALETTE_ROWS = 16
+SHIFT = tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
+CTRL = tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL
+NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _\-]+$")
 
+
+class TextPrompt(BaseEventHandler):
+    def __init__(
+        self,
+        parent: BaseEventHandler,
+        title: str,
+        text: str,
+        on_submit: Callable[[str], Optional[BaseEventHandler]],
+    ):
+        self.parent = parent
+        self.title = title
+        self.text = text
+        self.on_submit = on_submit
+        self.error = ""
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        width = NAME_MAX_LENGTH + 8
+        x, y = draw_box(console, width, 7, self.title)
+        console.print(x + 2, y + 2, (self.text + "_").ljust(NAME_MAX_LENGTH + 1),
+                      fg=color.menu_title, bg=(40, 10, 10))
+        console.print(x + 2, y + 4, "[Enter] ok  [Esc] cancel", fg=color.impossible)
+        if self.error:
+            console.print(x + 2, y + 5, self.error[: width - 4], fg=color.error)
+
+    def ev_keydown(self, event):
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return self.parent
+        if key in CONFIRM_KEYS:
+            return self.on_submit(self.text.strip())
+        if key == tcod.event.KeySym.BACKSPACE:
+            self.text = self.text[:-1]
+            self.error = ""
+            return None
+        char = key_to_char(event)
+        if char and len(self.text) < NAME_MAX_LENGTH:
+            self.text += char
+            self.error = ""
+        return None
 
 class PopupToConfirm(BaseEventHandler):
     def __init__(
@@ -1398,3 +1450,25 @@ def draw_box(console, width:int, height: int, title:str) -> Tuple[int,int]:
 def dim(console: tcod.console.Console) ->None:
     console.rgb["fg"] //= 4
     console.rgb["bg"] //= 4
+
+
+def key_to_char(event) -> Optional[str]:
+    sym = int(event.sym)
+    shifted = bool(event.mod & SHIFT)
+    if ord("a") <= sym <= ord("z"):
+        char = chr(sym)
+        return char.upper() if shifted else char
+    if ord("0") <= sym <= ord("9") and not shifted:
+        return chr(sym)
+    if sym == int(tcod.event.KeySym.SPACE):
+        return " "
+    if sym == int(tcod.event.KeySym.MINUS):
+        return "_" if shifted else "-"
+    return None
+
+def check_name(name: str) -> str:
+    if not name:
+        return "The level needs a name"
+    if not NAME_PATTERN.match(name):
+        return "Use letters, numbers, space, - and _"
+    return ""
