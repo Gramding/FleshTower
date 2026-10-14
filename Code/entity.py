@@ -168,6 +168,7 @@ class Item(Entity):
         equippable: Optional[Equippable] = None,
         effect: Effect,
         price: int,
+        quest_id: Optional[str] = None,
     ):
         super().__init__(
             x=x,
@@ -180,6 +181,7 @@ class Item(Entity):
             render_order=RenderOrder.ITEM,
         )
         self.price = price
+        self.quest_id = quest_id
         self.effect = effect
         self.consumable = consumable
         if self.consumable:

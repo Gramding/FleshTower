@@ -30,6 +30,10 @@ LEVEL_HEIGHT = 100
 CAMPAIGN_DIR = "Campaigns"
 CAMPAIGN_EXTENSTION = ".cmp"
 
+#Dialogue Stuff
+DIALOGUE_DIR = "Dialogues"
+LORE_DIR = "Lore"
+
 
 
 # DONT CHANGE THE ID of the bind this is what determins what happens

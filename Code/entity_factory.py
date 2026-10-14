@@ -16,6 +16,11 @@ from components.effects import *
 
 from typing import Dict, List, Tuple
 
+EDITABLE_PROPERTIES = {
+    "genericNPC": [("name", "text"), ("dialogue", "dialogue")],
+    "genericLoreItem": [("name", "text"), ("lore", "lore")],
+    "quest_item": [("name", "text"), ("quest_id", "quest_id")],
+}
 
 def short_name(entity) -> str:
     return entity.name
@@ -23,15 +28,24 @@ def short_name(entity) -> str:
 def build_palette() -> Dict[str, List[Tuple[str, object]]]:
     monster = []
     items = []
+    players = []
     for attr, value in list(globals().items()):
         if attr == "player":
             continue
+        
+            #player.append((attr,value))
         if isinstance(value, Actor):
             monster.append((attr,value))
         elif isinstance(value, Item):
             items.append((attr, value))
     return {"Monsters": monster, "Items":items}
-    
+
+
+def editable_properties(attr: str) -> List[Tuple[str, str]]:
+    fields = list(EDITABLE_PROPERTIES.get(attr, []))
+    if isinstance(globals().get(attr), Actor):
+        fields += [("drop_name", "text"), ("drop_id", "quest_id")]
+    return fields
 
 
 player = Actor(
@@ -50,6 +64,37 @@ player = Actor(
     spellbook=SpellBook(10),
     logbook=LogBook(),
     effect=DefaultEffect(),
+)
+
+genericNPC = Actor(
+    char="T",
+    color=(200, 180, 150),
+    name="testNPCDialogue",
+    ai_cls=Vendor,
+    equipment=Equipment(),
+    fighter=Fighter(base_hp=10, base_defense=0, base_power=0),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=0),
+    spellbook=SpellBook(0),
+    logbook=LogBook(),
+    effect=DefaultEffect(),
+)
+
+genericLoreItem = Item(
+    char="?",
+    color=(215, 200, 160),
+    name="Note",
+    effect=DefaultEffect(),
+    price=0,
+)
+
+quest_item = Item(
+    char="k",
+    color=(230, 200, 120),
+    name="Quest Item",
+    effect=DefaultEffect(),
+    price=0,
+    quest_id="quest_item",
 )
 
 rat = Actor(

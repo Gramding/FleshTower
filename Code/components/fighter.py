@@ -11,7 +11,6 @@ import math
 from components.consumption import ConsumptionFactory
 from components.settings import GENERAL_CHEATS
 
-from components.tileset import SPRITE_REMAINS
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -116,6 +115,17 @@ class Fighter(BaseComponent):
 
         self.engine.message_log.add_message(death_message, death_message_color)
         self.engine.player.level.add_xp(self.parent.level.xp_given)
+
+        # an item set in the level editor always drops
+        drop = getattr(self.parent, "guaranteed_drop", None)
+        if drop is not None and drop in self.parent.inventory.items:
+            self.parent.inventory.items.remove(drop)
+            drop.place(x=self.parent.x, y=self.parent.y, gamemap=self.engine.game_map)
+            self.parent.guaranteed_drop = None
+            self.engine.message_log.add_message(
+                f"{self.parent.name.replace('remains of ', '')} dropped {drop.name}",
+                color.menu_title,
+            )
 
         # 20% chance to drop an item on death
         # drop item on death

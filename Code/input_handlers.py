@@ -2,6 +2,7 @@ from __future__ import annotations
 import math
 import os
 import copy
+import textwrap
 from typing import Optional, TYPE_CHECKING, Tuple, Callable, Union
 import tcod
 import actions
@@ -10,6 +11,8 @@ import color
 import exceptions
 import libtcodpy
 from numpy import array_split
+from components.dialouge_parser import quest_key
+
 
 from components.settings import (
     CHEATS,
@@ -487,6 +490,8 @@ class InventoryActivateHandler(InventoryEventHandler):
     TITLE = "Select item to use"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        if getattr(item, "lore", None) is not None:
+            return ReadingScreen(self.engine, item)
         if item.consumable:
             # Return action for the selected item
             return item.consumable.get_action(self.engine.player)
@@ -805,9 +810,15 @@ class MainGameEventHandler(EventHandler):
             key == tcod.event.KeySym(c_event["KEY"])
             and modifier == tcod.event.Modifier(c_event["MOD"])
             and target
-            and "Organ" in target.name
         ):
-            return ShopActivateHandler(engine=self.engine, target=target)
+            if getattr(target, "dialogue", None) is not None:
+                return DialogueScreen(self.engine, target)
+            if "Organ" in target.name:
+                return ShopActivateHandler(engine=self.engine, target=target)
+            self.engine.message_log.add_message(
+                f"{target.name} has nothing to say.", color.impossible
+            )
+            return None
 
         for movement_id in range(100, 104):
             c_event = get_event_by_id(movement_id)
@@ -1530,4 +1541,338 @@ class CampaignVictoryHandler(BaseEventHandler):
             from setup_game import MainMenu
 
             return MainMenu()
+        return None
+
+# Dialogue lives beneathe here
+
+class ListPicker(BaseEventHandler):
+
+    def __init__(self, parent, title, items, on_pick):
+        self.parent = parent
+        self.title = title
+        self.items = items
+        self.on_pick = on_pick
+        self.selected = 0
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        width = max([len(self.title) + 4] + [len(d) + 6 for d, _ in self.items]) + 4
+        x, y = draw_box(console, width, len(self.items) + 4, self.title)
+        if not self.items:
+            console.print(x + 2, y + 1, "Nothing here", fg=color.impossible)
+        for i, (display, _) in enumerate(self.items):
+            text = f" {display}".ljust(width - 4)
+            if i == self.selected:
+                console.print(x + 2, y + 2 + i, text, fg=color.menu_title, bg=(90, 20, 20))
+            else:
+                console.print(x + 2, y + 2 + i, text)
+
+    def ev_keydown(self, event):
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return self.parent
+        if not self.items:
+            return None
+        if key == tcod.event.KeySym.UP:
+            self.selected = (self.selected - 1) % len(self.items)
+        elif key == tcod.event.KeySym.DOWN:
+            self.selected = (self.selected + 1) % len(self.items)
+        elif key in CONFIRM_KEYS:
+            return self.on_pick(self.items[self.selected][1])
+        return None
+
+class PropertyMenu(BaseEventHandler):
+    def __init__(self, editor, pos, fields):
+        self.editor = editor  # the LevelEditor, also the screen we return to
+        self.pos = pos
+        self.fields = fields  # [(key, kind)]
+        self.selected = 0
+
+    @property
+    def values(self):
+        return self.editor.level.properties.setdefault(self.pos, {})
+
+    def set_value(self, key, value):
+        self.values[key] = value
+        self.editor.dirty = True
+        return self
+
+    def on_render(self, console):
+        self.editor.on_render(console)
+        dim(console)
+        width = 44
+        x, y = draw_box(console, width, len(self.fields) + 5, "Properties")
+        for i, (key, kind) in enumerate(self.fields):
+            value = self.values.get(key, "-")
+            text = f" {key}: {value}"[: width - 4].ljust(width - 4)
+            bg = (90, 20, 20) if i == self.selected else color.black
+            console.print(x + 2, y + 2 + i, text, bg=bg)
+        console.print(x + 2, y + len(self.fields) + 3, "[Enter] edit  [Esc] done", fg=color.impossible)
+
+    def ev_keydown(self, event):
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return self.editor
+        if key == tcod.event.KeySym.UP:
+            self.selected = (self.selected - 1) % len(self.fields)
+        elif key == tcod.event.KeySym.DOWN:
+            self.selected = (self.selected + 1) % len(self.fields)
+        elif key in CONFIRM_KEYS:
+            return self.edit(*self.fields[self.selected])
+        return None
+
+    def edit(self, key, kind):
+        if kind == "text":
+            return TextPrompt(self, key, self.values.get(key, ""),
+                              lambda text: self.set_value(key, text))
+        if kind == "dialogue":
+            from components.dialouge_parser import list_dialogues, load_dialogue
+            from components.settings import DIALOGUE_DIR
+
+            def pick(filename):
+                try:  # check the file now, not when a player talks to the NPC
+                    load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+                except Exception as exc:
+                    return PopupMessage(self, f"Broken dialogue:\n{exc}",
+                                        halved=True, alignment=libtcodpy.CENTER)
+                return self.set_value(key, filename)
+
+            return ListPicker(self, "Choose dialogue", list_dialogues(), pick)
+        if kind == "lore":
+            from components.settings import LORE_DIR
+            from components.dialouge_parser import list_lore
+
+            return ListPicker(self, "Choose text", list_lore(),
+                              lambda filename: self.set_value(key, filename))
+        if kind == "quest_id":
+            def submit(text):
+                if not text:
+                    self.values.pop(key, None)
+                    self.editor.dirty = True
+                    return self
+                from components.dialouge_parser import quest_key
+                from level_editor import find_quest_id
+
+                quest_id = quest_key(text)
+                self.set_value(key, quest_id)
+                produced, used = find_quest_id(quest_id, self.editor.level, self.pos)
+                if not produced and not used:
+                    return self
+                lines = [f"ID '{quest_id}'"]
+                if produced:
+                    lines += ["", "Also produced by:"] + produced
+                if used:
+                    lines += ["", "Used by:"] + used
+                return PopupMessage(self, "\n".join(lines), halved=True,
+                                    alignment=libtcodpy.CENTER)
+
+            return TextPrompt(self, key, self.values.get(key, ""), submit)
+        return None
+
+def wrap_text(text: str, width: int) -> list:
+    lines = []
+    for paragraph in text.splitlines():
+        lines.extend(textwrap.wrap(paragraph, width) or [""])
+    return lines
+
+def tag_values(passage, prefix: str) -> list:
+    return [quest_key(tag[len(prefix):]) for tag in passage.tags if tag.startswith(prefix)]
+
+
+def find_quest_item(player, quest_id: str):
+    for item in player.inventory.items:
+        if getattr(item, "quest_id", None) == quest_id:
+            return item
+    return None
+
+
+def give_item(engine, item) -> None:
+    """Puts an item into the player's inventory, or on the floor if it is full."""
+    player = engine.player
+    if len(player.inventory.items) < player.inventory.capacity:
+        item.parent = player.inventory
+        player.inventory.items.append(item)
+        engine.message_log.add_message(f"You receive the {item.name}.", color.menu_title)
+    else:
+        item.place(player.x, player.y, engine.game_map)
+        engine.message_log.add_message(
+            f"Your hands are full. The {item.name} falls to the floor.", color.menu_title
+        )
+
+
+def give_quest_item(engine, quest_id: str) -> None:
+    import entity_factory
+
+    item = copy.deepcopy(entity_factory.quest_item)
+    item.quest_id = quest_id
+    item.name = quest_id.replace("_", " ").title()
+    give_item(engine, item)
+
+class DialogueScreen(AskUserEventHandler):
+    WIDTH = 50
+
+    def __init__(self, engine, npc):
+        super().__init__(engine)
+        self.npc = npc
+        self.dialogue = npc.dialogue
+        # passages whose gives/takes already ran for this NPC
+        if not hasattr(npc, "dialogue_done"):
+            npc.dialogue_done = set()
+        self.enter(self.dialogue.start)
+
+    def can_enter(self, name: str) -> bool:
+        target = self.dialogue.passages[name]
+        player = self.engine.player
+        return all(find_quest_item(player, q) for q in tag_values(target, "requires:"))
+
+    def enter(self, name: str) -> None:
+        import entity_factory
+        from entity import Item
+
+        self.current = name
+        passage = self.passage
+        if name in self.npc.dialogue_done:
+            return
+
+        player = self.engine.player
+        log = self.engine.message_log
+        changed = False  # anything handed over: then this passage only runs once
+
+        for quest_id in tag_values(passage, "takes:"):
+            item = find_quest_item(player, quest_id)
+            if item is not None:
+                player.inventory.items.remove(item)
+                log.add_message(f"You hand over the {item.name}.")
+                changed = True
+
+        for quest_id in tag_values(passage, "gives:"):
+            give_quest_item(self.engine, quest_id)
+            changed = True
+
+        for attr in tag_values(passage, "item:"):
+            prototype = getattr(entity_factory, attr, None)
+            if not isinstance(prototype, Item):
+                print(f"Dialogue tag item:{attr} names no item in entity_factory")
+                continue
+            give_item(self.engine, copy.deepcopy(prototype))
+            changed = True
+
+        for amount in tag_values(passage, "organs:"):
+            try:
+                organs = int(amount)
+            except ValueError:
+                print(f"Dialogue tag organs:{amount} is not a number")
+                continue
+            player.currency += organs
+            if organs >= 0:
+                log.add_message(f"You receive {organs} organs.", color.menu_title)
+            else:
+                log.add_message(f"You pay {-organs} organs.")
+            changed = True
+
+        if changed:
+            self.npc.dialogue_done.add(name)
+
+    def answers(self):
+        """The answers the player may pick. Links into passages whose
+        requirements are not met are hidden."""
+        links = [(label, target) for label, target in self.passage.links if self.can_enter(target)]
+        return links or [("Leave", None)]
+    
+    @property
+    def passage(self):
+        return self.dialogue.passages[self.current]
+
+    def on_render(self, console):
+        super().on_render(console)
+        dim(console)
+        inner = self.WIDTH - 4
+        text_lines = wrap_text(self.passage.text, inner)
+        answer_lines = [
+            wrap_text(f"{i + 1}) {label}", inner) for i, (label, _) in enumerate(self.answers())
+        ]
+        height = len(text_lines) + sum(len(lines) for lines in answer_lines) + 5
+        x, y = draw_box(console, self.WIDTH, height, self.npc.name)
+
+        row = y + 2
+        for line in text_lines:
+            console.print(x + 2, row, line)
+            row += 1
+        row += 1
+        for lines in answer_lines:
+            for line in lines:
+                console.print(x + 2, row, line, fg=color.menu_title)
+                row += 1
+
+    def ev_keydown(self, event):
+        key = event.sym
+        k = tcod.event.KeySym
+        if key == k.ESCAPE:
+            return MainGameEventHandler(self.engine)
+
+        if k.N1 <= key <= k.N9:
+            index = key - k.N1
+        elif k.KP_1 <= key <= k.KP_9:
+            index = key - k.KP_1
+        elif key in CONFIRM_KEYS and not self.passage.links:
+            index = 0  # Enter also closes a finished conversation
+        else:
+            return None
+
+        answers = self.answers()
+        if index >= len(answers):
+            return None
+        label, target = answers[index]
+        if target is None:
+            return MainGameEventHandler(self.engine)
+        self.enter(target)
+        return None
+
+    def ev_mousebuttondown(self, event):
+        return None  # don't close the conversation on a stray click
+
+class ReadingScreen(AskUserEventHandler):
+    WIDTH = 56
+    MAX_ROWS = 30  # text rows visible at once, longer texts scroll
+
+    def __init__(self, engine, item):
+        super().__init__(engine)
+        self.item = item
+        self.lines = wrap_text(item.lore, self.WIDTH - 4)
+        self.scroll = 0
+
+    @property
+    def rows(self):
+        return min(len(self.lines), self.MAX_ROWS)
+
+    def on_render(self, console):
+        super().on_render(console)
+        dim(console)
+        x, y = draw_box(console, self.WIDTH, self.rows + 5, self.item.name)
+        for i, line in enumerate(self.lines[self.scroll : self.scroll + self.rows]):
+            console.print(x + 2, y + 2 + i, line)
+
+        hint = "[Esc] close"
+        if len(self.lines) > self.rows:
+            hint = "Up/Down scroll  " + hint
+        console.print(x + 2, y + self.rows + 3, hint, fg=color.impossible)
+
+    def ev_keydown(self, event):
+        key = event.sym
+        k = tcod.event.KeySym
+        last = max(0, len(self.lines) - self.rows)
+        if key == k.UP:
+            self.scroll = max(0, self.scroll - 1)
+        elif key == k.DOWN:
+            self.scroll = min(last, self.scroll + 1)
+        elif key == k.PAGEUP:
+            self.scroll = max(0, self.scroll - self.rows)
+        elif key == k.PAGEDOWN:
+            self.scroll = min(last, self.scroll + self.rows)
+        elif key == k.ESCAPE or key in CONFIRM_KEYS:
+            return MainGameEventHandler(self.engine)
+        return None
+
+    def ev_mousebuttondown(self, event):
         return None

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import copy
 import lzma
 import os
 import pickle
 import re
 import traceback
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
+
+from components.dialouge_parser import load_dialogue, quest_key
 
 import numpy as np
 import tcod
@@ -20,6 +23,8 @@ from components.settings import (
     LEVEL_EXTENSION,
     LEVEL_HEIGHT,
     LEVEL_WIDTH,
+    DIALOGUE_DIR,
+    LORE_DIR,
 )
 from entity import Actor, Item
 
@@ -37,6 +42,7 @@ TILE_NAMES = {TILE_WALL: "Wall", TILE_FLOOR: "Floor", TILE_STAIRS: "Stairs"}
 BRUSH_TILE = "tile"
 BRUSH_START = "start"
 BRUSH_ENTITY = "entity"
+BRUSH_SELECT = "select"
 
 # graphics of each tile id, indexable with the whole tile grid at once
 TILE_GRAPHICS = np.array(
@@ -75,6 +81,12 @@ class CustomLevel:
         self.tiles = np.full((width, height), TILE_WALL, dtype=np.uint8, order="F")
         self.player_start: Tuple[int, int] = (width // 2, height // 2)
         self.entities: Dict[Tuple[int, int], str] = {}
+        self.properties: Dict[Tuple[int,int], Dict[str,str]] = []
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if not isinstance(self.__dict__.get("properties"), dict):
+            self.properties = {}
 
     @classmethod
     def new_default(cls) -> CustomLevel:
@@ -110,7 +122,6 @@ def load_level(filename: str) -> CustomLevel:
     with open(filename, "rb") as f:
         level = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(level, CustomLevel)
-    print(level.entities)
     return level
 
 def list_levels() -> List[Tuple[str,str]]:
@@ -126,6 +137,51 @@ def list_levels() -> List[Tuple[str,str]]:
         display = os.path.basename(filename)[: -len(LEVEL_EXTENSION)].replace(" ","_")
         results.append((display, filename))
     return results
+
+def find_quest_id(quest_id, current=None, skip_pos=None):
+    from components.dialouge_parser import quest_key, list_dialogues, load_dialogue
+
+    quest_id = quest_key(quest_id)
+    produced, used = [], []
+
+    levels = []
+    for _, filename in list_levels():
+        try:
+            level = load_level(filename)
+        except Exception:
+            continue
+        if current is not None and current.name and level.name == current.name:
+            continue  # the open version replaces the saved one
+        levels.append(level)
+    if current is not None:
+        levels.append(current)
+
+    for level in levels:
+        name = level.name or "this level"
+        for pos, props in getattr(level, "properties", {}).items():
+            if level is current and pos == skip_pos:
+                continue
+            attr = level.entities.get(pos, "?")
+            if quest_key(props.get("quest_id", "")) == quest_id:
+                produced.append(f"{name}: {attr} on the floor")
+            if quest_key(props.get("drop_id", "")) == quest_id:
+                produced.append(f"{name}: dropped by {attr}")
+
+    for _, filename in list_dialogues():
+        try:
+            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+        except Exception:
+            continue
+        for passage in dialogue.passages.values():
+            for tag in passage.tags:
+                kind, _, value = tag.partition(":")
+                if quest_key(value) != quest_id:
+                    continue
+                if kind == "gives":
+                    produced.append(f"{filename}: gives in '{passage.name}'")
+                elif kind in ("requires", "takes"):
+                    used.append(f"{filename}: {kind} in '{passage.name}'")
+    return produced, used
 
 def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
     from game_map import GameMap
@@ -147,8 +203,35 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
             missing += 1
             continue
         spawned = prototype.spawn(dungeon, x, y)
-    print("missing:", missing)
-    print("on map:", [e.name for e in dungeon.entities])     
+        props = level.properties.get((x, y), {})
+        if "name" in props:
+            spawned.name = props["name"]
+        if "dialogue" in props:
+            try:
+                spawned.dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, props["dialogue"]))
+            except Exception:
+                spawned.dialogue = None
+                engine.message_log.add_message(f"{spawned.name} has nothing to say.", color.impossible)
+        if "lore" in props:
+            try:
+                with open(os.path.join(LORE_DIR, props["lore"]), encoding="utf-8") as f:
+                    spawned.lore = f.read()
+            except OSError:
+                spawned.lore = "The pages are blank."
+
+        # a quest item lying on the floor
+        if "quest_id" in props:
+            spawned.quest_id = quest_key(props["quest_id"])
+
+        # a quest item carried by an enemy or NPC, dropped on death
+        if "drop_id" in props and hasattr(spawned, "inventory"):
+            drop = copy.deepcopy(entity_factory.quest_item)
+            drop.quest_id = quest_key(props["drop_id"])
+            drop.name = props.get("drop_name") or props["drop_id"]
+            drop.parent = spawned.inventory
+            spawned.inventory.items.append(drop)
+            spawned.guaranteed_drop = drop
+
     return dungeon, missing
 
 def new_custom_game(level:CustomLevel) -> Engine:
@@ -307,6 +390,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.status = "Shape the flesh. [S] saves."
         self.center_camera(*level.player_start)
 
+        self.pending = None
+
 
     def center_camera(self, x: int, y: int) -> None:
         self.cam_x = x - VIEW_WIDTH // 2
@@ -348,26 +433,38 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return TILE_NAMES[self.brush_tile]
         if self.brush == BRUSH_START:
             return "Player start"
+        if self.brush == BRUSH_SELECT:
+            return "Select / edit"
         return entity_factory.short_name(self.selected_entity()[1])
 
     def brush_glyph(self) -> Tuple[str, Tuple[int, int, int]]:
-        """What the cursor looks like, a preview of the current brush."""
         if self.brush == BRUSH_TILE:
             return {TILE_WALL: "#", TILE_FLOOR: ".", TILE_STAIRS: ">"}[self.brush_tile], color.white
         if self.brush == BRUSH_START:
             return "@", color.white
+        if self.brush == BRUSH_SELECT:
+            return "?", color.white
         prototype = self.selected_entity()[1]
         return prototype.char, prototype.color
 
 
     def paint(self, x: int, y: int) -> None:
         level = self.level
+        if self.brush == BRUSH_SELECT:
+            attr = level.entities.get((x, y))
+            fields = entity_factory.editable_properties(attr) if attr else []
+            if fields:
+                self.pending = input_handlers.PropertyMenu(self, (x, y), fields)
+            else:
+                self.status = "Nothing to edit here"
+            return
         if self.brush == BRUSH_TILE:
             if self.brush_tile == TILE_WALL:
                 if (x, y) == level.player_start:
                     self.status = "Can't wall in the start"
                     return
                 level.entities.pop((x, y), None)
+                level.properties.pop((x, y), None)
             if self.brush_tile == TILE_STAIRS:
                 old = level.stairs_location
                 if old and old != (x, y):
@@ -390,6 +487,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             attr = self.selected_entity()[0]
             if level.entities.get((x, y)) != attr:
                 level.entities[(x, y)] = attr
+                level.properties.pop((x, y), None)
                 if level.tiles[x, y] == TILE_WALL:
                     level.tiles[x, y] = TILE_FLOOR
                 self.dirty = True
@@ -398,6 +496,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
         level = self.level
         if (x, y) in level.entities:
             del level.entities[(x, y)]
+            level.properties.pop((x, y), None)
             self.dirty = True
         elif (x, y) == level.player_start:
             self.status = "Move the start with [4]"
@@ -492,6 +591,10 @@ class LevelEditor(input_handlers.BaseEventHandler):
             self.rect_anchor = self.map_pos()
         else:
             self.apply_at_mouse()
+        if self.pending is not None:
+            handler, self.pending = self.pending, None
+            self.held_button = None
+            return handler
 
     def ev_mousebuttonup(self, event):
         if self.rect_mode and self.rect_anchor is not None:
@@ -535,6 +638,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             self.brush = BRUSH_START
         elif key == k.N5:
             self.brush = BRUSH_ENTITY
+        elif key == k.N6:
+            self.brush = BRUSH_SELECT
         elif key == k.TAB:
             self.group_index = (self.group_index + 1) % len(self.groups)
             self.brush = BRUSH_ENTITY
@@ -635,6 +740,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "3 stairs "
             "4 start",
             "5 entity [ ] pick",
+            "5 select / edit"
             "LMB draw RMB erase",
             "R rectangle mode",
             "Arrows pan (Shift)",
