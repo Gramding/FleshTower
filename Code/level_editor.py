@@ -304,6 +304,8 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
         props = level.properties.get((x, y), {})
         if "name" in props:
             spawned.name = props["name"]
+        if is_yes(props.get("invulnerable")):
+            spawned.invulnerable = True
         if "dialogue" in props:
             try:
                 spawned.dialogue = load_dialogue(

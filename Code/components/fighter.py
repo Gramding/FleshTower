@@ -78,6 +78,9 @@ class Fighter(BaseComponent):
 
     @hp.setter
     def hp(self, value: int) -> None:
+        # invulnerable actors (set in the level editor) never lose HP
+        if getattr(getattr(self, "parent", None), "invulnerable", False):
+            value = max(value, getattr(self, "_hp", value))
         # this enshures that HP can never be negative
         # and never more than maximum
         self._hp = max(0, min(value, self.max_hp))

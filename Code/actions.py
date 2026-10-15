@@ -132,6 +132,8 @@ class MeleeAction(ActionWithDirection):
         damage = 0
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
+        if getattr(target, "invulnerable", False):
+            raise exceptions.Impossible(f"{target.name} cannot be harmed.")
         for i in range(self.entity.fighter.attack_count):
             dmg_chance = random.randint(0, 100)
             if dmg_chance >= target.fighter.damage_reduction:

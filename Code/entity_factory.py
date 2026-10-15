@@ -17,7 +17,7 @@ from components.effects import *
 from typing import Dict, List, Tuple
 
 EDITABLE_PROPERTIES = {
-    "genericNPC": [("name", "text"), ("dialogue", "dialogue")],
+    "genericNPC": [("name", "text"), ("dialogue", "dialogue"), ("invulnerable", "bool")],
     "genericLoreItem": [("name", "text"), ("lore", "lore")],
     "quest_item": [("name", "text"), ("quest_id", "quest_id")],
 }

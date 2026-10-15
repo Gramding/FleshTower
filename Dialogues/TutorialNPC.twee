@@ -1,0 +1,89 @@
+:: StoryTitle
+TutorialNPC
+
+
+:: StoryData
+{
+  "ifid": "44F811C4-2BA9-46A4-B8E7-B09EDD659707",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Start",
+  "tag-colors": {
+    "item:health_potion": "green",
+    "organs:10": "green"
+  },
+  "zoom": 1
+}
+
+
+:: But if I'm dead, how do I stand here before you? {"position":"1200,800","size":"100,100"}
+Shall I tell you a bit about yourself?
+
+[[Myself?]]
+
+
+:: Mission? {"position":"1200,400","size":"100,100"}
+Ah, yes. You were created to conquer the tower we're in. This is your birthplace, and it will most likely be the place you die in for all eternity.
+
+
+
+[[Tower?]]
+
+
+:: Myself? {"position":"1200,600","size":"100,100"}
+Yes, you. You, the creation that dies, but only in body. Whenever you die, the tower forms you down here again. And again, and again, and again we have this same conversation.
+
+
+[[Start]]
+
+
+:: Piss off! {"position":"1000,1100","size":"100,100"}
+This again. Might I remind you that you yourself, however far back it was, hired me to guide you whenever you die?
+
+
+[[What? How long ago, and how often did I die?]]
+
+
+:: Start [item:health_potion organs:10] {"position":"800,800","size":"100,100"}
+Greetings. It seems you've died yet again. Ah, what am I saying? You can never remember.
+
+[[Who are you?]]
+[[Piss off!]]
+[[What do you mean by died again?]]
+[[Leave]]
+
+
+:: Leave {"position":"800,1000","size":"100,100"}
+Off you go, then. I'll be here when you return. You always do.
+
+
+
+:: Tower? {"position":"1100,200","size":"100,100"}
+Where else did you think you were? The tower, of course! That is not for me to tell you, though.
+
+[[Start]]
+
+
+:: What do you mean by died again? {"position":"1000,800","size":"100,100"}
+You're down here, so you must have died. And since you don't remember me, you must have died.
+
+[[But if I'm dead, how do I stand here before you?]]
+
+
+:: What? How long ago, and how often did I die? {"position":"1200,1100","size":"100,100"}
+It was fun counting your deaths at first, but so much time has passed that I can't remember how often you've died. How long ago is another thing I can't remember. Nor do I want to. So much time has passed since I forgot that it would only sadden me.
+
+[[Why are you still alive, then?]]
+
+
+:: Who are you? {"position":"1000,525","size":"100,100"}
+Ah, this, time and time again. I'm called The Keeper. Whenever you die and inevitably forget, I'm there to tell you about yourself and the mission you have to accomplish.
+
+[[Mission?]]
+[[Myself?]]
+
+
+:: Why are you still alive, then? {"position":"1400,1100","size":"100,100"}
+I'm only alive because you, in the past, let me consume a bit of your flesh. With it, I've retained a fraction of your strange immortality.
+
+[[Start]]
