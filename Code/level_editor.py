@@ -106,7 +106,7 @@ class CustomLevel:
         self.tiles = np.full((width, height), TILE_WALL, dtype=np.uint8, order="F")
         self.player_start: Tuple[int, int] = (width // 2, height // 2)
         self.entities: Dict[Tuple[int, int], str] = {}
-        self.properties: Dict[Tuple[int, int], Dict[str, str]] = []
+        self.properties: Dict[Tuple[int, int], Dict[str, str]] = {}
 
     def __setstate__(self, state):
         self.__dict__.update(state)
