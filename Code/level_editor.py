@@ -735,12 +735,12 @@ class LevelEditor(input_handlers.BaseEventHandler):
             console.print(x + 2, y, label, fg=color.white, bg=bg)
 
         help_lines = [
-            "1 wall  "
+            "1 wall  ",
             "2 floor",
-            "3 stairs "
+            "3 stairs ",
             "4 start",
             "5 entity [ ] pick",
-            "5 select / edit"
+            "6 select / edit",
             "LMB draw RMB erase",
             "R rectangle mode",
             "Arrows pan (Shift)",
