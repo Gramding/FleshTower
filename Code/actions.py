@@ -201,8 +201,61 @@ class MovementAction(ActionWithDirection):
         self.entity.move(self.dx, self.dy)
 
 
+class PullLeverAction(ActionWithDirection):
+    def perform(self) -> None:
+        import tile_types
+
+        game_map = self.engine.game_map
+        x, y = self.dest_xy
+        if game_map.tiles[x, y]["light"]["ch"] == tile_types.button_off["light"]["ch"]:
+            game_map.tiles[x, y] = tile_types.button_on
+        else:
+            game_map.tiles[x, y] = tile_types.button_off
+
+        if game_map.toggle_link(game_map.buttons[(x, y)]):
+            self.engine.message_log.add_message(
+                "You pull the lever. Something grinds in the walls."
+            )
+        else:
+            self.engine.message_log.add_message(
+                "You pull the lever. Nothing happens.", color.impossible
+            )
+
+
+class UnlockDoorAction(ActionWithDirection):
+    def perform(self) -> None:
+        import tile_types
+
+        game_map = self.engine.game_map
+        door = game_map.doors[self.dest_xy]
+        key = next(
+            (i for i in self.entity.inventory.items if getattr(i, "quest_id", None) == door["key"]),
+            None,
+        )
+        if key is None:
+            if door["hidden"]:
+                # don't give the secret away
+                raise exceptions.Impossible("Path inaccessible!")
+            raise exceptions.Impossible("The door is locked.")
+
+        door["open"] = True
+        game_map.tiles[self.dest_xy] = tile_types.door_open
+        if door["consume_key"]:
+            self.entity.inventory.items.remove(key)
+            self.engine.message_log.add_message(f"The {key.name} stays in the lock.")
+        else:
+            self.engine.message_log.add_message(f"You unlock the door with the {key.name}.")
+
+
 class BumpAction(ActionWithDirection):
     def perform(self) -> None:
+        game_map = self.engine.game_map
+        if self.entity is self.engine.player:
+            if self.dest_xy in getattr(game_map, "buttons", {}):
+                return PullLeverAction(self.entity, self.dx, self.dy).perform()
+            door = getattr(game_map, "doors", {}).get(self.dest_xy)
+            if door and door["key"] and not door["open"]:
+                return UnlockDoorAction(self.entity, self.dx, self.dy).perform()
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":

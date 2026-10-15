@@ -35,6 +35,30 @@ class GameMap:
 
         self.upstairs_location = (int(0), int(0))
 
+        # level editor buttons and doors, linked by link_id
+        self.buttons = {}  # {(x, y): link_id}
+        self.doors = {}  # {(x, y): {"link": link_id, "open": bool, "hidden": bool}}
+
+    def toggle_link(self, link_id: str) -> int:
+        """Opens/closes every door with this link_id. Returns how many changed."""
+        changed = 0
+        for (x, y), door in getattr(self, "doors", {}).items():
+            if not link_id or door["link"] != link_id:
+                continue
+            if door["open"]:
+                # never close a door on something standing in it
+                if any(e.x == x and e.y == y for e in self.entities):
+                    continue
+                door["open"] = False
+                self.tiles[x, y] = (
+                    tile_types.randWall() if door["hidden"] else tile_types.door_closed
+                )
+            else:
+                door["open"] = True
+                self.tiles[x, y] = tile_types.door_open
+            changed += 1
+        return changed
+
     @property
     def gamemap(self) -> GameMap:
         return self

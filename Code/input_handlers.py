@@ -1668,6 +1668,36 @@ class PropertyMenu(BaseEventHandler):
                                     alignment=libtcodpy.CENTER)
 
             return TextPrompt(self, key, self.values.get(key, ""), submit)
+        if kind == "bool":
+            from level_editor import is_yes
+
+            return self.set_value(key, "no" if is_yes(self.values.get(key)) else "yes")
+        if kind == "link_id":
+            def submit(text):
+                if not text:
+                    self.values.pop(key, None)
+                    self.editor.dirty = True
+                    return self
+                from components.dialouge_parser import quest_key
+                from level_editor import find_link_id, TILE_NAMES
+
+                link_id = quest_key(text)
+                self.set_value(key, link_id)
+                me = TILE_NAMES[int(self.editor.level.tiles[self.pos])]
+                others = find_link_id(self.editor.level, link_id, self.pos)
+                lines = [f"ID '{link_id}'", ""]
+                if others:
+                    lines.append("Already used by:")
+                    lines += [f"{kind_} at {x},{y}" for kind_, (x, y) in others]
+                else:
+                    lines.append("Not linked yet")
+                counterpart = "Door" if me == "Button" else "Button"
+                if not any(kind_ == counterpart for kind_, _ in others):
+                    lines += ["", f"No {counterpart.lower()} uses this id yet"]
+                return PopupMessage(self, "\n".join(lines), halved=True,
+                                    alignment=libtcodpy.CENTER)
+
+            return TextPrompt(self, key, self.values.get(key, ""), submit)
         return None
 
 def wrap_text(text: str, width: int) -> list:

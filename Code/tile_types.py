@@ -7,23 +7,27 @@ import numpy as np
 # fg: forground Color
 # bg: Background color
 
-graphic_dt = np.dtype([
-    ("ch", np.int32),
-    ("fg", "3B"),
-    ("bg", "3B"),
-])
+graphic_dt = np.dtype(
+    [
+        ("ch", np.int32),
+        ("fg", "3B"),
+        ("bg", "3B"),
+    ]
+)
 
 # another abap Structure :D
 # walkable if it has collision
 # transaprent if it blocks field of view
 # dark represents the character on tile (uses above created struct type)
 
-tile_dt = np.dtype([
-    ("walkable", np.bool),
-    ("transparent", np.bool),
-    ("dark", graphic_dt),
-    ("light", graphic_dt),
-])
+tile_dt = np.dtype(
+    [
+        ("walkable", np.bool),
+        ("transparent", np.bool),
+        ("dark", graphic_dt),
+        ("light", graphic_dt),
+    ]
+)
 
 # this is a helper function for tile creation
 
@@ -75,4 +79,32 @@ chest = new_tile(
     transparent=False,
     dark=(0, (255, 255, 255), (0, 0, 0)),
     light=(0, (255, 255, 255), (0, 0, 0)),
+)
+
+button_on = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(ord("/"), (255, 255, 255), (0, 0, 0)),
+    light=(ord("/"), (255, 255, 255), (0, 0, 0)),
+)
+
+button_off = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(ord("\\"), (255, 255, 255), (0, 0, 0)),
+    light=(ord("\\"), (255, 255, 255), (0, 0, 0)),
+)
+
+door_closed = new_tile(
+    walkable=False,
+    transparent=False,
+    dark=(ord("+"), (255, 255, 255), (0, 0, 0)),
+    light=(ord("+"), (255, 255, 255), (0, 0, 0)),
+)
+
+door_open = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord("-"), (255, 255, 255), (0, 0, 0)),
+    light=(ord("-"), (255, 255, 255), (0, 0, 0)),
 )

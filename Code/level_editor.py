@@ -37,7 +37,15 @@ LEVEL_FORMAT_VERSION = 1
 TILE_WALL = 0
 TILE_FLOOR = 1
 TILE_STAIRS = 2
-TILE_NAMES = {TILE_WALL: "Wall", TILE_FLOOR: "Floor", TILE_STAIRS: "Stairs"}
+TILE_BUTTON = 3
+TILE_DOOR = 4
+TILE_NAMES = {
+    TILE_WALL: "Wall",
+    TILE_FLOOR: "Floor",
+    TILE_STAIRS: "Stairs",
+    TILE_BUTTON: "Button",
+    TILE_DOOR: "Door",
+}
 
 BRUSH_TILE = "tile"
 BRUSH_START = "start"
@@ -50,9 +58,22 @@ TILE_GRAPHICS = np.array(
         tile_types.randWall()["light"],
         tile_types.randFloor()["light"],
         tile_types.stairs_up["light"],
+        tile_types.button_off["light"],
+        tile_types.door_closed["light"],
     ],
     dtype=tile_types.graphic_dt,
 )
+
+TILE_PROPERTIES = {
+    TILE_BUTTON: [("link_id", "link_id")],
+    TILE_DOOR: [
+        ("link_id", "link_id"),
+        ("hidden", "bool"),
+        ("open", "bool"),
+        ("key_id", "quest_id"),
+        ("consume_key", "bool"),
+    ],
+}
 
 NAME_MAX_LENGTH = 24
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _\-]+$")
@@ -68,21 +89,25 @@ PALETTE_ROWS = 16
 CURSOR_BG = (150, 40, 40)
 RECT_BG = (90, 30, 90)
 START_BG = (40, 90, 40)
+LINK_BG = (30, 60, 110)
 
 
 SHIFT = tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
 CTRL = tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL
 
+
 class CustomLevel:
-    def __init__(self, name: str = "", width: int = LEVEL_WIDTH, height: int = LEVEL_HEIGHT):
+    def __init__(
+        self, name: str = "", width: int = LEVEL_WIDTH, height: int = LEVEL_HEIGHT
+    ):
         self.name = name
         self.width = width
         self.height = height
         self.tiles = np.full((width, height), TILE_WALL, dtype=np.uint8, order="F")
         self.player_start: Tuple[int, int] = (width // 2, height // 2)
         self.entities: Dict[Tuple[int, int], str] = {}
-        self.properties: Dict[Tuple[int,int], Dict[str,str]] = []
-    
+        self.properties: Dict[Tuple[int, int], Dict[str, str]] = []
+
     def __setstate__(self, state):
         self.__dict__.update(state)
         if not isinstance(self.__dict__.get("properties"), dict):
@@ -109,8 +134,10 @@ class CustomLevel:
         with open(filename, "wb") as f:
             f.write(save_data)
 
+
 def level_file_name(name: str) -> str:
-    return os.path.join(LEVEL_DIR, name.strip().replace(" ","_") + LEVEL_EXTENSION)
+    return os.path.join(LEVEL_DIR, name.strip().replace(" ", "_") + LEVEL_EXTENSION)
+
 
 def save_level(level: CustomLevel) -> str:
     os.makedirs(LEVEL_DIR, exist_ok=True)
@@ -118,13 +145,15 @@ def save_level(level: CustomLevel) -> str:
     level.save_as(filename=filename)
     return filename
 
+
 def load_level(filename: str) -> CustomLevel:
     with open(filename, "rb") as f:
         level = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(level, CustomLevel)
     return level
 
-def list_levels() -> List[Tuple[str,str]]:
+
+def list_levels() -> List[Tuple[str, str]]:
     os.makedirs(LEVEL_DIR, exist_ok=True)
     files = [
         os.path.join(LEVEL_DIR, f)
@@ -134,9 +163,10 @@ def list_levels() -> List[Tuple[str,str]]:
     files.sort(key=os.path.getmtime, reverse=True)
     results = []
     for filename in files:
-        display = os.path.basename(filename)[: -len(LEVEL_EXTENSION)].replace(" ","_")
+        display = os.path.basename(filename)[: -len(LEVEL_EXTENSION)].replace(" ", "_")
         results.append((display, filename))
     return results
+
 
 def find_quest_id(quest_id, current=None, skip_pos=None):
     from components.dialouge_parser import quest_key, list_dialogues, load_dialogue
@@ -166,6 +196,8 @@ def find_quest_id(quest_id, current=None, skip_pos=None):
                 produced.append(f"{name}: {attr} on the floor")
             if quest_key(props.get("drop_id", "")) == quest_id:
                 produced.append(f"{name}: dropped by {attr}")
+            if quest_key(props.get("key_id", "")) == quest_id:
+                used.append(f"{name}: unlocks door at {pos[0]},{pos[1]}")
 
     for _, filename in list_dialogues():
         try:
@@ -183,6 +215,46 @@ def find_quest_id(quest_id, current=None, skip_pos=None):
                     used.append(f"{filename}: {kind} in '{passage.name}'")
     return produced, used
 
+
+def find_link_id(level, link_id, skip_pos=None) -> List[Tuple[str, Tuple[int, int]]]:
+    """Every button/door in this level that uses link_id, as (kind, pos)."""
+    link_id = quest_key(link_id)
+    found = []
+    for pos, props in level.properties.items():
+        if pos == skip_pos or quest_key(props.get("link_id", "")) != link_id:
+            continue
+        tile = int(level.tiles[pos])
+        if tile in TILE_PROPERTIES:
+            found.append((TILE_NAMES[tile], pos))
+    return found
+
+
+def link_problems(level) -> List[str]:
+    """Buttons or doors without an id, and ids missing their counterpart."""
+    problems = []
+    kinds: Dict[str, set] = {}
+    for x, y in np.argwhere(np.isin(level.tiles, list(TILE_PROPERTIES))):
+        pos = (int(x), int(y))
+        tile = int(level.tiles[pos])
+        props = level.properties.get(pos, {})
+        link_id = quest_key(props.get("link_id", ""))
+        if not link_id:
+            if not props.get("key_id"):  # a locked door needs no button
+                problems.append(f"{TILE_NAMES[tile]} at {pos} has no link")
+            continue
+        kinds.setdefault(link_id, set()).add(tile)
+    for link_id, tiles in kinds.items():
+        if TILE_DOOR not in tiles:
+            problems.append(f"'{link_id}' has no door")
+        if TILE_BUTTON not in tiles:
+            problems.append(f"'{link_id}' has no button")
+    return problems
+
+
+def is_yes(value) -> bool:
+    return str(value).strip().lower() in ("yes", "true", "1")
+
+
 def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
     from game_map import GameMap
 
@@ -191,8 +263,34 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
     dungeon.tiles[level.tiles == TILE_FLOOR] = tile_types.randFloor()
     dungeon.tiles[level.tiles == TILE_STAIRS] = tile_types.stairs_up
 
+    # buttons and doors, linked by a shared link_id
+    dungeon.buttons = {}
+    dungeon.doors = {}
+    for x, y in np.argwhere(np.isin(level.tiles, list(TILE_PROPERTIES))):
+        pos = (int(x), int(y))
+        props = level.properties.get(pos, {})
+        link_id = quest_key(props.get("link_id", ""))
+        if level.tiles[pos] == TILE_BUTTON:
+            dungeon.tiles[pos] = tile_types.button_off
+            dungeon.buttons[pos] = link_id
+        else:
+            door = {
+                "link": link_id,
+                "open": is_yes(props.get("open")),
+                "hidden": is_yes(props.get("hidden")),
+                "key": quest_key(props.get("key_id", "")),
+                "consume_key": is_yes(props.get("consume_key")),
+            }
+            if door["open"]:
+                dungeon.tiles[pos] = tile_types.door_open
+            elif door["hidden"]:
+                dungeon.tiles[pos] = tile_types.randWall()
+            else:
+                dungeon.tiles[pos] = tile_types.door_closed
+            dungeon.doors[pos] = door
+
     stairs = level.stairs_location
-    dungeon.upstairs_location = stairs if stairs else (-1,-1)
+    dungeon.upstairs_location = stairs if stairs else (-1, -1)
 
     player.place(*level.player_start, dungeon)
 
@@ -208,10 +306,14 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
             spawned.name = props["name"]
         if "dialogue" in props:
             try:
-                spawned.dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, props["dialogue"]))
+                spawned.dialogue = load_dialogue(
+                    os.path.join(DIALOGUE_DIR, props["dialogue"])
+                )
             except Exception:
                 spawned.dialogue = None
-                engine.message_log.add_message(f"{spawned.name} has nothing to say.", color.impossible)
+                engine.message_log.add_message(
+                    f"{spawned.name} has nothing to say.", color.impossible
+                )
         if "lore" in props:
             try:
                 with open(os.path.join(LORE_DIR, props["lore"]), encoding="utf-8") as f:
@@ -234,14 +336,15 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
 
     return dungeon, missing
 
-def new_custom_game(level:CustomLevel) -> Engine:
+
+def new_custom_game(level: CustomLevel) -> Engine:
     import procgen
     from setup_game import create_engine
 
     engine = create_engine(current_floor=0)
     engine.item_chances = procgen.item_chances
     engine.enemy_chances = procgen.enemy_chances
-    engine.game_map, missing = build_game_map(level,engine)
+    engine.game_map, missing = build_game_map(level, engine)
     engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
@@ -251,12 +354,14 @@ def new_custom_game(level:CustomLevel) -> Engine:
             f"{missing} entities of this level no longer exist", color.impossible
         )
     if level.stairs_location is None:
-        engine.message_log.add_message("There are no stairs in this level", color.impossible)
+        engine.message_log.add_message(
+            "There are no stairs in this level", color.impossible
+        )
 
     return engine
 
 
-def event_tile(event) -> Optional[Tuple[int,int]]:
+def event_tile(event) -> Optional[Tuple[int, int]]:
     try:
         tile = event.tile
     except Exception:
@@ -274,35 +379,47 @@ class LevelMenu(input_handlers.BaseEventHandler):
 
     def refresh(self) -> None:
         self.levels = list_levels()
-        self.selected = max(0, min(self.selected,len(self.levels) - 1 ))
+        self.selected = max(0, min(self.selected, len(self.levels) - 1))
 
-    def popup(self, text:str) -> input_handlers.BaseEventHandler:
-        return input_handlers.PopupMessage(self,text,halved=True,alignment=libtcodpy.CENTER)
+    def popup(self, text: str) -> input_handlers.BaseEventHandler:
+        return input_handlers.PopupMessage(
+            self, text, halved=True, alignment=libtcodpy.CENTER
+        )
 
     def on_render(self, console):
         self.main_menu.on_render(console)
         input_handlers.dim(console)
-        width, height = 60,30
-        x,y = input_handlers.draw_box(console,width,height,"Custom Level Select")
+        width, height = 60, 30
+        x, y = input_handlers.draw_box(console, width, height, "Custom Level Select")
         visible_rows = height - 9
         if not self.levels:
-            console.print(x + 2 , y + 2, "No custom levels", fg=color.impossible)
-            console.print(x + 2, y + 3, "Press [N] cave a new Floor into the Tower.", fg=color.impossible)
-        first = max(0,self.selected - visible_rows + 1)
+            console.print(x + 2, y + 2, "No custom levels", fg=color.impossible)
+            console.print(
+                x + 2,
+                y + 3,
+                "Press [N] cave a new Floor into the Tower.",
+                fg=color.impossible,
+            )
+        first = max(0, self.selected - visible_rows + 1)
         for row, (display, _) in enumerate(self.levels[first : first + visible_rows]):
             index = first + row
-            text  = f" {display}"[: width - 4].ljust(width - 4)
+            text = f" {display}"[: width - 4].ljust(width - 4)
             if index == self.selected:
-                console.print(x + 2, y + 2 + row, text, fg=color.menu_title, bg=PANEL_HIGHLIGHT)
+                console.print(
+                    x + 2, y + 2 + row, text, fg=color.menu_title, bg=PANEL_HIGHLIGHT
+                )
             else:
                 console.print(x + 2, y + 2 + row, text, fg=color.menu_text)
 
         help_y = y + height - 6
         console.print(x + 2, help_y, "[Enter] play      [E] edit", fg=color.menu_text)
-        console.print(x + 2, help_y + 1, "[N] new level     [R] rename", fg=color.menu_text)
-        console.print(x + 2, help_y + 2, "[Del] delete      [Esc] back", fg=color.menu_text)
+        console.print(
+            x + 2, help_y + 1, "[N] new level     [R] rename", fg=color.menu_text
+        )
+        console.print(
+            x + 2, help_y + 2, "[Del] delete      [Esc] back", fg=color.menu_text
+        )
         console.print(x + 2, help_y + 3, "Up/Down to choose", fg=color.impossible)
-
 
     def current(self) -> Optional[Tuple[str, str]]:
         if not self.levels:
@@ -327,7 +444,9 @@ class LevelMenu(input_handlers.BaseEventHandler):
             return None
         elif key in input_handlers.CONFIRM_KEYS or key == tcod.event.KeySym.P:
             try:
-                return input_handlers.MainGameEventHandler(new_custom_game(self.load_current()))
+                return input_handlers.MainGameEventHandler(
+                    new_custom_game(self.load_current())
+                )
             except Exception as exc:
                 traceback.print_exc()
                 return self.popup(f"Failed to load:\n{exc}")
@@ -392,7 +511,6 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
         self.pending = None
 
-
     def center_camera(self, x: int, y: int) -> None:
         self.cam_x = x - VIEW_WIDTH // 2
         self.cam_y = y - VIEW_HEIGHT // 2
@@ -414,7 +532,6 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return None
         return x, y
 
-
     @property
     def group(self) -> str:
         return self.groups[self.group_index]
@@ -425,7 +542,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
     def cycle_entity(self, step: int) -> None:
         entries = self.palette[self.group]
-        self.palette_index[self.group] = (self.palette_index[self.group] + step) % len(entries)
+        self.palette_index[self.group] = (self.palette_index[self.group] + step) % len(
+            entries
+        )
         self.brush = BRUSH_ENTITY
 
     def brush_label(self) -> str:
@@ -437,9 +556,21 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return "Select / edit"
         return entity_factory.short_name(self.selected_entity()[1])
 
+    def hovered_link(self, pos: Optional[Tuple[int, int]]) -> str:
+        """link_id of the button/door under the mouse, '' if there is none."""
+        if pos is None or int(self.level.tiles[pos]) not in TILE_PROPERTIES:
+            return ""
+        return quest_key(self.level.properties.get(pos, {}).get("link_id", ""))
+
     def brush_glyph(self) -> Tuple[str, Tuple[int, int, int]]:
         if self.brush == BRUSH_TILE:
-            return {TILE_WALL: "#", TILE_FLOOR: ".", TILE_STAIRS: ">"}[self.brush_tile], color.white
+            return {
+                TILE_WALL: "#",
+                TILE_FLOOR: ".",
+                TILE_STAIRS: ">",
+                TILE_BUTTON: "/",
+                TILE_DOOR: "+",
+            }[self.brush_tile], color.white
         if self.brush == BRUSH_START:
             return "@", color.white
         if self.brush == BRUSH_SELECT:
@@ -447,10 +578,15 @@ class LevelEditor(input_handlers.BaseEventHandler):
         prototype = self.selected_entity()[1]
         return prototype.char, prototype.color
 
-
     def paint(self, x: int, y: int) -> None:
         level = self.level
+        tile = int(level.tiles[x, y])
         if self.brush == BRUSH_SELECT:
+            if tile in TILE_PROPERTIES:
+                self.pending = input_handlers.PropertyMenu(
+                    self, (x, y), TILE_PROPERTIES[tile]
+                )
+                return
             attr = level.entities.get((x, y))
             fields = entity_factory.editable_properties(attr) if attr else []
             if fields:
@@ -459,11 +595,15 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 self.status = "Nothing to edit here"
             return
         if self.brush == BRUSH_TILE:
-            if self.brush_tile == TILE_WALL:
+            if self.brush_tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
                 if (x, y) == level.player_start:
-                    self.status = "Can't wall in the start"
+                    self.status = "Can't build on the start"
                     return
                 level.entities.pop((x, y), None)
+                if tile != self.brush_tile:
+                    level.properties.pop((x, y), None)
+            elif tile in TILE_PROPERTIES:
+                # floor/stairs over a button or door drops its link
                 level.properties.pop((x, y), None)
             if self.brush_tile == TILE_STAIRS:
                 old = level.stairs_location
@@ -477,7 +617,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
             if level.player_start != (x, y):
                 level.entities.pop((x, y), None)
                 level.player_start = (x, y)
-                if level.tiles[x, y] == TILE_WALL:
+                if tile in TILE_PROPERTIES:
+                    level.properties.pop((x, y), None)
+                if tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
                     level.tiles[x, y] = TILE_FLOOR
                 self.dirty = True
         else:
@@ -488,7 +630,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             if level.entities.get((x, y)) != attr:
                 level.entities[(x, y)] = attr
                 level.properties.pop((x, y), None)
-                if level.tiles[x, y] == TILE_WALL:
+                if tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
                     level.tiles[x, y] = TILE_FLOOR
                 self.dirty = True
 
@@ -501,6 +643,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
         elif (x, y) == level.player_start:
             self.status = "Move the start with [4]"
         elif level.tiles[x, y] != TILE_WALL:
+            if level.tiles[x, y] in TILE_PROPERTIES:
+                level.properties.pop((x, y), None)
             level.tiles[x, y] = TILE_WALL
             self.dirty = True
 
@@ -528,7 +672,6 @@ class LevelEditor(input_handlers.BaseEventHandler):
         elif self.held_button == 3:
             self.erase(*pos)
 
-
     def ask_save(self, then_leave: bool = False):
         def submit(name: str):
             problem = input_handlers.check_name(name)
@@ -543,7 +686,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 )
             return self.save_as(name, then_leave)
 
-        prompt = input_handlers.TextPrompt(self, "Save level as", self.level.name, submit)
+        prompt = input_handlers.TextPrompt(
+            self, "Save level as", self.level.name, submit
+        )
         return prompt
 
     def save_as(self, name: str, then_leave: bool = False):
@@ -558,6 +703,11 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.status = f"Saved {name}"
         if self.level.stairs_location is None:
             self.status += ". No stairs yet!"
+        problems = link_problems(self.level)
+        if problems:
+            self.status += f". {problems[0]}"
+            if len(problems) > 1:
+                self.status += f" (+{len(problems) - 1} more)"
         self.level_menu.refresh()
         if then_leave:
             return self.leave()
@@ -640,6 +790,10 @@ class LevelEditor(input_handlers.BaseEventHandler):
             self.brush = BRUSH_ENTITY
         elif key == k.N6:
             self.brush = BRUSH_SELECT
+        elif key == k.N7:
+            self.brush, self.brush_tile = BRUSH_TILE, TILE_BUTTON
+        elif key == k.N8:
+            self.brush, self.brush_tile = BRUSH_TILE, TILE_DOOR
         elif key == k.TAB:
             self.group_index = (self.group_index + 1) % len(self.groups)
             self.brush = BRUSH_ENTITY
@@ -657,12 +811,13 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return self.ask_save()
         elif key == k.ESCAPE:
             if self.dirty:
-                return input_handlers.PopupToConfirm(self, "Leave without saving?", self.leave)
+                return input_handlers.PopupToConfirm(
+                    self, "Leave without saving?", self.leave
+                )
             return self.leave()
         self.clamp_camera()
         self.apply_at_mouse()
         return None
-
 
     def on_render(self, console):
         level = self.level
@@ -684,6 +839,13 @@ class LevelEditor(input_handlers.BaseEventHandler):
             console.print(px, py, "@", fg=color.white, bg=START_BG)
 
         pos = self.map_pos()
+        link_id = self.hovered_link(pos)
+        if link_id:
+            # show everything this button/door is linked with
+            for _, (lx, ly) in find_link_id(level, link_id):
+                sx, sy = lx - cx, ly - cy
+                if 0 <= sx < VIEW_WIDTH and 0 <= sy < VIEW_HEIGHT:
+                    console.rgb["bg"][sx, sy] = LINK_BG
         if self.rect_anchor is not None and pos is not None:
             x1, x2 = sorted((self.rect_anchor[0], pos[0]))
             y1, y2 = sorted((self.rect_anchor[1], pos[1]))
@@ -702,8 +864,16 @@ class LevelEditor(input_handlers.BaseEventHandler):
     def render_panel(self, console, pos: Optional[Tuple[int, int]]) -> None:
         x = PANEL_X
         w = PANEL_WIDTH
-        console.draw_frame(x=x, y=0, width=w, height=console.height,
-                           title="Editor", clear=True, fg=color.white, bg=color.black)
+        console.draw_frame(
+            x=x,
+            y=0,
+            width=w,
+            height=console.height,
+            title="Editor",
+            clear=True,
+            fg=color.white,
+            bg=color.black,
+        )
         inner = w - 2
         title = (self.level.name or "<unnamed>") + ("*" if self.dirty else "")
         console.print(x + 1, 1, title[:inner], fg=color.menu_title)
@@ -719,6 +889,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 prototype = getattr(entity_factory, attr, None)
                 label = entity_factory.short_name(prototype) if prototype else attr
                 console.print(x + 1, 7, label[:inner], fg=color.impossible)
+            elif int(self.level.tiles[pos]) in TILE_PROPERTIES:
+                link_id = self.hovered_link(pos) or "-"
+                console.print(x + 1, 7, f"link: {link_id}"[:inner], fg=color.impossible)
 
         console.print(x + 1, 9, f"<{self.group}> Tab"[:inner], fg=color.menu_title)
         entries = self.palette[self.group]
@@ -727,10 +900,15 @@ class LevelEditor(input_handlers.BaseEventHandler):
         for row, (attr, prototype) in enumerate(entries[first : first + PALETTE_ROWS]):
             index = first + row
             y = 10 + row
-            label = f" {entity_factory.short_name(prototype)}"[: inner - 1].ljust(inner - 1)
+            label = f" {entity_factory.short_name(prototype)}"[: inner - 1].ljust(
+                inner - 1
+            )
             selected = index == current
-            bg = PANEL_HIGHLIGHT if selected and self.brush == BRUSH_ENTITY else (
-                (40, 40, 40) if selected else color.black)
+            bg = (
+                PANEL_HIGHLIGHT
+                if selected and self.brush == BRUSH_ENTITY
+                else ((40, 40, 40) if selected else color.black)
+            )
             console.print(x + 1, y, prototype.char, fg=prototype.color, bg=bg)
             console.print(x + 2, y, label, fg=color.white, bg=bg)
 
@@ -741,6 +919,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "4 start",
             "5 entity [ ] pick",
             "6 select / edit",
+            "7 button",
+            "8 door",
             "LMB draw RMB erase",
             "R rectangle mode",
             "Arrows pan (Shift)",
@@ -754,4 +934,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
         status_y = console.height - 4
         for i in range(0, min(len(self.status), inner * 3), inner):
-            console.print(x + 1, status_y + i // inner, self.status[i : i + inner], fg=color.menu_title)
+            console.print(
+                x + 1,
+                status_y + i // inner,
+                self.status[i : i + inner],
+                fg=color.menu_title,
+            )
