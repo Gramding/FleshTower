@@ -1479,6 +1479,31 @@ def key_to_char(event) -> Optional[str]:
         return "_" if shifted else "-"
     return None
 
+# what Shift turns each key into on a US keyboard
+US_SHIFTED = {
+    "1": "!", "2": "@", "3": "#", "4": "$", "5": "%", "6": "^", "7": "&",
+    "8": "*", "9": "(", "0": ")", "-": "_", "=": "+", "[": "{", "]": "}",
+    "\\": "|", ";": ":", "'": '"', ",": "<", ".": ">", "/": "?", "`": "~",
+}
+
+
+def typed_char(event) -> Optional[str]:
+    """Any printable character for a US keyboard layout, punctuation included."""
+    sym = int(event.sym)
+    if not 32 <= sym < 127:
+        return None
+    char = chr(sym)
+    shifted = bool(event.mod & SHIFT)
+    if char == " ":
+        return char
+    if "a" <= char <= "z":
+        caps = bool(event.mod & tcod.event.Modifier.CAPS)
+        return char.upper() if shifted != caps else char
+    if char in US_SHIFTED:
+        return US_SHIFTED[char] if shifted else char
+    return None
+
+
 def check_name(name: str) -> str:
     if not name:
         return "The level needs a name"
@@ -1642,9 +1667,56 @@ class PropertyMenu(BaseEventHandler):
         if kind == "lore":
             from components.settings import LORE_DIR
             from components.dialouge_parser import list_lore
+            from level_editor import find_lore_users
 
-            return ListPicker(self, "Choose text", list_lore(),
-                              lambda filename: self.set_value(key, filename))
+            def open_editor(filename, text):
+                others = find_lore_users(filename, self.editor.level, self.pos)
+                title = filename + (f" (used {len(others)}x more)" if others else "")
+
+                def save(new_text):
+                    os.makedirs(LORE_DIR, exist_ok=True)
+                    with open(os.path.join(LORE_DIR, filename), "w", encoding="utf-8") as f:
+                        f.write(new_text)
+                    return self.set_value(key, filename)
+
+                return LoreEditor(self, title, text, save)
+
+            def new_text():
+                def submit(name):
+                    if not name:
+                        prompt.error = "The text needs a name"
+                        return None
+                    problem = check_name(name)
+                    if problem:
+                        prompt.error = problem
+                        return None
+                    filename = name.replace(" ", "_") + ".txt"
+                    if os.path.exists(os.path.join(LORE_DIR, filename)):
+                        prompt.error = f"{name} already exists"
+                        return None
+                    return open_editor(filename, "")  # file is written on save only
+
+                prompt = TextPrompt(self, "Name of the new text", "", submit)
+                return prompt
+
+            def pick(filename):
+                if filename is None:
+                    return new_text()
+
+                def choose(choice):
+                    if choice == "use":
+                        return self.set_value(key, filename)
+                    try:
+                        with open(os.path.join(LORE_DIR, filename), encoding="utf-8") as f:
+                            text = f.read()
+                    except OSError as exc:
+                        return PopupMessage(self, f"Can't read {filename}:\n{exc}",
+                                            halved=True, alignment=libtcodpy.CENTER)
+                    return open_editor(filename, text)
+
+                return ListPicker(self, filename, [("Use this", "use"), ("Edit", "edit")], choose)
+
+            return ListPicker(self, "Choose text", [("+ New text...", None)] + list_lore(), pick)
         if kind == "quest_id":
             def submit(text):
                 if not text:
@@ -1699,6 +1771,180 @@ class PropertyMenu(BaseEventHandler):
 
             return TextPrompt(self, key, self.values.get(key, ""), submit)
         return None
+
+class LoreEditor(BaseEventHandler):
+    """Multi-line text editor for lore files, used from the level editor."""
+
+    WIDTH = 56  # same box as ReadingScreen, so lines wrap like they will in game
+    ROWS = 30
+    CURSOR_BG = (150, 40, 40)
+
+    def __init__(self, parent, title, text, on_save):
+        self.parent = parent
+        self.title = title
+        self.on_save = on_save  # (text) -> handler, writes the file
+        self.lines = text.split("\n") if text else [""]
+        self.row = 0
+        self.col = 0
+        self.scroll = 0
+        self.dirty = False
+        self.error = ""
+
+    def segments(self):
+        """Screen rows as (line, start, end), each line wrapped at spaces."""
+        width = self.WIDTH - 4
+        result = []
+        for row, line in enumerate(self.lines):
+            start = 0
+            while len(line) - start > width:
+                space = line.rfind(" ", start + 1, start + width + 1)
+                end = space + 1 if space > start else start + width
+                result.append((row, start, end))
+                start = end
+            result.append((row, start, len(line)))
+        return result
+
+    def cursor_segment(self, segments) -> int:
+        for i, (row, start, end) in enumerate(segments):
+            if row == self.row and start <= self.col and (
+                self.col < end or end == len(self.lines[row])
+            ):
+                return i
+        return 0
+
+    def move_vertical(self, step: int) -> None:
+        segments = self.segments()
+        i = self.cursor_segment(segments)
+        x = self.col - segments[i][1]
+        j = max(0, min(i + step, len(segments) - 1))
+        row, start, end = segments[j]
+        last = j + 1 == len(segments) or segments[j + 1][0] != row
+        self.row = row
+        self.col = min(start + x, end if last else max(start, end - 1))
+
+    def insert(self, text: str) -> None:
+        line = self.lines[self.row]
+        self.lines[self.row] = line[: self.col] + text + line[self.col :]
+        self.col += len(text)
+        self.dirty = True
+
+    def newline(self) -> None:
+        line = self.lines[self.row]
+        self.lines[self.row] = line[: self.col]
+        self.lines.insert(self.row + 1, line[self.col :])
+        self.row += 1
+        self.col = 0
+        self.dirty = True
+
+    def backspace(self) -> None:
+        if self.col > 0:
+            line = self.lines[self.row]
+            self.lines[self.row] = line[: self.col - 1] + line[self.col :]
+            self.col -= 1
+        elif self.row > 0:
+            self.col = len(self.lines[self.row - 1])
+            self.lines[self.row - 1] += self.lines.pop(self.row)
+            self.row -= 1
+        else:
+            return
+        self.dirty = True
+
+    def delete(self) -> None:
+        line = self.lines[self.row]
+        if self.col < len(line):
+            self.lines[self.row] = line[: self.col] + line[self.col + 1 :]
+        elif self.row + 1 < len(self.lines):
+            self.lines[self.row] += self.lines.pop(self.row + 1)
+        else:
+            return
+        self.dirty = True
+
+    def save(self):
+        try:
+            handler = self.on_save("\n".join(self.lines))
+        except OSError as exc:
+            self.error = f"Save failed: {exc}"
+            return None
+        self.dirty = False
+        return handler
+
+    def leave(self):
+        if self.dirty:
+            return PopupToConfirm(self, "Discard changes?", lambda: self.parent)
+        return self.parent
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        segments = self.segments()
+        cursor = self.cursor_segment(segments)
+        if cursor < self.scroll:
+            self.scroll = cursor
+        elif cursor >= self.scroll + self.ROWS:
+            self.scroll = cursor - self.ROWS + 1
+
+        title = self.title + ("*" if self.dirty else "")
+        x, y = draw_box(console, self.WIDTH, self.ROWS + 5, title)
+        for i, (row, start, end) in enumerate(segments[self.scroll : self.scroll + self.ROWS]):
+            console.print(x + 2, y + 2 + i, self.lines[row][start:end])
+
+        line = self.lines[self.row]
+        char = line[self.col] if self.col < len(line) else " "
+        cx = x + 2 + self.col - segments[cursor][1]
+        cy = y + 2 + cursor - self.scroll
+        console.print(cx, cy, char, bg=self.CURSOR_BG)
+
+        if self.error:
+            console.print(x + 2, y + self.ROWS + 3, self.error[: self.WIDTH - 4], fg=color.error)
+        else:
+            console.print(x + 2, y + self.ROWS + 3, "[Ctrl+S] save  [Esc] back", fg=color.impossible)
+
+    def ev_keydown(self, event):
+        key = event.sym
+        k = tcod.event.KeySym
+        self.error = ""
+        if event.mod & CTRL:
+            if key == k.S:
+                return self.save()
+            return None
+        if key == k.ESCAPE:
+            return self.leave()
+        if key in CONFIRM_KEYS:
+            self.newline()
+        elif key == k.BACKSPACE:
+            self.backspace()
+        elif key == k.DELETE:
+            self.delete()
+        elif key == k.LEFT:
+            if self.col > 0:
+                self.col -= 1
+            elif self.row > 0:
+                self.row -= 1
+                self.col = len(self.lines[self.row])
+        elif key == k.RIGHT:
+            if self.col < len(self.lines[self.row]):
+                self.col += 1
+            elif self.row + 1 < len(self.lines):
+                self.row += 1
+                self.col = 0
+        elif key == k.UP:
+            self.move_vertical(-1)
+        elif key == k.DOWN:
+            self.move_vertical(1)
+        elif key == k.PAGEUP:
+            self.move_vertical(-self.ROWS)
+        elif key == k.PAGEDOWN:
+            self.move_vertical(self.ROWS)
+        elif key == k.HOME:
+            self.col = 0
+        elif key == k.END:
+            self.col = len(self.lines[self.row])
+        else:
+            char = typed_char(event)
+            if char:
+                self.insert(char)
+        return None
+
 
 def wrap_text(text: str, width: int) -> list:
     lines = []

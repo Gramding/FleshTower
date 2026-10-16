@@ -168,12 +168,8 @@ def list_levels() -> List[Tuple[str, str]]:
     return results
 
 
-def find_quest_id(quest_id, current=None, skip_pos=None):
-    from components.dialouge_parser import quest_key, list_dialogues, load_dialogue
-
-    quest_id = quest_key(quest_id)
-    produced, used = [], []
-
+def all_levels(current=None) -> List[CustomLevel]:
+    """Every saved level, with the one open in the editor replacing its saved copy."""
     levels = []
     for _, filename in list_levels():
         try:
@@ -185,8 +181,28 @@ def find_quest_id(quest_id, current=None, skip_pos=None):
         levels.append(level)
     if current is not None:
         levels.append(current)
+    return levels
 
-    for level in levels:
+
+def find_lore_users(lore_file, current=None, skip_pos=None) -> List[str]:
+    """Every lore item, in any level, that shows this text file."""
+    users = []
+    for level in all_levels(current):
+        for pos, props in getattr(level, "properties", {}).items():
+            if level is current and pos == skip_pos:
+                continue
+            if props.get("lore") == lore_file:
+                users.append(f"{level.name or 'this level'}: {pos[0]},{pos[1]}")
+    return users
+
+
+def find_quest_id(quest_id, current=None, skip_pos=None):
+    from components.dialouge_parser import quest_key, list_dialogues, load_dialogue
+
+    quest_id = quest_key(quest_id)
+    produced, used = [], []
+
+    for level in all_levels(current):
         name = level.name or "this level"
         for pos, props in getattr(level, "properties", {}).items():
             if level is current and pos == skip_pos:
