@@ -136,16 +136,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             ],
         )
         elif event.sym == tcod.event.KeySym.K:
-            text = ""
-            for section in KEYBINDS:
-                text = f"{text}{section}\n\n"
-                for bind in KEYBINDS[section]:
-                    text = f"{text}{bind}:{KEYBINDS[section][bind]['NAME']}\n"
-                text = f"{text}\n\n\n"
-
-            return input_handlers.PopupMessage(
-                self, text, halved=False, alignment=libtcodpy.CENTER
-            )
+            return input_handlers.KeybindScreen(self)
         elif event.sym == tcod.event.KeySym.S:
             text = ""
             from components.scoreboard import Scoreboard

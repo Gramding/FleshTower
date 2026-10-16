@@ -769,6 +769,87 @@ def get_event_by_id(id: int):
     return currentKey
 
 
+# readable names for keys whose KeySym name is not what is printed on the key
+KEY_LABELS = {
+    "PERIOD": ".", "COMMA": ",", "SLASH": "/", "SEMICOLON": ";", "APOSTROPHE": "'",
+    "MINUS": "-", "EQUALS": "=", "LEFTBRACKET": "[", "RIGHTBRACKET": "]",
+    "BACKSLASH": "\\", "GRAVE": "`", "ESCAPE": "Esc", "RETURN": "Enter",
+    "KP_ENTER": "Enter", "PAGEUP": "PgUp", "PAGEDOWN": "PgDn",
+}
+
+
+def mod_label(mod) -> str:
+    mod = tcod.event.Modifier(mod)
+    parts = []
+    if mod & CTRL:
+        parts.append("Ctrl")
+    if mod & (tcod.event.Modifier.LALT | tcod.event.Modifier.RALT):
+        parts.append("Alt")
+    if mod & SHIFT:
+        parts.append("Shift")
+    return " + ".join(parts)
+
+
+def key_label(key, mod=tcod.event.Modifier.NONE) -> str:
+    """e.g. 'Shift + .' for the take stairs bind."""
+    name = tcod.event.KeySym(key).name
+    if len(name) == 2 and name[0] == "N" and name[1].isdigit():
+        text = name[1]  # number row keys are called N1, N2, ...
+    else:
+        text = KEY_LABELS.get(name, name if len(name) == 1 else name.title())
+    prefix = mod_label(mod)
+    return f"{prefix} + {text}" if prefix else text
+
+
+class KeybindScreen(BaseEventHandler):
+    """Lists every keybind, read from KEYBINDS so it always shows the real keys."""
+
+    WIDTH = 46
+
+    def __init__(self, parent: BaseEventHandler):
+        self.parent = parent
+        self.lines = self.build_lines()
+
+    @staticmethod
+    def build_lines():
+        from components.settings import KEYBINDS
+
+        lines = []  # (text, colour)
+        for section, binds in KEYBINDS.items():
+            lines.append((section, color.menu_title))
+            for bind in binds.values():
+                # for movement MOD is the rogue sprint, not part of the key
+                mod = tcod.event.Modifier.NONE if section == "Movement" else bind["MOD"]
+                lines.append((f"  {key_label(bind['KEY'], mod):<14}{bind['NAME']}", color.menu_text))
+            if section == "Movement" and binds:
+                sprint = mod_label(next(iter(binds.values()))["MOD"])
+                if sprint:
+                    lines.append((f"  {sprint + ' + move':<14}Sprint (Rogue)", color.menu_text))
+            lines.append(("", color.menu_text))
+        lines.append(("Other", color.menu_title))
+        lines.append((f"  {'/':<14}Look around", color.menu_text))
+        lines.append((f"  {'H':<14}Keybinds", color.menu_text))
+        return lines
+
+    def on_render(self, console):
+        self.parent.on_render(console)
+        dim(console)
+        height = len(self.lines) + 5
+        x, y = draw_box(console, self.WIDTH, height, "Keybinds")
+        for i, (text, fg) in enumerate(self.lines):
+            console.print(x + 2, y + 2 + i, text[: self.WIDTH - 4], fg=fg)
+        console.print(x + 2, y + height - 2, "[Esc] close", fg=color.impossible)
+
+    def ev_keydown(self, event):
+        if event.sym in CONFIRM_KEYS or event.sym in (
+            tcod.event.KeySym.ESCAPE,
+            tcod.event.KeySym.H,
+            tcod.event.KeySym.K,
+        ):
+            return self.parent
+        return None
+
+
 class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
@@ -881,6 +962,8 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         if key == tcod.event.KeySym.SLASH:
             return LookHandler(self.engine)
+        if key == tcod.event.KeySym.H:
+            return KeybindScreen(self)
 
         c_event = get_event_by_id(9)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(

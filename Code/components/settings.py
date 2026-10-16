@@ -100,7 +100,7 @@ KEYBINDS = {
             "MOD": event.Modifier.NONE,
         },
     },
-    "Menues": {
+    "Menus": {
         "I": {
             "NAME": "Inventory",
             "ID": 6,
