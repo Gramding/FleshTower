@@ -22,6 +22,14 @@ EDITABLE_PROPERTIES = {
     "quest_item": [("name", "text"), ("quest_id", "quest_id")],
 }
 
+# AIs a placed actor can be switched to in the level editor
+AI_OVERRIDES = {
+    "hostile": HostileEnemy,
+    "caster": HostileCaster,
+    "neutral": Vendor,  # stands still, never attacks
+}
+
+
 def short_name(entity) -> str:
     return entity.name
 
@@ -45,6 +53,13 @@ def editable_properties(attr: str) -> List[Tuple[str, str]]:
     fields = list(EDITABLE_PROPERTIES.get(attr, []))
     if isinstance(globals().get(attr), Actor):
         fields += [("drop_name", "text"), ("drop_id", "quest_id"), ("on_death", "link_id")]
+        fields += [  # overrides of this one placed actor, see level_editor.apply_overrides
+            ("hp", "int"),
+            ("power", "int"),
+            ("defense", "int"),
+            ("xp", "int"),
+            ("ai", "choice:default," + ",".join(AI_OVERRIDES)),
+        ]
     elif isinstance(globals().get(attr), Item):
         fields += [("on_pickup", "link_id")]
     return fields

@@ -10,10 +10,31 @@ from components.tileset import get_tileset
 import setup_game
 
 
+def screens_below(handler):
+    """The handler and the screens it was opened over: popups and menus keep
+    the screen behind them in .parent (or .editor for level editor menus)."""
+    seen = set()
+    while handler is not None and id(handler) not in seen:
+        seen.add(id(handler))
+        yield handler
+        handler = getattr(handler, "parent", None) or getattr(handler, "editor", None)
+
+
 def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
-    if isinstance(handler, input_handlers.EventHandler):
-        handler.engine.save_as(filename)
-        print("The Flesh remembers this point in time")
+    for screen in screens_below(handler):
+        if isinstance(screen, input_handlers.EventHandler):
+            if screen.engine.player.is_alive:
+                screen.engine.save_as(filename)
+                print("The Flesh remembers this point in time")
+            return
+        if hasattr(screen, "level") and getattr(screen, "dirty", False):
+            # a level editor behind a popup: same autosave as its own ev_quit
+            from level_editor import save_level, level_file_name
+
+            screen.level.name = screen.level.name or "autosave"
+            save_level(screen.level)
+            print(f"Unsaved level written to {level_file_name(screen.level.name)}")
+            return
 
 
 def main() -> None:

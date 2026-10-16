@@ -208,7 +208,8 @@ class MovementAction(ActionWithDirection):
         if self.entity is self.engine.player:
             from events import on_step
 
-            on_step(self.engine.game_map, (dest_x, dest_y))
+            previous = (dest_x - self.dx, dest_y - self.dy)
+            on_step(self.engine.game_map, (dest_x, dest_y), previous)
 
 
 class TileBumpAction(ActionWithDirection):
@@ -227,8 +228,12 @@ class TileBumpAction(ActionWithDirection):
 
 class PullLeverAction(TileBumpAction):
     def perform(self) -> None:
+        from events import conditions_met
+
         game_map = self.engine.game_map
         info = self.info
+        if not conditions_met(self.engine, info["props"]):
+            raise exceptions.Impossible("The lever won't budge.")
         game_map.set_tile_state(self.dest_xy, "on" if info["state"] == "off" else "off")
 
         if game_map.fire(info["props"].get("link_id", "")):

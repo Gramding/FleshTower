@@ -80,12 +80,26 @@ ACTION_FIELDS: Dict[str, List[Tuple[str, str]]] = {
     "teleport": [],
     "give_item": [("item_id", "quest_id"), ("item_name", "text")],
     "fire_signal": [("signal", "link_id")],
+    "set_flag": [("flag", "flag"), ("value", "choice:on,off")],
     "end_level": [],
 }
+OPTIONAL_FIELDS = ("item_name", "value")  # action fields that may stay empty
+
+# only react when these hold, checked by events.conditions_met
+CONDITION_FIELDS: List[Tuple[str, str]] = [
+    ("requires_flag", "flag"),
+    ("requires_not_flag", "flag"),
+    ("requires_item", "quest_id"),
+]
+
+
+# area triggers: a rectangle in the level that fires link_id when the player walks in
+AREA_FIELDS: List[Tuple[str, str]] = [("link_id", "link_id"), ("repeat", "bool")] + CONDITION_FIELDS
 
 
 def event_fields(props: dict) -> List[Tuple[str, str]]:
-    return ACTION_FIELDS.get(props.get("action", ""), [])
+    action = ACTION_FIELDS.get(props.get("action", ""), [])
+    return action + [("delay", "int")] + CONDITION_FIELDS
 
 
 TILES: List[TileDef] = [
@@ -96,7 +110,7 @@ TILES: List[TileDef] = [
         3, "Button", "/",
         {"off": lambda: tile_types.button_off, "on": lambda: tile_types.button_on},
         color=(230, 200, 120),
-        properties=[("link_id", "link_id")],
+        properties=[("link_id", "link_id")] + CONDITION_FIELDS,
         solid=True,
         link="sends",
         on_bump="lever",
@@ -130,7 +144,8 @@ TILES: List[TileDef] = [
             "hidden": tile_types.randFloor,
         },
         color=(200, 200, 200),
-        properties=[("link_id", "link_id"), ("hidden", "bool"), ("repeat", "bool")],
+        properties=[("link_id", "link_id"), ("hidden", "bool"), ("repeat", "bool")]
+        + CONDITION_FIELDS,
         solid=True,  # keeps entities off the cell, the player can still walk on it
         link="sends",
         on_step=True,
@@ -159,7 +174,13 @@ TILE_FLOOR = 1
 TILE_STAIRS = 2
 
 # props that hold ids, normalised when a level is built
-ID_PROPERTIES = ("link_id", "key_id", "signal", "item_id")
+ID_PROPERTIES = (
+    "link_id", "key_id", "signal", "item_id",
+    "flag", "requires_flag", "requires_not_flag", "requires_item",
+)
+
+# props holding a flag name, for autocomplete and checks
+FLAG_PROPERTIES = ("flag", "requires_flag", "requires_not_flag")
 
 # entity props that fire a signal (tiles send theirs through link_id)
 SIGNAL_PROPERTIES = ("on_death", "on_pickup")

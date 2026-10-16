@@ -6,6 +6,7 @@ import os
 import pickle
 import re
 import traceback
+from collections import deque
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from components.dialouge_parser import load_dialogue, quest_key
@@ -50,6 +51,7 @@ BRUSH_TILE = "tile"
 BRUSH_START = "start"
 BRUSH_ENTITY = "entity"
 BRUSH_SELECT = "select"
+BRUSH_AREA = "area"
 
 TILE_GROUP = "Tiles"  # palette group of TILES, the rest are entity groups
 
@@ -86,6 +88,7 @@ CURSOR_BG = (150, 40, 40)
 RECT_BG = (90, 30, 90)
 START_BG = (40, 90, 40)
 LINK_BG = (30, 60, 110)
+AREA_BG = (60, 50, 10)
 
 
 SHIFT = tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
@@ -103,11 +106,23 @@ class CustomLevel:
         self.player_start: Tuple[int, int] = (width // 2, height // 2)
         self.entities: Dict[Tuple[int, int], str] = {}
         self.properties: Dict[Tuple[int, int], Dict[str, str]] = {}
+        # area triggers: {"rect": (x1, y1, x2, y2), "props": {...}}, see tiles.AREA_FIELDS
+        self.areas: List[dict] = []
 
     def __setstate__(self, state):
         self.__dict__.update(state)
         if not isinstance(self.__dict__.get("properties"), dict):
             self.properties = {}
+        if "areas" not in self.__dict__:
+            self.areas = []
+
+    def area_at(self, pos) -> Optional[dict]:
+        """The last drawn area containing pos."""
+        for area in reversed(self.areas):
+            x1, y1, x2, y2 = area["rect"]
+            if x1 <= pos[0] <= x2 and y1 <= pos[1] <= y2:
+                return area
+        return None
 
     @classmethod
     def new_default(cls) -> CustomLevel:
@@ -248,6 +263,10 @@ def signal_users(level):
         signal = quest_key(props.get("signal", ""))
         if signal and tile is not None and tile.event and props.get("action") == "fire_signal":
             yield signal, "sends", f"{tile.name} fire_signal", pos
+    for area in getattr(level, "areas", []):
+        signal = quest_key(area["props"].get("link_id", ""))
+        if signal:
+            yield signal, "sends", "Area", area["rect"][:2]
 
 
 def dialogue_signals() -> set:
@@ -274,6 +293,40 @@ def known_signals(level) -> List[Tuple[str, int]]:
         counts[signal] = counts.get(signal, 0) + 1
     for signal in dialogue_signals():
         counts[signal] = counts.get(signal, 0) + 1
+    return sorted(counts.items(), key=lambda item: -item[1])
+
+
+def flag_users(current=None):
+    """Every use of a flag, as (flag, "sets"/"reads", where)."""
+    from components.dialouge_parser import list_dialogues
+
+    for level in all_levels(current):
+        for pos, props in getattr(level, "properties", {}).items():
+            name = f"{level.name or 'this level'} {pos[0]},{pos[1]}"
+            if props.get("flag") and props.get("action") == "set_flag":
+                yield quest_key(props["flag"]), "sets", name
+            for key in ("requires_flag", "requires_not_flag"):
+                if props.get(key):
+                    yield quest_key(props[key]), "reads", name
+    for _, filename in list_dialogues():
+        try:
+            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+        except Exception:
+            continue
+        for passage in dialogue.passages.values():
+            for tag in passage.tags:
+                kind, _, value = tag.partition(":")
+                if kind in ("flag", "unflag"):
+                    yield quest_key(value), "sets", filename
+                elif kind in ("if", "ifnot"):
+                    yield quest_key(value), "reads", filename
+
+
+def known_flags(current=None) -> List[Tuple[str, int]]:
+    """Flags in use anywhere, most used first, for autocomplete: (flag, uses)."""
+    counts: Dict[str, int] = {}
+    for flag, _, _ in flag_users(current):
+        counts[flag] = counts.get(flag, 0) + 1
     return sorted(counts.items(), key=lambda item: -item[1])
 
 
@@ -315,8 +368,13 @@ def find_link_id(level, link_id, skip_pos=None) -> List[Tuple[str, str, Tuple[in
     ]
 
 
-def link_problems(level) -> List[str]:
+Problem = Tuple[str, Optional[Tuple[int, int]]]  # (text, where to jump to)
+
+
+def link_problems(level) -> List[Problem]:
     """Linkable tiles without an id or action, and signals nothing sends or receives."""
+    from tiles import ACTION_FIELDS, OPTIONAL_FIELDS
+
     problems = []
     linkable = [tile.id for tile in TILES if tile.link]
     for x, y in np.argwhere(np.isin(level.tiles, linkable)):
@@ -324,20 +382,161 @@ def link_problems(level) -> List[str]:
         tile = tile_at(level, pos)
         props = level.properties.get(pos, {})
         if not props.get("link_id") and not props.get("key_id"):  # a locked door needs no button
-            problems.append(f"{tile.name} at {pos} has no link")
-        if tile.event and not props.get("action"):
-            problems.append(f"{tile.name} at {pos} has no action")
+            problems.append((f"{tile.name} has no link", pos))
+        if tile.event:
+            action = props.get("action")
+            if not action:
+                problems.append((f"{tile.name} has no action", pos))
+            for key, _ in ACTION_FIELDS.get(action, []):
+                if key not in OPTIONAL_FIELDS and not props.get(key):
+                    problems.append((f"{action} event has no {key}", pos))
 
-    roles: Dict[str, set] = {}
-    for signal, role, _, _ in signal_users(level):
-        roles.setdefault(signal, set()).add(role)
+    for area in getattr(level, "areas", []):
+        if not area["props"].get("link_id"):
+            problems.append(("Area has no link", area["rect"][:2]))
+
+    users: Dict[str, Dict[str, Tuple[int, int]]] = {}  # signal -> role -> first pos
+    for signal, role, _, pos in signal_users(level):
+        users.setdefault(signal, {}).setdefault(role, pos)
     sent_elsewhere = {START_SIGNAL} | dialogue_signals()
-    for signal, found in roles.items():
-        if "receives" not in found:
-            problems.append(f"'{signal}' triggers nothing")
-        if "sends" not in found and signal not in sent_elsewhere:
-            problems.append(f"nothing triggers '{signal}'")
+    for signal, roles in users.items():
+        first = next(iter(roles.values()))
+        if "receives" not in roles:
+            problems.append((f"'{signal}' triggers nothing", first))
+        if "sends" not in roles and signal not in sent_elsewhere:
+            problems.append((f"nothing triggers '{signal}'", first))
     return problems
+
+
+def sent_signals(level) -> set:
+    """Signals something in or around this level can fire."""
+    sent = {signal for signal, role, _, _ in signal_users(level) if role == "sends"}
+    return sent | {START_SIGNAL} | dialogue_signals()
+
+
+def reachable(level) -> np.ndarray:
+    """Cells the player can reach from the start, walking 4 ways. Doors count
+    as open when something can open them: a sent signal or a key."""
+    walkable = np.zeros(max(TILE_BY_ID) + 1, dtype=bool)  # per tile id, default state
+    for tile in TILES:
+        walkable[tile.id] = tile.make(tile.initial_state({}))["walkable"]
+    known = level.tiles < len(walkable)
+    passable = np.zeros(level.tiles.shape, dtype=bool)
+    passable[known] = walkable[level.tiles[known]]
+    signals = sent_signals(level)
+    for pos, props in level.properties.items():
+        tile = tile_at(level, pos)
+        if tile is None or not tile.stateful:
+            continue
+        open_now = tile.make(tile.initial_state(props))["walkable"]
+        can_open = tile.on_link is not None and quest_key(props.get("link_id", "")) in signals
+        passable[pos] = open_now or can_open or bool(props.get("key_id"))
+
+    seen = np.zeros_like(passable)
+    queue = deque([level.player_start])
+    seen[level.player_start] = True
+    while queue:
+        x, y = queue.popleft()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < level.width and 0 <= ny < level.height and passable[nx, ny] and not seen[nx, ny]:
+                seen[nx, ny] = True
+                queue.append((nx, ny))
+    return seen
+
+
+def check_level(level) -> List[Problem]:
+    """Everything that looks wrong with a level, for the check report."""
+    problems: List[Problem] = []
+    if level.stairs_location is None:
+        problems.append(("No stairs", None))
+    problems += link_problems(level)
+
+    seen = reachable(level)
+
+    def can_reach(pos) -> bool:  # standing on it or right next to it (levers)
+        x, y = pos
+        return any(
+            0 <= nx < level.width and 0 <= ny < level.height and seen[nx, ny]
+            for nx, ny in ((x, y), (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1))
+        )
+
+    stairs = level.stairs_location
+    if stairs and not seen[stairs]:
+        problems.append(("Stairs can't be reached", stairs))
+    for pos, attr in level.entities.items():
+        if not isinstance(getattr(entity_factory, attr, None), (Actor, Item)):
+            problems.append((f"{attr} no longer exists", pos))
+        elif not seen[pos]:
+            problems.append((f"{attr} can't be reached", pos))
+    for x, y in np.argwhere(level.tiles != TILE_WALL):
+        pos = (int(x), int(y))
+        tile = tile_at(level, pos)
+        if tile is not None and (tile.on_bump or tile.on_step) and not can_reach(pos):
+            problems.append((f"{tile.name} can't be reached", pos))
+
+    for pos, props in level.properties.items():
+        if props.get("lore") and not os.path.exists(os.path.join(LORE_DIR, props["lore"])):
+            problems.append((f"Lore file {props['lore']} is missing", pos))
+        if props.get("dialogue") and not os.path.exists(
+            os.path.join(DIALOGUE_DIR, props["dialogue"])
+        ):
+            problems.append((f"Dialogue {props['dialogue']} is missing", pos))
+        for key in ("key_id", "requires_item"):
+            if props.get(key):
+                produced, _ = find_quest_id(props[key], level)
+                if not produced:
+                    problems.append((f"Nothing gives '{quest_key(props[key])}' ({key})", pos))
+
+    # flags this level reads that nothing anywhere sets
+    users = list(flag_users(level))
+    set_somewhere = {flag for flag, role, _ in users if role == "sets"}
+    for pos, props in level.properties.items():
+        for key in ("requires_flag", "requires_not_flag"):
+            flag = quest_key(props.get(key, ""))
+            if flag and flag not in set_somewhere:
+                problems.append((f"Flag '{flag}' is never set", pos))
+    return problems
+
+
+def normalised(props: dict) -> dict:
+    """Copy of props with every id written the way the game compares them."""
+    props = dict(props)
+    for key in ID_PROPERTIES:
+        if key in props:
+            props[key] = quest_key(props[key])
+    return props
+
+
+def apply_overrides(actor, props: dict) -> None:
+    """Stats and AI set on one placed actor in the editor (hp, power, ...)."""
+    fighter = getattr(actor, "fighter", None)
+    if fighter is None:
+        return
+
+    def number(key) -> Optional[int]:
+        try:
+            return int(props[key])
+        except (KeyError, ValueError):
+            return None
+
+    hp = number("hp")
+    if hp:
+        fighter.base_hp = fighter.max_hp = hp
+        fighter._hp = hp
+    power = number("power")
+    if power is not None:
+        fighter.base_power = power
+        fighter.power = power + fighter.bonus_power
+    defense = number("defense")
+    if defense is not None:
+        fighter.base_defense = defense
+        fighter.defense = defense + fighter.bonus_defense
+    xp = number("xp")
+    if xp is not None and getattr(actor, "level", None) is not None:
+        actor.level.xp_given = xp
+    ai_cls = entity_factory.AI_OVERRIDES.get(props.get("ai", ""))
+    if ai_cls is not None:
+        actor.ai = ai_cls(actor)
 
 
 def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
@@ -355,13 +554,15 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
             continue
         for x, y in np.argwhere(mask):
             pos = (int(x), int(y))
-            props = dict(level.properties.get(pos, {}))
-            for key in ID_PROPERTIES:
-                if key in props:
-                    props[key] = quest_key(props[key])
+            props = normalised(level.properties.get(pos, {}))
             state = tile.initial_state(props)
             dungeon.tiles[pos] = tile.make(state)
             dungeon.tile_state[pos] = {"tile": tile.id, "state": state, "props": props}
+
+    dungeon.areas = [  # area triggers, see events.enter_areas
+        {"rect": tuple(area["rect"]), "props": normalised(area["props"]), "spent": False}
+        for area in getattr(level, "areas", [])
+    ]
 
     stairs = level.stairs_location
     dungeon.upstairs_location = stairs if stairs else (-1, -1)
@@ -380,6 +581,7 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
             spawned.name = props["name"]
         if is_yes(props.get("invulnerable")):
             spawned.invulnerable = True
+        apply_overrides(spawned, props)
         for key in SIGNAL_PROPERTIES:  # on_death / on_pickup, see events.py
             if props.get(key):
                 setattr(spawned, key, quest_key(props[key]))
@@ -654,6 +856,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return "Player start"
         if self.brush == BRUSH_SELECT:
             return "Select / edit"
+        if self.brush == BRUSH_AREA:
+            return "Area trigger"
         return entity_factory.short_name(self.selected_entity()[1])
 
     def hovered_link(self, pos: Optional[Tuple[int, int]]) -> str:
@@ -673,6 +877,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return "@", color.white
         if self.brush == BRUSH_SELECT:
             return "?", color.white
+        if self.brush == BRUSH_AREA:
+            return "[", (230, 200, 120)
         prototype = self.selected_entity()[1]
         return prototype.char, prototype.color
 
@@ -686,8 +892,11 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 return
             attr = level.entities.get((x, y))
             fields = entity_factory.editable_properties(attr) if attr else []
+            area = level.area_at((x, y))
             if fields:
                 self.pending = input_handlers.PropertyMenu(self, (x, y), fields)
+            elif area is not None:
+                self.pending = self.area_menu(area)
             else:
                 self.status = "Nothing to edit here"
             return
@@ -762,7 +971,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
     def apply_at_mouse(self) -> None:
         pos = self.map_pos()
-        if pos is None or self.held_button is None or self.rect_mode:
+        if pos is None or self.held_button is None or self.rect_mode or self.brush == BRUSH_AREA:
             return
         if self.held_button == 1:
             self.paint(*pos)
@@ -798,13 +1007,11 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return self
         self.dirty = False
         self.status = f"Saved {name}"
-        if self.level.stairs_location is None:
-            self.status += ". No stairs yet!"
-        problems = link_problems(self.level)
+        problems = check_level(self.level)
         if problems:
-            self.status += f". {problems[0]}"
+            self.status += f". {problems[0][0]}"
             if len(problems) > 1:
-                self.status += f" (+{len(problems) - 1} more)"
+                self.status += f" (+{len(problems) - 1} more, [V] shows all)"
         self.level_menu.refresh()
         if then_leave:
             return self.leave()
@@ -814,12 +1021,32 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.level_menu.refresh()
         return self.level_menu
 
+    def check_report(self):
+        """[V]: every problem of the level, Enter jumps to it."""
+        problems = check_level(self.level)
+        if not problems:
+            self.status = "No problems found"
+            return None
+
+        def jump(pos):
+            if pos is not None:
+                self.center_camera(*pos)
+                self.status = f"Jumped to {pos[0]},{pos[1]}"
+            return self
+
+        items = [
+            (f"{text}" + (f"  ({pos[0]},{pos[1]})" if pos else ""), pos)
+            for text, pos in problems
+        ]
+        return input_handlers.ListPicker(self, f"Check level: {len(problems)} problems", items, jump)
+
     def ev_quit(self, event):
         if self.dirty:
             name = self.level.name or "autosave"
             self.level.name = name
             try:
                 save_level(self.level)
+                self.dirty = False  # main.save_game would write it again otherwise
                 print(f"Unsaved level written to {level_file_name(name)}")
             except Exception:
                 traceback.print_exc()
@@ -834,7 +1061,14 @@ class LevelEditor(input_handlers.BaseEventHandler):
         if tile is not None:
             self.mouse = tile
         self.held_button = int(event.button)
-        if self.rect_mode:
+        if self.brush == BRUSH_AREA:
+            pos = self.map_pos()
+            if self.held_button == 3 and pos is not None:
+                self.delete_area(pos)
+                self.held_button = None
+            else:
+                self.rect_anchor = pos
+        elif self.rect_mode:
             self.rect_anchor = self.map_pos()
         else:
             self.apply_at_mouse()
@@ -844,12 +1078,39 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return handler
 
     def ev_mousebuttonup(self, event):
-        if self.rect_mode and self.rect_anchor is not None:
+        handler = None
+        if self.rect_anchor is not None:
             end = self.map_pos()
-            if end is not None:
+            if end is not None and self.brush == BRUSH_AREA:
+                handler = self.add_area(self.rect_anchor, end)
+            elif end is not None and self.rect_mode:
                 self.fill_rect(self.rect_anchor, end, erase=self.held_button == 3)
         self.rect_anchor = None
         self.held_button = None
+        return handler
+
+    def area_menu(self, area: dict):
+        from tiles import AREA_FIELDS
+
+        return input_handlers.PropertyMenu(self, None, AREA_FIELDS, values=area["props"])
+
+    def add_area(self, a: Tuple[int, int], b: Tuple[int, int]):
+        x1, x2 = sorted((a[0], b[0]))
+        y1, y2 = sorted((a[1], b[1]))
+        area = {"rect": (x1, y1, x2, y2), "props": {}}
+        self.level.areas.append(area)
+        self.dirty = True
+        self.status = "Area added, give it a link_id"
+        return self.area_menu(area)
+
+    def delete_area(self, pos: Tuple[int, int]) -> None:
+        area = self.level.area_at(pos)
+        if area is None:
+            self.status = "No area here"
+            return
+        self.level.areas.remove(area)
+        self.dirty = True
+        self.status = "Area removed"
 
     def ev_mousewheel(self, event):
         step = -1 if event.y > 0 else 1
@@ -887,6 +1148,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             self.use_palette()
         elif key == k.N6:
             self.brush = BRUSH_SELECT
+        elif key == k.N7:
+            self.brush = BRUSH_AREA
         elif key == k.TAB:
             self.group_index = (self.group_index + 1) % len(self.groups)
             self.use_palette()
@@ -902,6 +1165,8 @@ class LevelEditor(input_handlers.BaseEventHandler):
             self.center_camera(*self.level.player_start)
         elif key == k.S:
             return self.ask_save()
+        elif key == k.V:
+            return self.check_report()
         elif key == k.ESCAPE:
             if self.dirty:
                 return input_handlers.PopupToConfirm(
@@ -917,6 +1182,13 @@ class LevelEditor(input_handlers.BaseEventHandler):
         cx, cy = self.cam_x, self.cam_y
         view = level.tiles[cx : cx + VIEW_WIDTH, cy : cy + VIEW_HEIGHT]
         console.rgb[0 : view.shape[0], 0 : view.shape[1]] = TILE_GRAPHICS[view]
+
+        for area in level.areas:  # tint area triggers
+            x1, y1, x2, y2 = area["rect"]
+            sx1, sx2 = max(x1 - cx, 0), min(x2 - cx + 1, VIEW_WIDTH)
+            sy1, sy2 = max(y1 - cy, 0), min(y2 - cy + 1, VIEW_HEIGHT)
+            if sx1 < sx2 and sy1 < sy2:
+                console.rgb["bg"][sx1:sx2, sy1:sy2] = AREA_BG
 
         for (x, y), attr in level.entities.items():
             sx, sy = x - cx, y - cy
@@ -992,6 +1264,11 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 if tile is not None and tile.event:
                     action = self.level.properties.get(pos, {}).get("action", "-")
                     console.print(x + 1, 8, f"do: {action}"[:inner], fg=color.impossible)
+            area = self.level.area_at(pos)
+            hovered = tile_at(self.level, pos)
+            if area is not None and not (hovered is not None and hovered.event):  # "do:" uses line 8
+                area_link = area["props"].get("link_id") or "-"
+                console.print(x + 1, 8, f"area: {area_link}"[:inner], fg=color.impossible)
 
         console.print(x + 1, 9, f"<{self.group}> Tab"[:inner], fg=color.menu_title)
         entries = self.palette[self.group]
@@ -1020,11 +1297,13 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "5 palette [ ] pick",
             "Tab next palette",
             "6 select / edit",
+            "7 area trigger",
             "LMB draw RMB erase",
             "R rectangle mode",
             "Arrows pan (Shift)",
             "Wheel scroll/pick",
             "C center on start",
+            "V check level",
             "S save  Esc back",
         ]
         help_y = 11 + PALETTE_ROWS + 1

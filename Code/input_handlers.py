@@ -151,6 +151,9 @@ class EventHandler(BaseEventHandler):
             self.engine.message_log.add_message(exc.args[0], color.impossible)
             return False  # Skip enemy turn on exceptions.
         self.engine.handle_enemy_turns()
+        from events import tick
+
+        tick(self.engine.game_map)  # delayed level editor events
         self.engine.update_fov()
         return True
 
@@ -1847,10 +1850,11 @@ class ListPicker(BaseEventHandler):
         return None
 
 class PropertyMenu(BaseEventHandler):
-    def __init__(self, editor, pos, fields):
+    def __init__(self, editor, pos, fields, values=None):
         self.editor = editor  # the LevelEditor, also the screen we return to
-        self.pos = pos
+        self.pos = pos  # None for things without a cell, e.g. area triggers
         self._fields = fields  # [(key, kind)], or values -> [(key, kind)]
+        self._values = values  # props stored elsewhere than level.properties[pos]
         self.selected = 0
 
     @property
@@ -1861,6 +1865,8 @@ class PropertyMenu(BaseEventHandler):
 
     @property
     def values(self):
+        if self._values is not None:
+            return self._values
         return self.editor.level.properties.setdefault(self.pos, {})
 
     def set_value(self, key, value):
@@ -1896,6 +1902,32 @@ class PropertyMenu(BaseEventHandler):
         if kind == "text":
             return TextPrompt(self, key, self.values.get(key, ""),
                               lambda text: self.set_value(key, text))
+        if kind == "flag":
+            from components.dialouge_parser import quest_key
+            from level_editor import known_flags
+
+            def submit_flag(text):
+                if not text:
+                    self.values.pop(key, None)
+                    self.editor.dirty = True
+                    return self
+                return self.set_value(key, quest_key(text))
+
+            return TextPrompt(self, key, self.values.get(key, ""), submit_flag,
+                              suggestions=id_suggestions(known_flags(self.editor.level)))
+        if kind == "int":
+            def submit_number(text):
+                if not text:  # empty: back to the entity's own value
+                    self.values.pop(key, None)
+                    self.editor.dirty = True
+                    return self
+                if not text.isdigit():
+                    prompt.error = "Enter a whole number"
+                    return None
+                return self.set_value(key, text)
+
+            prompt = TextPrompt(self, key, self.values.get(key, ""), submit_number)
+            return prompt
         if kind == "long_text":  # multi-line, e.g. the text of a message event
             return LoreEditor(self, key, self.values.get(key, ""),
                               lambda text: self.set_value(key, text))
@@ -2021,7 +2053,7 @@ class PropertyMenu(BaseEventHandler):
 
                 link_id = quest_key(text)
                 self.set_value(key, link_id)
-                tile = tile_at(self.editor.level, self.pos)
+                tile = tile_at(self.editor.level, self.pos) if self.pos is not None else None
                 # a tile's link_id has the tile's role, any other signal field sends
                 role = tile.link if key == "link_id" and tile is not None and tile.link else "sends"
                 others = find_link_id(self.editor.level, link_id, self.pos)
@@ -2274,9 +2306,16 @@ class DialogueScreen(AskUserEventHandler):
         self.enter(self.dialogue.start)
 
     def can_enter(self, name: str) -> bool:
+        from events import get_flags
+
         target = self.dialogue.passages[name]
         player = self.engine.player
-        return all(find_quest_item(player, q) for q in tag_values(target, "requires:"))
+        flags = get_flags(self.engine)
+        return (
+            all(find_quest_item(player, q) for q in tag_values(target, "requires:"))
+            and all(flag in flags for flag in tag_values(target, "if:"))
+            and not any(flag in flags for flag in tag_values(target, "ifnot:"))
+        )
 
     def enter(self, name: str) -> None:
         import entity_factory
@@ -2325,6 +2364,15 @@ class DialogueScreen(AskUserEventHandler):
 
         for signal in tag_values(passage, "signal:"):  # see events.py
             self.engine.game_map.fire(signal)
+            changed = True
+
+        from events import get_flags
+
+        for flag in tag_values(passage, "flag:"):
+            get_flags(self.engine).add(flag)
+            changed = True
+        for flag in tag_values(passage, "unflag:"):
+            get_flags(self.engine).discard(flag)
             changed = True
 
         if changed:

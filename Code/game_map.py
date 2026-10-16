@@ -38,6 +38,8 @@ class GameMap:
         # level editor tiles with a state, see tiles.py
         # {(x, y): {"tile": TileDef.id, "state": str, "props": dict}}
         self.tile_state = {}
+        self.areas = []  # area triggers: {"rect", "props", "spent"}
+        self.pending_events = []  # delayed events: [turns left, marker pos]
 
     def set_tile_state(self, pos, state: str) -> None:
         from tiles import TILE_BY_ID
