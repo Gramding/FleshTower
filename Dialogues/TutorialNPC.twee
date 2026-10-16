@@ -44,7 +44,7 @@ This again. Might I remind you that you yourself, however far back it was, hired
 [[What? How long ago, and how often did I die?]]
 
 
-:: Start [item:health_potion organs:10] {"position":"800,800","size":"100,100"}
+:: Start {"position":"800,800","size":"100,100"}
 Greetings. It seems you've died yet again. Ah, what am I saying? You can never remember.
 
 [[Who are you?]]
@@ -53,8 +53,8 @@ Greetings. It seems you've died yet again. Ah, what am I saying? You can never r
 [[Leave]]
 
 
-:: Leave {"position":"800,1000","size":"100,100"}
-Off you go, then. I'll be here when you return. You always do.
+:: Leave [item:health_potion organs:10] {"position":"800,1000","size":"100,100"}
+Off you go, then. I'll be here when you return. You always do. And take this as always.
 
 
 
