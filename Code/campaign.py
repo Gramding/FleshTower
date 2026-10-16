@@ -106,9 +106,7 @@ class CampaignMenu(input_handlers.BaseEventHandler):
             return None
         elif key in input_handlers.CONFIRM_KEYS or key == tcod.event.KeySym.P:
             try:
-                return input_handlers.MainGameEventHandler(
-                    new_campaign_game(self.load_current())
-                )
+                return input_handlers.resume_game(new_campaign_game(self.load_current()))
             except Exception as exc:
                 traceback.print_exc()
                 return self.popup(f"Failed to load:\n{exc}")

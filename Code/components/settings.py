@@ -94,7 +94,7 @@ KEYBINDS = {
     },
     "System": {
         "ESCAPE": {
-            "NAME": "Exit game",
+            "NAME": "Pause menu",
             "ID": 5,
             "KEY": event.KeySym.ESCAPE,
             "MOD": event.Modifier.NONE,

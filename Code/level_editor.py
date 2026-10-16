@@ -18,6 +18,18 @@ import color
 import entity_factory
 import input_handlers
 import tile_types
+from tiles import (
+    TileDef,
+    TILES,
+    TILE_BY_ID,
+    TILE_WALL,
+    TILE_FLOOR,
+    TILE_STAIRS,
+    ID_PROPERTIES,
+    SIGNAL_PROPERTIES,
+    START_SIGNAL,
+    is_yes,
+)
 from components.settings import (
     LEVEL_DIR,
     LEVEL_EXTENSION,
@@ -34,46 +46,30 @@ if TYPE_CHECKING:
 
 LEVEL_FORMAT_VERSION = 1
 
-TILE_WALL = 0
-TILE_FLOOR = 1
-TILE_STAIRS = 2
-TILE_BUTTON = 3
-TILE_DOOR = 4
-TILE_NAMES = {
-    TILE_WALL: "Wall",
-    TILE_FLOOR: "Floor",
-    TILE_STAIRS: "Stairs",
-    TILE_BUTTON: "Button",
-    TILE_DOOR: "Door",
-}
-
 BRUSH_TILE = "tile"
 BRUSH_START = "start"
 BRUSH_ENTITY = "entity"
 BRUSH_SELECT = "select"
 
-# graphics of each tile id, indexable with the whole tile grid at once
-TILE_GRAPHICS = np.array(
-    [
-        tile_types.randWall()["light"],
-        tile_types.randFloor()["light"],
-        tile_types.stairs_up["light"],
-        tile_types.button_off["light"],
-        tile_types.door_closed["light"],
-    ],
-    dtype=tile_types.graphic_dt,
-)
+TILE_GROUP = "Tiles"  # palette group of TILES, the rest are entity groups
 
-TILE_PROPERTIES = {
-    TILE_BUTTON: [("link_id", "link_id")],
-    TILE_DOOR: [
-        ("link_id", "link_id"),
-        ("hidden", "bool"),
-        ("open", "bool"),
-        ("key_id", "quest_id"),
-        ("consume_key", "bool"),
-    ],
-}
+
+def build_tile_graphics() -> np.ndarray:
+    """Graphics of each tile id, indexable with the whole tile grid at once.
+    Ids without a tile show as a magenta '?'."""
+    unknown = np.array(
+        (ord("?"), (255, 0, 255), (0, 0, 0)), dtype=tile_types.graphic_dt
+    )
+    graphics = np.full(max(TILE_BY_ID) + 1, unknown, dtype=tile_types.graphic_dt)
+    for tile in TILES:
+        if tile.editor_char:  # e.g. event markers look like floor in game
+            graphics[tile.id] = (ord(tile.char), tile.color, (0, 0, 0))
+        else:
+            graphics[tile.id] = tile.make()["light"]
+    return graphics
+
+
+TILE_GRAPHICS = build_tile_graphics()
 
 NAME_MAX_LENGTH = 24
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _\-]+$")
@@ -232,43 +228,116 @@ def find_quest_id(quest_id, current=None, skip_pos=None):
     return produced, used
 
 
-def find_link_id(level, link_id, skip_pos=None) -> List[Tuple[str, Tuple[int, int]]]:
-    """Every button/door in this level that uses link_id, as (kind, pos)."""
-    link_id = quest_key(link_id)
-    found = []
+def tile_at(level, pos) -> Optional[TileDef]:
+    return TILE_BY_ID.get(int(level.tiles[pos]))
+
+
+def signal_users(level):
+    """Everything in this level that sends or receives a signal,
+    as (signal, "sends"/"receives", label, pos)."""
     for pos, props in level.properties.items():
-        if pos == skip_pos or quest_key(props.get("link_id", "")) != link_id:
+        tile = tile_at(level, pos)
+        link_id = quest_key(props.get("link_id", ""))
+        if link_id and tile is not None and tile.link:
+            yield link_id, tile.link, tile.name, pos
+        attr = level.entities.get(pos)
+        for key in SIGNAL_PROPERTIES:
+            signal = quest_key(props.get(key, ""))
+            if signal and attr:
+                yield signal, "sends", f"{attr} {key}", pos
+        signal = quest_key(props.get("signal", ""))
+        if signal and tile is not None and tile.event and props.get("action") == "fire_signal":
+            yield signal, "sends", f"{tile.name} fire_signal", pos
+
+
+def dialogue_signals() -> set:
+    """Signals fired by a signal:<id> tag in any dialogue."""
+    from components.dialouge_parser import list_dialogues
+
+    found = set()
+    for _, filename in list_dialogues():
+        try:
+            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+        except Exception:
             continue
-        tile = int(level.tiles[pos])
-        if tile in TILE_PROPERTIES:
-            found.append((TILE_NAMES[tile], pos))
+        for passage in dialogue.passages.values():
+            for tag in passage.tags:
+                if tag.startswith("signal:"):
+                    found.add(quest_key(tag[len("signal:") :]))
     return found
 
 
-def link_problems(level) -> List[str]:
-    """Buttons or doors without an id, and ids missing their counterpart."""
-    problems = []
-    kinds: Dict[str, set] = {}
-    for x, y in np.argwhere(np.isin(level.tiles, list(TILE_PROPERTIES))):
-        pos = (int(x), int(y))
-        tile = int(level.tiles[pos])
-        props = level.properties.get(pos, {})
-        link_id = quest_key(props.get("link_id", ""))
-        if not link_id:
-            if not props.get("key_id"):  # a locked door needs no button
-                problems.append(f"{TILE_NAMES[tile]} at {pos} has no link")
+def known_signals(level) -> List[Tuple[str, int]]:
+    """Signals in use, most used first, for autocomplete: (signal, uses)."""
+    counts: Dict[str, int] = {START_SIGNAL: 0}
+    for signal, _, _, _ in signal_users(level):
+        counts[signal] = counts.get(signal, 0) + 1
+    for signal in dialogue_signals():
+        counts[signal] = counts.get(signal, 0) + 1
+    return sorted(counts.items(), key=lambda item: -item[1])
+
+
+def known_quest_ids(current=None) -> List[Tuple[str, int]]:
+    """Quest ids used in any level or dialogue, most used first: (id, uses)."""
+    from components.dialouge_parser import list_dialogues
+
+    counts: Dict[str, int] = {}
+
+    def add(value):
+        value = quest_key(value or "")
+        if value:
+            counts[value] = counts.get(value, 0) + 1
+
+    for level in all_levels(current):
+        for props in getattr(level, "properties", {}).values():
+            for key in ("quest_id", "drop_id", "key_id", "item_id"):
+                add(props.get(key))
+    for _, filename in list_dialogues():
+        try:
+            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+        except Exception:
             continue
-        kinds.setdefault(link_id, set()).add(tile)
-    for link_id, tiles in kinds.items():
-        if TILE_DOOR not in tiles:
-            problems.append(f"'{link_id}' has no door")
-        if TILE_BUTTON not in tiles:
-            problems.append(f"'{link_id}' has no button")
+        for passage in dialogue.passages.values():
+            for tag in passage.tags:
+                kind, _, value = tag.partition(":")
+                if kind in ("gives", "requires", "takes"):
+                    add(value)
+    return sorted(counts.items(), key=lambda item: -item[1])
+
+
+def find_link_id(level, link_id, skip_pos=None) -> List[Tuple[str, str, Tuple[int, int]]]:
+    """Everything in this level that uses this signal, as (label, role, pos)."""
+    link_id = quest_key(link_id)
+    return [
+        (label, role, pos)
+        for signal, role, label, pos in signal_users(level)
+        if signal == link_id and pos != skip_pos
+    ]
+
+
+def link_problems(level) -> List[str]:
+    """Linkable tiles without an id or action, and signals nothing sends or receives."""
+    problems = []
+    linkable = [tile.id for tile in TILES if tile.link]
+    for x, y in np.argwhere(np.isin(level.tiles, linkable)):
+        pos = (int(x), int(y))
+        tile = tile_at(level, pos)
+        props = level.properties.get(pos, {})
+        if not props.get("link_id") and not props.get("key_id"):  # a locked door needs no button
+            problems.append(f"{tile.name} at {pos} has no link")
+        if tile.event and not props.get("action"):
+            problems.append(f"{tile.name} at {pos} has no action")
+
+    roles: Dict[str, set] = {}
+    for signal, role, _, _ in signal_users(level):
+        roles.setdefault(signal, set()).add(role)
+    sent_elsewhere = {START_SIGNAL} | dialogue_signals()
+    for signal, found in roles.items():
+        if "receives" not in found:
+            problems.append(f"'{signal}' triggers nothing")
+        if "sends" not in found and signal not in sent_elsewhere:
+            problems.append(f"nothing triggers '{signal}'")
     return problems
-
-
-def is_yes(value) -> bool:
-    return str(value).strip().lower() in ("yes", "true", "1")
 
 
 def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
@@ -276,34 +345,23 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
 
     player = engine.player
     dungeon = GameMap(engine, level.width, level.height, entities=[player])
-    dungeon.tiles[level.tiles == TILE_FLOOR] = tile_types.randFloor()
-    dungeon.tiles[level.tiles == TILE_STAIRS] = tile_types.stairs_up
 
-    # buttons and doors, linked by a shared link_id
-    dungeon.buttons = {}
-    dungeon.doors = {}
-    for x, y in np.argwhere(np.isin(level.tiles, list(TILE_PROPERTIES))):
-        pos = (int(x), int(y))
-        props = level.properties.get(pos, {})
-        link_id = quest_key(props.get("link_id", ""))
-        if level.tiles[pos] == TILE_BUTTON:
-            dungeon.tiles[pos] = tile_types.button_off
-            dungeon.buttons[pos] = link_id
-        else:
-            door = {
-                "link": link_id,
-                "open": is_yes(props.get("open")),
-                "hidden": is_yes(props.get("hidden")),
-                "key": quest_key(props.get("key_id", "")),
-                "consume_key": is_yes(props.get("consume_key")),
-            }
-            if door["open"]:
-                dungeon.tiles[pos] = tile_types.door_open
-            elif door["hidden"]:
-                dungeon.tiles[pos] = tile_types.randWall()
-            else:
-                dungeon.tiles[pos] = tile_types.door_closed
-            dungeon.doors[pos] = door
+    for tile in TILES:
+        mask = level.tiles == tile.id
+        if tile.id == TILE_WALL or not mask.any():
+            continue  # the map starts as all wall
+        if not tile.stateful:
+            dungeon.tiles[mask] = tile.make()
+            continue
+        for x, y in np.argwhere(mask):
+            pos = (int(x), int(y))
+            props = dict(level.properties.get(pos, {}))
+            for key in ID_PROPERTIES:
+                if key in props:
+                    props[key] = quest_key(props[key])
+            state = tile.initial_state(props)
+            dungeon.tiles[pos] = tile.make(state)
+            dungeon.tile_state[pos] = {"tile": tile.id, "state": state, "props": props}
 
     stairs = level.stairs_location
     dungeon.upstairs_location = stairs if stairs else (-1, -1)
@@ -322,6 +380,9 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
             spawned.name = props["name"]
         if is_yes(props.get("invulnerable")):
             spawned.invulnerable = True
+        for key in SIGNAL_PROPERTIES:  # on_death / on_pickup, see events.py
+            if props.get(key):
+                setattr(spawned, key, quest_key(props[key]))
         if "dialogue" in props:
             try:
                 spawned.dialogue = load_dialogue(
@@ -363,10 +424,11 @@ def new_custom_game(level: CustomLevel) -> Engine:
     engine.item_chances = procgen.item_chances
     engine.enemy_chances = procgen.enemy_chances
     engine.game_map, missing = build_game_map(level, engine)
-    engine.update_fov()
 
     engine.message_log.add_message("Flesh Tower", color.welcome_text)
     engine.message_log.add_message(f"You awaken in {level.name}")
+    engine.game_map.fire(START_SIGNAL)
+    engine.update_fov()
     if missing:
         engine.message_log.add_message(
             f"{missing} entities of this level no longer exist", color.impossible
@@ -462,9 +524,7 @@ class LevelMenu(input_handlers.BaseEventHandler):
             return None
         elif key in input_handlers.CONFIRM_KEYS or key == tcod.event.KeySym.P:
             try:
-                return input_handlers.MainGameEventHandler(
-                    new_custom_game(self.load_current())
-                )
+                return input_handlers.resume_game(new_custom_game(self.load_current()))
             except Exception as exc:
                 traceback.print_exc()
                 return self.popup(f"Failed to load:\n{exc}")
@@ -511,13 +571,15 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.level = level
         self.dirty = False
 
-        self.palette = entity_factory.build_palette()
+        self.palette = {TILE_GROUP: [(tile.id, tile) for tile in TILES]}
+        self.palette.update(entity_factory.build_palette())
         self.groups = list(self.palette.keys())
         self.group_index = 0
         self.palette_index = {group: 0 for group in self.groups}
 
         self.brush = BRUSH_TILE
         self.brush_tile = TILE_FLOOR
+        self.pick_tile(TILE_FLOOR)
         self.rect_mode = False
         self.rect_anchor: Optional[Tuple[int, int]] = None
 
@@ -563,11 +625,31 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.palette_index[self.group] = (self.palette_index[self.group] + step) % len(
             entries
         )
-        self.brush = BRUSH_ENTITY
+        self.use_palette()
+
+    def use_palette(self) -> None:
+        """Brush becomes whatever is selected in the shown palette group."""
+        if self.group == TILE_GROUP:
+            self.brush = BRUSH_TILE
+            self.brush_tile = self.selected_entity()[0]
+        else:
+            self.brush = BRUSH_ENTITY
+
+    def pick_tile(self, tile_id: int) -> None:
+        """Tile brush, with the Tiles palette following along."""
+        self.brush, self.brush_tile = BRUSH_TILE, tile_id
+        ids = [tile_id_ for tile_id_, _ in self.palette[TILE_GROUP]]
+        self.palette_index[TILE_GROUP] = ids.index(tile_id)
+
+    def palette_active(self) -> bool:
+        """Is the brush the one selected in the shown palette group?"""
+        if self.group == TILE_GROUP:
+            return self.brush == BRUSH_TILE
+        return self.brush == BRUSH_ENTITY
 
     def brush_label(self) -> str:
         if self.brush == BRUSH_TILE:
-            return TILE_NAMES[self.brush_tile]
+            return TILE_BY_ID[self.brush_tile].name
         if self.brush == BRUSH_START:
             return "Player start"
         if self.brush == BRUSH_SELECT:
@@ -575,20 +657,18 @@ class LevelEditor(input_handlers.BaseEventHandler):
         return entity_factory.short_name(self.selected_entity()[1])
 
     def hovered_link(self, pos: Optional[Tuple[int, int]]) -> str:
-        """link_id of the button/door under the mouse, '' if there is none."""
-        if pos is None or int(self.level.tiles[pos]) not in TILE_PROPERTIES:
+        """link_id of the linkable tile under the mouse, '' if there is none."""
+        if pos is None:
+            return ""
+        tile = tile_at(self.level, pos)
+        if tile is None or not tile.link:
             return ""
         return quest_key(self.level.properties.get(pos, {}).get("link_id", ""))
 
     def brush_glyph(self) -> Tuple[str, Tuple[int, int, int]]:
         if self.brush == BRUSH_TILE:
-            return {
-                TILE_WALL: "#",
-                TILE_FLOOR: ".",
-                TILE_STAIRS: ">",
-                TILE_BUTTON: "/",
-                TILE_DOOR: "+",
-            }[self.brush_tile], color.white
+            tile = TILE_BY_ID[self.brush_tile]
+            return tile.char, tile.color
         if self.brush == BRUSH_START:
             return "@", color.white
         if self.brush == BRUSH_SELECT:
@@ -598,12 +678,11 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
     def paint(self, x: int, y: int) -> None:
         level = self.level
-        tile = int(level.tiles[x, y])
+        tile = tile_at(level, (x, y))
         if self.brush == BRUSH_SELECT:
-            if tile in TILE_PROPERTIES:
-                self.pending = input_handlers.PropertyMenu(
-                    self, (x, y), TILE_PROPERTIES[tile]
-                )
+            if tile is not None and tile.properties:
+                # fields may depend on the values, e.g. the action of an event marker
+                self.pending = input_handlers.PropertyMenu(self, (x, y), tile.fields_for)
                 return
             attr = level.entities.get((x, y))
             fields = entity_factory.editable_properties(attr) if attr else []
@@ -613,32 +692,33 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 self.status = "Nothing to edit here"
             return
         if self.brush == BRUSH_TILE:
-            if self.brush_tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
+            brush = TILE_BY_ID[self.brush_tile]
+            if brush.solid:
                 if (x, y) == level.player_start:
                     self.status = "Can't build on the start"
                     return
-                level.entities.pop((x, y), None)
-                if tile != self.brush_tile:
+                if level.entities.pop((x, y), None) is not None:
                     level.properties.pop((x, y), None)
-            elif tile in TILE_PROPERTIES:
-                # floor/stairs over a button or door drops its link
-                level.properties.pop((x, y), None)
-            if self.brush_tile == TILE_STAIRS:
-                old = level.stairs_location
-                if old and old != (x, y):
-                    level.tiles[old] = TILE_FLOOR
-                    self.status = "Stairs moved (one per level)"
-            if level.tiles[x, y] != self.brush_tile:
-                level.tiles[x, y] = self.brush_tile
+            if tile is not None and tile.properties and tile.id != brush.id:
+                level.properties.pop(
+                    (x, y), None
+                )  # e.g. floor over a door drops its link
+            if brush.unique:
+                for ox, oy in np.argwhere(level.tiles == brush.id):
+                    if (ox, oy) != (x, y):
+                        level.tiles[ox, oy] = TILE_FLOOR
+                        level.properties.pop((int(ox), int(oy)), None)
+                        self.status = f"{brush.name} moved (one per level)"
+            if level.tiles[x, y] != brush.id:
+                level.tiles[x, y] = brush.id
                 self.dirty = True
         elif self.brush == BRUSH_START:
             if level.player_start != (x, y):
                 level.entities.pop((x, y), None)
                 level.player_start = (x, y)
-                if tile in TILE_PROPERTIES:
-                    level.properties.pop((x, y), None)
-                if tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
+                if tile is None or tile.solid:
                     level.tiles[x, y] = TILE_FLOOR
+                    level.properties.pop((x, y), None)
                 self.dirty = True
         else:
             if (x, y) == level.player_start:
@@ -648,7 +728,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             if level.entities.get((x, y)) != attr:
                 level.entities[(x, y)] = attr
                 level.properties.pop((x, y), None)
-                if tile in (TILE_WALL, TILE_BUTTON, TILE_DOOR):
+                if tile is None or tile.solid:
                     level.tiles[x, y] = TILE_FLOOR
                 self.dirty = True
 
@@ -661,8 +741,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
         elif (x, y) == level.player_start:
             self.status = "Move the start with [4]"
         elif level.tiles[x, y] != TILE_WALL:
-            if level.tiles[x, y] in TILE_PROPERTIES:
-                level.properties.pop((x, y), None)
+            level.properties.pop((x, y), None)
             level.tiles[x, y] = TILE_WALL
             self.dirty = True
 
@@ -674,7 +753,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 if erase:
                     self.erase(x, y)
                 elif self.brush == BRUSH_START or (
-                    self.brush == BRUSH_TILE and self.brush_tile == TILE_STAIRS
+                    self.brush == BRUSH_TILE and TILE_BY_ID[self.brush_tile].unique
                 ):
                     self.paint(b[0], b[1])
                     return
@@ -797,24 +876,20 @@ class LevelEditor(input_handlers.BaseEventHandler):
         elif key == k.RIGHT:
             self.cam_x += pan
         elif key == k.N1:
-            self.brush, self.brush_tile = BRUSH_TILE, TILE_WALL
+            self.pick_tile(TILE_WALL)
         elif key == k.N2:
-            self.brush, self.brush_tile = BRUSH_TILE, TILE_FLOOR
+            self.pick_tile(TILE_FLOOR)
         elif key == k.N3:
-            self.brush, self.brush_tile = BRUSH_TILE, TILE_STAIRS
+            self.pick_tile(TILE_STAIRS)
         elif key == k.N4:
             self.brush = BRUSH_START
         elif key == k.N5:
-            self.brush = BRUSH_ENTITY
+            self.use_palette()
         elif key == k.N6:
             self.brush = BRUSH_SELECT
-        elif key == k.N7:
-            self.brush, self.brush_tile = BRUSH_TILE, TILE_BUTTON
-        elif key == k.N8:
-            self.brush, self.brush_tile = BRUSH_TILE, TILE_DOOR
         elif key == k.TAB:
             self.group_index = (self.group_index + 1) % len(self.groups)
-            self.brush = BRUSH_ENTITY
+            self.use_palette()
         elif key in (k.LEFTBRACKET, k.PAGEUP):
             self.cycle_entity(-1)
         elif key in (k.RIGHTBRACKET, k.PAGEDOWN):
@@ -860,7 +935,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
         link_id = self.hovered_link(pos)
         if link_id:
             # show everything this button/door is linked with
-            for _, (lx, ly) in find_link_id(level, link_id):
+            for _, _, (lx, ly) in find_link_id(level, link_id):
                 sx, sy = lx - cx, ly - cy
                 if 0 <= sx < VIEW_WIDTH and 0 <= sy < VIEW_HEIGHT:
                     console.rgb["bg"][sx, sy] = LINK_BG
@@ -907,9 +982,16 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 prototype = getattr(entity_factory, attr, None)
                 label = entity_factory.short_name(prototype) if prototype else attr
                 console.print(x + 1, 7, label[:inner], fg=color.impossible)
-            elif int(self.level.tiles[pos]) in TILE_PROPERTIES:
-                link_id = self.hovered_link(pos) or "-"
-                console.print(x + 1, 7, f"link: {link_id}"[:inner], fg=color.impossible)
+            else:
+                tile = tile_at(self.level, pos)
+                if tile is not None and tile.link:
+                    link_id = self.hovered_link(pos) or "-"
+                    console.print(
+                        x + 1, 7, f"link: {link_id}"[:inner], fg=color.impossible
+                    )
+                if tile is not None and tile.event:
+                    action = self.level.properties.get(pos, {}).get("action", "-")
+                    console.print(x + 1, 8, f"do: {action}"[:inner], fg=color.impossible)
 
         console.print(x + 1, 9, f"<{self.group}> Tab"[:inner], fg=color.menu_title)
         entries = self.palette[self.group]
@@ -924,7 +1006,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             selected = index == current
             bg = (
                 PANEL_HIGHLIGHT
-                if selected and self.brush == BRUSH_ENTITY
+                if selected and self.palette_active()
                 else ((40, 40, 40) if selected else color.black)
             )
             console.print(x + 1, y, prototype.char, fg=prototype.color, bg=bg)
@@ -935,10 +1017,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "2 floor",
             "3 stairs ",
             "4 start",
-            "5 entity [ ] pick",
+            "5 palette [ ] pick",
+            "Tab next palette",
             "6 select / edit",
-            "7 button",
-            "8 door",
             "LMB draw RMB erase",
             "R rectangle mode",
             "Arrows pan (Shift)",

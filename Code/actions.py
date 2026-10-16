@@ -70,6 +70,10 @@ class PickupAction(Action):
                 inventory.items.append(item)
 
                 self.engine.message_log.add_message(f"You pick up {item.name}!")
+                signal = getattr(item, "on_pickup", None)
+                if signal:
+                    item.on_pickup = None
+                    self.engine.game_map.fire(signal)
                 return
         raise exceptions.Impossible("You grab the floor?")
 
@@ -201,20 +205,33 @@ class MovementAction(ActionWithDirection):
                 raise exceptions.Impossible("The path is blocked!")
         # if above are correct movement is triggered
         self.entity.move(self.dx, self.dy)
+        if self.entity is self.engine.player:
+            from events import on_step
+
+            on_step(self.engine.game_map, (dest_x, dest_y))
 
 
-class PullLeverAction(ActionWithDirection):
+class TileBumpAction(ActionWithDirection):
+    """Base for level editor tiles that react when the player walks into them.
+    Register subclasses in TILE_BUMPS under the name a TileDef uses as on_bump."""
+
+    @staticmethod
+    def wants(info: dict) -> bool:
+        """Should bumping this tile run the action instead of moving/attacking?"""
+        return True
+
+    @property
+    def info(self) -> dict:
+        return self.engine.game_map.tile_state[self.dest_xy]
+
+
+class PullLeverAction(TileBumpAction):
     def perform(self) -> None:
-        import tile_types
-
         game_map = self.engine.game_map
-        x, y = self.dest_xy
-        if game_map.tiles[x, y]["light"]["ch"] == tile_types.button_off["light"]["ch"]:
-            game_map.tiles[x, y] = tile_types.button_on
-        else:
-            game_map.tiles[x, y] = tile_types.button_off
+        info = self.info
+        game_map.set_tile_state(self.dest_xy, "on" if info["state"] == "off" else "off")
 
-        if game_map.toggle_link(game_map.buttons[(x, y)]):
+        if game_map.fire(info["props"].get("link_id", "")):
             self.engine.message_log.add_message(
                 "You pull the lever. Something grinds in the walls."
             )
@@ -224,40 +241,54 @@ class PullLeverAction(ActionWithDirection):
             )
 
 
-class UnlockDoorAction(ActionWithDirection):
-    def perform(self) -> None:
-        import tile_types
+class UnlockDoorAction(TileBumpAction):
+    @staticmethod
+    def wants(info: dict) -> bool:
+        return bool(info["props"].get("key_id")) and info["state"] != "open"
 
-        game_map = self.engine.game_map
-        door = game_map.doors[self.dest_xy]
+    def perform(self) -> None:
+        from tiles import is_yes
+
+        info = self.info
         key = next(
-            (i for i in self.entity.inventory.items if getattr(i, "quest_id", None) == door["key"]),
+            (
+                i
+                for i in self.entity.inventory.items
+                if getattr(i, "quest_id", None) == info["props"]["key_id"]
+            ),
             None,
         )
         if key is None:
-            if door["hidden"]:
+            if info["state"] == "hidden":
                 # don't give the secret away
                 raise exceptions.Impossible("Path inaccessible!")
             raise exceptions.Impossible("The door is locked.")
 
-        door["open"] = True
-        game_map.tiles[self.dest_xy] = tile_types.door_open
-        if door["consume_key"]:
+        self.engine.game_map.set_tile_state(self.dest_xy, "open")
+        if is_yes(info["props"].get("consume_key")):
             self.entity.inventory.items.remove(key)
             self.engine.message_log.add_message(f"The {key.name} stays in the lock.")
         else:
             self.engine.message_log.add_message(f"You unlock the door with the {key.name}.")
 
 
+# TileDef.on_bump name -> action, see tiles.py
+TILE_BUMPS = {
+    "lever": PullLeverAction,
+    "door": UnlockDoorAction,
+}
+
+
 class BumpAction(ActionWithDirection):
     def perform(self) -> None:
         game_map = self.engine.game_map
-        if self.entity is self.engine.player:
-            if self.dest_xy in getattr(game_map, "buttons", {}):
-                return PullLeverAction(self.entity, self.dx, self.dy).perform()
-            door = getattr(game_map, "doors", {}).get(self.dest_xy)
-            if door and door["key"] and not door["open"]:
-                return UnlockDoorAction(self.entity, self.dx, self.dy).perform()
+        info = getattr(game_map, "tile_state", {}).get(self.dest_xy)
+        if info is not None and self.entity is self.engine.player:
+            from tiles import TILE_BY_ID
+
+            bump = TILE_BUMPS.get(TILE_BY_ID[info["tile"]].on_bump)
+            if bump is not None and bump.wants(info):
+                return bump(self.entity, self.dx, self.dy).perform()
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":

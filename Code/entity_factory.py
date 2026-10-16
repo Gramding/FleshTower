@@ -44,7 +44,9 @@ def build_palette() -> Dict[str, List[Tuple[str, object]]]:
 def editable_properties(attr: str) -> List[Tuple[str, str]]:
     fields = list(EDITABLE_PROPERTIES.get(attr, []))
     if isinstance(globals().get(attr), Actor):
-        fields += [("drop_name", "text"), ("drop_id", "quest_id")]
+        fields += [("drop_name", "text"), ("drop_id", "quest_id"), ("on_death", "link_id")]
+    elif isinstance(globals().get(attr), Item):
+        fields += [("on_pickup", "link_id")]
     return fields
 
 

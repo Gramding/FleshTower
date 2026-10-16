@@ -35,29 +35,22 @@ class GameMap:
 
         self.upstairs_location = (int(0), int(0))
 
-        # level editor buttons and doors, linked by link_id
-        self.buttons = {}  # {(x, y): link_id}
-        self.doors = {}  # {(x, y): {"link": link_id, "open": bool, "hidden": bool}}
+        # level editor tiles with a state, see tiles.py
+        # {(x, y): {"tile": TileDef.id, "state": str, "props": dict}}
+        self.tile_state = {}
 
-    def toggle_link(self, link_id: str) -> int:
-        """Opens/closes every door with this link_id. Returns how many changed."""
-        changed = 0
-        for (x, y), door in getattr(self, "doors", {}).items():
-            if not link_id or door["link"] != link_id:
-                continue
-            if door["open"]:
-                # never close a door on something standing in it
-                if any(e.x == x and e.y == y for e in self.entities):
-                    continue
-                door["open"] = False
-                self.tiles[x, y] = (
-                    tile_types.randWall() if door["hidden"] else tile_types.door_closed
-                )
-            else:
-                door["open"] = True
-                self.tiles[x, y] = tile_types.door_open
-            changed += 1
-        return changed
+    def set_tile_state(self, pos, state: str) -> None:
+        from tiles import TILE_BY_ID
+
+        info = self.tile_state[pos]
+        info["state"] = state
+        self.tiles[pos] = TILE_BY_ID[info["tile"]].make(state)
+
+    def fire(self, signal: str) -> int:
+        """Fires a signal, see events.py. Returns how many receivers reacted."""
+        from events import fire
+
+        return fire(self, signal)
 
     @property
     def gamemap(self) -> GameMap:
@@ -198,7 +191,10 @@ class GameWorld:
             if level is not None:
                 from level_editor import build_game_map
 
+                from tiles import START_SIGNAL
+
                 self.engine.game_map, _ = build_game_map(level, self.engine)
+                self.engine.game_map.fire(START_SIGNAL)
                 return
             # no levels left: stay where we are, the handler shows the victory screen
             self.current_floor -= 1

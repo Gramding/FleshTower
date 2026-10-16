@@ -135,7 +135,7 @@ class EventHandler(BaseEventHandler):
                 return CampaignVictoryHandler(self.engine)
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
-            return MainGameEventHandler(self.engine)
+            return resume_game(self.engine)
         return self
 
     def handle_action(self, action: Optional[Action]) -> bool:
@@ -850,6 +850,47 @@ class KeybindScreen(BaseEventHandler):
         return None
 
 
+def pause_menu(game: EventHandler, extra_options=()) -> BaseEventHandler:
+    """Esc in game. extra_options are added on top, e.g. a later "back to editor"."""
+    engine = game.engine
+
+    def save() -> bool:
+        try:
+            engine.save_as("savegame.sav")
+            return True
+        except Exception as exc:
+            print(f"Saving failed: {exc}")
+            return False
+
+    def to_main_menu():
+        from setup_game import MainMenu
+
+        save()
+        return MainMenu()
+
+    def quit_game():
+        save()
+        # saved already; the main loop would not save from this menu anyway
+        raise exceptions.QuitWithoutSaving()
+
+    k = tcod.event.KeySym
+    options = list(extra_options) + [
+        (k.R, "Resume", lambda: game),
+        (k.M, "Save and main menu", to_main_menu),
+        (k.Q, "Save and quit", quit_game),
+    ]
+    return ChoicePopup(game, "Paused", options)
+
+
+def resume_game(engine: Engine) -> BaseEventHandler:
+    """Back to playing, unless an event queued a lore page to read first."""
+    page = getattr(engine, "pending_screen", None)
+    if page is not None:
+        engine.pending_screen = None
+        return ReadingScreen(engine, page)
+    return MainGameEventHandler(engine)
+
+
 class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
@@ -929,7 +970,7 @@ class MainGameEventHandler(EventHandler):
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
             c_event["MOD"]
         ):
-            raise SystemExit()
+            return pause_menu(self)
 
         c_event = get_event_by_id(12)
         if key == tcod.event.KeySym(c_event["KEY"]) and modifier == tcod.event.Modifier(
@@ -1467,45 +1508,97 @@ CTRL = tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9 _\-]+$")
 
 
+def rank_matches(query: str, labels: list) -> list:
+    """Indexes of the labels matching query: starts-with first, then contains.
+    Case and spaces vs underscores are ignored."""
+    def norm(text):
+        return text.strip().lower().replace(" ", "_")
+
+    query = norm(query)
+    if not query:
+        return list(range(len(labels)))
+    starts = [i for i, label in enumerate(labels) if norm(label).startswith(query)]
+    contains = [i for i, label in enumerate(labels) if query in norm(label) and i not in starts]
+    return starts + contains
+
+
+def id_suggestions(counts) -> list:
+    """[(id, uses)] -> autocomplete entries for TextPrompt, e.g. ('gate', 'gate  (3)')."""
+    return [(value, f"{value}  ({uses})" if uses else value) for value, uses in counts]
+
+
 class TextPrompt(BaseEventHandler):
+    MAX_SUGGESTIONS = 8
+
     def __init__(
         self,
         parent: BaseEventHandler,
         title: str,
         text: str,
         on_submit: Callable[[str], Optional[BaseEventHandler]],
+        suggestions: Optional[list] = None,
     ):
         self.parent = parent
         self.title = title
         self.text = text
         self.on_submit = on_submit
         self.error = ""
+        self.suggestions = suggestions or []  # [(value, label)], autocomplete for ids
+        self.highlight: Optional[int] = None  # picked with Up/Down
+
+    def matches(self) -> list:
+        indexes = rank_matches(self.text, [value for value, _ in self.suggestions])
+        return [self.suggestions[i] for i in indexes[: self.MAX_SUGGESTIONS]]
 
     def on_render(self, console):
         self.parent.on_render(console)
         dim(console)
         width = NAME_MAX_LENGTH + 8
-        x, y = draw_box(console, width, 7, self.title)
+        matches = self.matches() if self.suggestions else []
+        list_rows = len(matches) + 1 if matches else 0
+        x, y = draw_box(console, width, 7 + list_rows, self.title)
         console.print(x + 2, y + 2, (self.text + "_").ljust(NAME_MAX_LENGTH + 1),
                       fg=color.menu_title, bg=(40, 10, 10))
-        console.print(x + 2, y + 4, "[Enter] ok  [Esc] cancel", fg=color.impossible)
+        for i, (_, label) in enumerate(matches):
+            text = f" {label}"[: width - 4].ljust(width - 4)
+            bg = (90, 20, 20) if i == self.highlight else color.black
+            console.print(x + 2, y + 3 + i, text, fg=color.menu_text, bg=bg)
+        hint = "[Tab] fill  [Enter] ok" if matches else "[Enter] ok  [Esc] cancel"
+        console.print(x + 2, y + 4 + list_rows, hint, fg=color.impossible)
         if self.error:
-            console.print(x + 2, y + 5, self.error[: width - 4], fg=color.error)
+            console.print(x + 2, y + 5 + list_rows, self.error[: width - 4], fg=color.error)
 
     def ev_keydown(self, event):
         key = event.sym
-        if key == tcod.event.KeySym.ESCAPE:
+        k = tcod.event.KeySym
+        if key == k.ESCAPE:
             return self.parent
+        matches = self.matches() if self.suggestions else []
+        if self.highlight is not None and self.highlight >= len(matches):
+            self.highlight = None
         if key in CONFIRM_KEYS:
+            if self.highlight is not None:  # a suggestion picked with the arrows
+                return self.on_submit(matches[self.highlight][0])
             return self.on_submit(self.text.strip())
-        if key == tcod.event.KeySym.BACKSPACE:
+        if matches and key in (k.UP, k.DOWN):
+            step = -1 if key == k.UP else 1
+            start = -1 if self.highlight is None and step == 1 else (self.highlight or 0)
+            self.highlight = (start + step) % len(matches)
+            return None
+        if matches and key == k.TAB:
+            self.text = matches[self.highlight or 0][0]
+            self.highlight = None
+            return None
+        if key == k.BACKSPACE:
             self.text = self.text[:-1]
             self.error = ""
+            self.highlight = None
             return None
         char = key_to_char(event)
         if char and len(self.text) < NAME_MAX_LENGTH:
             self.text += char
             self.error = ""
+            self.highlight = None
         return None
 
 class PopupToConfirm(BaseEventHandler):
@@ -1654,48 +1747,117 @@ class CampaignVictoryHandler(BaseEventHandler):
 # Dialogue lives beneathe here
 
 class ListPicker(BaseEventHandler):
+    MAX_ROWS = 30  # longer lists scroll
+    MAX_WIDTH = 76
 
     def __init__(self, parent, title, items, on_pick):
         self.parent = parent
         self.title = title
-        self.items = items
+        self.all_items = items  # [(label, value)], value None stays on top while filtering
         self.on_pick = on_pick
         self.selected = 0
+        self.scroll = 0
+        self.query = ""  # typed filter
+
+    @property
+    def items(self) -> list:
+        pinned = [item for item in self.all_items if item[1] is None]
+        rest = [item for item in self.all_items if item[1] is not None]
+        if not self.query:
+            return pinned + rest
+        return pinned + [rest[i] for i in rank_matches(self.query, [d for d, _ in rest])]
+
+    @property
+    def rows(self) -> int:
+        return max(1, min(len(self.items), self.MAX_ROWS))
 
     def on_render(self, console):
         self.parent.on_render(console)
         dim(console)
-        width = max([len(self.title) + 4] + [len(d) + 6 for d, _ in self.items]) + 4
-        x, y = draw_box(console, width, len(self.items) + 4, self.title)
-        if not self.items:
-            console.print(x + 2, y + 1, "Nothing here", fg=color.impossible)
-        for i, (display, _) in enumerate(self.items):
-            text = f" {display}".ljust(width - 4)
-            if i == self.selected:
-                console.print(x + 2, y + 2 + i, text, fg=color.menu_title, bg=(90, 20, 20))
+        items = self.items
+        width = max([len(self.title) + 4] + [len(d) + 6 for d, _ in self.all_items]) + 4
+        width = min(width, self.MAX_WIDTH)
+        top = 1 if self.query else 0  # the filter line
+        scrolls = len(items) > self.rows
+        x, y = draw_box(console, width, self.rows + top + (5 if scrolls else 4), self.title)
+        if self.query:
+            console.print(x + 2, y + 1, f"Filter: {self.query}_"[: width - 4], fg=color.menu_title)
+        if not items:
+            text = "No match" if self.query else "Nothing here"
+            console.print(x + 2, y + 2 + top, text, fg=color.impossible)
+
+        # keep the selection in view
+        if self.selected < self.scroll:
+            self.scroll = self.selected
+        elif self.selected >= self.scroll + self.rows:
+            self.scroll = self.selected - self.rows + 1
+        visible = items[self.scroll : self.scroll + self.rows]
+        for row, (display, _) in enumerate(visible):
+            text = f" {display}"[: width - 4].ljust(width - 4)
+            row_y = y + 2 + top + row
+            if self.scroll + row == self.selected:
+                console.print(x + 2, row_y, text, fg=color.menu_title, bg=(90, 20, 20))
             else:
-                console.print(x + 2, y + 2 + i, text)
+                console.print(x + 2, row_y, text)
+        hint = f"{self.selected + 1}/{len(items)}  PgUp/PgDn" if scrolls else ""
+        if not self.query and len(self.all_items) > 5:
+            hint = (hint + "  type to filter").strip()
+        if hint:
+            console.print(x + 2, y + self.rows + top + 3, hint[: width - 4], fg=color.impossible)
+
+    def set_query(self, query: str) -> None:
+        self.query = query
+        self.scroll = 0
+        # select the first match, not a pinned entry like "+ New text..."
+        pinned = sum(1 for _, value in self.all_items if value is None)
+        self.selected = pinned if query and len(self.items) > pinned else 0
 
     def ev_keydown(self, event):
         key = event.sym
-        if key == tcod.event.KeySym.ESCAPE:
+        k = tcod.event.KeySym
+        if key == k.ESCAPE:
+            if self.query:  # first Esc clears the filter
+                self.set_query("")
+                return None
             return self.parent
-        if not self.items:
+        if key == k.BACKSPACE:
+            self.set_query(self.query[:-1])
             return None
-        if key == tcod.event.KeySym.UP:
-            self.selected = (self.selected - 1) % len(self.items)
-        elif key == tcod.event.KeySym.DOWN:
-            self.selected = (self.selected + 1) % len(self.items)
+        char = key_to_char(event)
+        if char:
+            self.set_query(self.query + char)
+            return None
+        items = self.items
+        if not items:
+            return None
+        if key == k.UP:
+            self.selected = (self.selected - 1) % len(items)
+        elif key == k.DOWN:
+            self.selected = (self.selected + 1) % len(items)
+        elif key == k.PAGEUP:
+            self.selected = max(0, self.selected - self.rows)
+        elif key == k.PAGEDOWN:
+            self.selected = min(len(items) - 1, self.selected + self.rows)
+        elif key == k.HOME:
+            self.selected = 0
+        elif key == k.END:
+            self.selected = len(items) - 1
         elif key in CONFIRM_KEYS:
-            return self.on_pick(self.items[self.selected][1])
+            return self.on_pick(items[self.selected][1])
         return None
 
 class PropertyMenu(BaseEventHandler):
     def __init__(self, editor, pos, fields):
         self.editor = editor  # the LevelEditor, also the screen we return to
         self.pos = pos
-        self.fields = fields  # [(key, kind)]
+        self._fields = fields  # [(key, kind)], or values -> [(key, kind)]
         self.selected = 0
+
+    @property
+    def fields(self):
+        fields = self._fields(self.values) if callable(self._fields) else self._fields
+        self.selected = min(self.selected, len(fields) - 1)
+        return fields
 
     @property
     def values(self):
@@ -1734,6 +1896,24 @@ class PropertyMenu(BaseEventHandler):
         if kind == "text":
             return TextPrompt(self, key, self.values.get(key, ""),
                               lambda text: self.set_value(key, text))
+        if kind == "long_text":  # multi-line, e.g. the text of a message event
+            return LoreEditor(self, key, self.values.get(key, ""),
+                              lambda text: self.set_value(key, text))
+        if kind.startswith("choice:"):
+            options = kind[len("choice:"):].split(",")
+            current = self.values.get(key)
+            index = options.index(current) + 1 if current in options else 0
+            return self.set_value(key, options[index % len(options)])
+        if kind == "entity":
+            import entity_factory
+
+            entries = [
+                (f"{group}: {entity_factory.short_name(prototype)}", attr)
+                for group, items in entity_factory.build_palette().items()
+                for attr, prototype in items
+            ]
+            return ListPicker(self, "Choose entity", entries,
+                              lambda attr: self.set_value(key, attr))
         if kind == "dialogue":
             from components.dialouge_parser import list_dialogues, load_dialogue
             from components.settings import DIALOGUE_DIR
@@ -1822,7 +2002,10 @@ class PropertyMenu(BaseEventHandler):
                 return PopupMessage(self, "\n".join(lines), halved=True,
                                     alignment=libtcodpy.CENTER)
 
-            return TextPrompt(self, key, self.values.get(key, ""), submit)
+            from level_editor import known_quest_ids
+
+            return TextPrompt(self, key, self.values.get(key, ""), submit,
+                              suggestions=id_suggestions(known_quest_ids(self.editor.level)))
         if kind == "bool":
             from level_editor import is_yes
 
@@ -1834,25 +2017,35 @@ class PropertyMenu(BaseEventHandler):
                     self.editor.dirty = True
                     return self
                 from components.dialouge_parser import quest_key
-                from level_editor import find_link_id, TILE_NAMES
+                from level_editor import find_link_id, tile_at
 
                 link_id = quest_key(text)
                 self.set_value(key, link_id)
-                me = TILE_NAMES[int(self.editor.level.tiles[self.pos])]
+                tile = tile_at(self.editor.level, self.pos)
+                # a tile's link_id has the tile's role, any other signal field sends
+                role = tile.link if key == "link_id" and tile is not None and tile.link else "sends"
                 others = find_link_id(self.editor.level, link_id, self.pos)
                 lines = [f"ID '{link_id}'", ""]
                 if others:
                     lines.append("Already used by:")
-                    lines += [f"{kind_} at {x},{y}" for kind_, (x, y) in others]
+                    lines += [f"{label} at {x},{y}" for label, _, (x, y) in others]
                 else:
                     lines.append("Not linked yet")
-                counterpart = "Door" if me == "Button" else "Button"
-                if not any(kind_ == counterpart for kind_, _ in others):
-                    lines += ["", f"No {counterpart.lower()} uses this id yet"]
+                needed = "receives" if role == "sends" else "sends"
+                from tiles import START_SIGNAL
+
+                if link_id == START_SIGNAL:
+                    lines += ["", "Fired when the level starts"]
+                elif not any(other_role == needed for _, other_role, _ in others):
+                    missing = "Nothing reacts to" if needed == "receives" else "Nothing triggers"
+                    lines += ["", f"{missing} this id yet"]
                 return PopupMessage(self, "\n".join(lines), halved=True,
                                     alignment=libtcodpy.CENTER)
 
-            return TextPrompt(self, key, self.values.get(key, ""), submit)
+            from level_editor import known_signals
+
+            return TextPrompt(self, key, self.values.get(key, ""), submit,
+                              suggestions=id_suggestions(known_signals(self.editor.level)))
         return None
 
 class LoreEditor(BaseEventHandler):
@@ -2130,6 +2323,10 @@ class DialogueScreen(AskUserEventHandler):
                 log.add_message(f"You pay {-organs} organs.")
             changed = True
 
+        for signal in tag_values(passage, "signal:"):  # see events.py
+            self.engine.game_map.fire(signal)
+            changed = True
+
         if changed:
             self.npc.dialogue_done.add(name)
 
@@ -2168,7 +2365,7 @@ class DialogueScreen(AskUserEventHandler):
         key = event.sym
         k = tcod.event.KeySym
         if key == k.ESCAPE:
-            return MainGameEventHandler(self.engine)
+            return resume_game(self.engine)
 
         if k.N1 <= key <= k.N9:
             index = key - k.N1
@@ -2184,7 +2381,7 @@ class DialogueScreen(AskUserEventHandler):
             return None
         label, target = answers[index]
         if target is None:
-            return MainGameEventHandler(self.engine)
+            return resume_game(self.engine)
         self.enter(target)
         return None
 

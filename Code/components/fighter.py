@@ -129,6 +129,11 @@ class Fighter(BaseComponent):
                 color.menu_title,
             )
 
+        signal = getattr(self.parent, "on_death", None)
+        if signal:
+            self.parent.on_death = None
+            self.engine.game_map.fire(signal)
+
         # 20% chance to drop an item on death
         # drop item on death
         if random.randint(0, 100) < 20 and len(self.parent.inventory.items) > 0:
