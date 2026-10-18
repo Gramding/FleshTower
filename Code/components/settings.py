@@ -33,6 +33,7 @@ CAMPAIGN_EXTENSTION = ".cmp"
 #Dialogue Stuff
 DIALOGUE_DIR = "Dialogues"
 LORE_DIR = "Lore"
+LOOT_DIR = "LootTables"
 
 
 

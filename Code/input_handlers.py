@@ -1898,6 +1898,73 @@ class PropertyMenu(BaseEventHandler):
             return self.edit(*self.fields[self.selected])
         return None
 
+    def text_file_field(self, key, folder, files, what, built_in=(), template="",
+                        suggestions=None, check=None):
+        """A field naming a text file in folder (lore, loot tables): pick one,
+        create a new one or edit it in place.
+        built_in: extra (label, value) entries that are not files.
+        check: text -> problems, shown after saving."""
+        from level_editor import find_lore_users
+
+        def open_editor(filename, text):
+            others = find_lore_users(filename, self.editor.level, self.pos, key)
+            title = filename + (f" (used {len(others)}x more)" if others else "")
+
+            def save(new_text):
+                os.makedirs(folder, exist_ok=True)
+                with open(os.path.join(folder, filename), "w", encoding="utf-8") as f:
+                    f.write(new_text)
+                result = self.set_value(key, filename)
+                problems = check(new_text) if check else []
+                if problems:
+                    return PopupMessage(result, "Saved, but:\n" + "\n".join(problems[:10]),
+                                        halved=True, alignment=libtcodpy.CENTER)
+                return result
+
+            return LoreEditor(self, title, text, save, suggestions=suggestions)
+
+        def new_file():
+            def submit(name):
+                if not name:
+                    prompt.error = f"The {what} needs a name"
+                    return None
+                problem = check_name(name)
+                if problem:
+                    prompt.error = problem
+                    return None
+                filename = name.replace(" ", "_") + ".txt"
+                if os.path.exists(os.path.join(folder, filename)):
+                    prompt.error = f"{name} already exists"
+                    return None
+                return open_editor(filename, template)  # file is written on save only
+
+            prompt = TextPrompt(self, f"Name of the new {what}", "", submit)
+            return prompt
+
+        built_in_values = {value for _, value in built_in}
+
+        def pick(filename):
+            if filename is None:
+                return new_file()
+            if filename in built_in_values:
+                return self.set_value(key, filename)
+
+            def choose(choice):
+                if choice == "use":
+                    return self.set_value(key, filename)
+                try:
+                    with open(os.path.join(folder, filename), encoding="utf-8") as f:
+                        text = f.read()
+                except OSError as exc:
+                    return PopupMessage(self, f"Can't read {filename}:\n{exc}",
+                                        halved=True, alignment=libtcodpy.CENTER)
+                return open_editor(filename, text)
+
+            return ListPicker(self, filename, [("Use this", "use"), ("Edit", "edit")], choose)
+
+        entries = [(f"+ New {what}...", None)] + list(built_in) + files
+        return ListPicker(self, f"Choose {what}", entries, pick)
+
     def edit(self, key, kind):
         if kind == "text":
             return TextPrompt(self, key, self.values.get(key, ""),
@@ -1962,56 +2029,34 @@ class PropertyMenu(BaseEventHandler):
         if kind == "lore":
             from components.settings import LORE_DIR
             from components.dialouge_parser import list_lore
-            from level_editor import find_lore_users
 
-            def open_editor(filename, text):
-                others = find_lore_users(filename, self.editor.level, self.pos)
-                title = filename + (f" (used {len(others)}x more)" if others else "")
+            return self.text_file_field(key, LORE_DIR, list_lore(), "text")
+        if kind == "loot_table":
+            from components import loot
+            from components.settings import LOOT_DIR
 
-                def save(new_text):
-                    os.makedirs(LORE_DIR, exist_ok=True)
-                    with open(os.path.join(LORE_DIR, filename), "w", encoding="utf-8") as f:
-                        f.write(new_text)
-                    return self.set_value(key, filename)
+            def check(text):
+                return loot.parse(text).problems
 
-                return LoreEditor(self, title, text, save)
+            return self.text_file_field(
+                key, LOOT_DIR, loot.list_loot_tables(), "loot table",
+                built_in=[("random (floor loot)", loot.RANDOM_TABLE)],
+                template=loot.TEMPLATE,
+                suggestions=loot.item_names() + ["rolls:"],
+                check=check,
+            )
+        if kind == "item":
+            import entity_factory
+            from entity import Item
 
-            def new_text():
-                def submit(name):
-                    if not name:
-                        prompt.error = "The text needs a name"
-                        return None
-                    problem = check_name(name)
-                    if problem:
-                        prompt.error = problem
-                        return None
-                    filename = name.replace(" ", "_") + ".txt"
-                    if os.path.exists(os.path.join(LORE_DIR, filename)):
-                        prompt.error = f"{name} already exists"
-                        return None
-                    return open_editor(filename, "")  # file is written on save only
-
-                prompt = TextPrompt(self, "Name of the new text", "", submit)
-                return prompt
-
-            def pick(filename):
-                if filename is None:
-                    return new_text()
-
-                def choose(choice):
-                    if choice == "use":
-                        return self.set_value(key, filename)
-                    try:
-                        with open(os.path.join(LORE_DIR, filename), encoding="utf-8") as f:
-                            text = f.read()
-                    except OSError as exc:
-                        return PopupMessage(self, f"Can't read {filename}:\n{exc}",
-                                            halved=True, alignment=libtcodpy.CENTER)
-                    return open_editor(filename, text)
-
-                return ListPicker(self, filename, [("Use this", "use"), ("Edit", "edit")], choose)
-
-            return ListPicker(self, "Choose text", [("+ New text...", None)] + list_lore(), pick)
+            entries = [
+                (entity_factory.short_name(prototype), attr)
+                for items in entity_factory.build_palette().values()
+                for attr, prototype in items
+                if isinstance(prototype, Item)
+            ]
+            return ListPicker(self, "Choose item", [("(none)", "")] + entries,
+                              lambda attr: self.set_value(key, attr))
         if kind == "quest_id":
             def submit(text):
                 if not text:
@@ -2087,7 +2132,7 @@ class LoreEditor(BaseEventHandler):
     ROWS = 30
     CURSOR_BG = (150, 40, 40)
 
-    def __init__(self, parent, title, text, on_save):
+    def __init__(self, parent, title, text, on_save, suggestions=None):
         self.parent = parent
         self.title = title
         self.on_save = on_save  # (text) -> handler, writes the file
@@ -2097,6 +2142,40 @@ class LoreEditor(BaseEventHandler):
         self.scroll = 0
         self.dirty = False
         self.error = ""
+        # words offered for the first word of a line, e.g. item names in loot tables
+        self.suggestions = suggestions or []
+        self.completing = None  # (matches, index, word start) while Tab cycles
+
+    def word_at_cursor(self):
+        """(start, word) when the cursor is at the end of a line's first word."""
+        before = self.lines[self.row][: self.col]
+        word = before.lstrip()
+        if not self.suggestions or not word or word.startswith("#") or " " in word:
+            return None
+        return len(before) - len(word), word
+
+    def completions(self) -> list:
+        found = self.word_at_cursor()
+        if found is None:
+            return []
+        matches = [self.suggestions[i] for i in rank_matches(found[1], self.suggestions)]
+        return [match for match in matches if match != found[1]][:6]
+
+    def complete(self) -> None:
+        """Tab: fill in the best match, pressing again cycles through the others."""
+        if self.completing:
+            matches, index, start = self.completing
+            index = (index + 1) % len(matches)
+        else:
+            matches = self.completions()
+            if not matches:
+                return
+            index, start = 0, self.word_at_cursor()[0]
+        line = self.lines[self.row]
+        self.lines[self.row] = line[:start] + matches[index] + line[self.col :]
+        self.col = start + len(matches[index])
+        self.completing = (matches, index, start)
+        self.dirty = True
 
     def segments(self):
         """Screen rows as (line, start, end), each line wrapped at spaces."""
@@ -2202,22 +2281,43 @@ class LoreEditor(BaseEventHandler):
         cy = y + 2 + cursor - self.scroll
         console.print(cx, cy, char, bg=self.CURSOR_BG)
 
+        # autocomplete list under the cursor
+        if self.completing:
+            matches, highlight = self.completing[0], self.completing[1]
+        else:
+            matches, highlight = self.completions(), None
+        if matches:
+            width = max(len(match) for match in matches) + 2
+            px = min(cx, console.width - width)
+            for i, match in enumerate(matches):
+                if cy + 1 + i >= console.height:
+                    break
+                bg = (90, 20, 20) if i == highlight else (40, 40, 40)
+                console.print(px, cy + 1 + i, f" {match}".ljust(width), fg=color.menu_text, bg=bg)
+
         if self.error:
             console.print(x + 2, y + self.ROWS + 3, self.error[: self.WIDTH - 4], fg=color.error)
         else:
-            console.print(x + 2, y + self.ROWS + 3, "[Ctrl+S] save  [Esc] back", fg=color.impossible)
+            hint = "[Ctrl+S] save  [Esc] back"
+            if self.suggestions:
+                hint += "  [Tab] complete"
+            console.print(x + 2, y + self.ROWS + 3, hint, fg=color.impossible)
 
     def ev_keydown(self, event):
         key = event.sym
         k = tcod.event.KeySym
         self.error = ""
+        if key != k.TAB:
+            self.completing = None
         if event.mod & CTRL:
             if key == k.S:
                 return self.save()
             return None
         if key == k.ESCAPE:
             return self.leave()
-        if key in CONFIRM_KEYS:
+        if key == k.TAB:
+            self.complete()
+        elif key in CONFIRM_KEYS:
             self.newline()
         elif key == k.BACKSPACE:
             self.backspace()

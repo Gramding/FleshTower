@@ -102,6 +102,20 @@ door_closed = new_tile(
     light=(ord("+"), (255, 255, 255), (0, 0, 0)),
 )
 
+chest_closed = new_tile(
+    walkable=False,
+    transparent=True,
+    dark=(ord("="), (110, 80, 30), (0, 0, 0)),
+    light=(ord("="), (200, 150, 60), (0, 0, 0)),
+)
+
+chest_open = new_tile(
+    walkable=False,
+    transparent=True,
+    dark=(ord("_"), (110, 80, 30), (0, 0, 0)),
+    light=(ord("_"), (200, 150, 60), (0, 0, 0)),
+)
+
 plate_armed = new_tile(
     walkable=True,
     transparent=True,

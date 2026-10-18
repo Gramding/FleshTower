@@ -252,17 +252,8 @@ class UnlockDoorAction(TileBumpAction):
         return bool(info["props"].get("key_id")) and info["state"] != "open"
 
     def perform(self) -> None:
-        from tiles import is_yes
-
         info = self.info
-        key = next(
-            (
-                i
-                for i in self.entity.inventory.items
-                if getattr(i, "quest_id", None) == info["props"]["key_id"]
-            ),
-            None,
-        )
+        key = find_key(self.entity, info["props"]["key_id"])
         if key is None:
             if info["state"] == "hidden":
                 # don't give the secret away
@@ -270,17 +261,99 @@ class UnlockDoorAction(TileBumpAction):
             raise exceptions.Impossible("The door is locked.")
 
         self.engine.game_map.set_tile_state(self.dest_xy, "open")
-        if is_yes(info["props"].get("consume_key")):
-            self.entity.inventory.items.remove(key)
-            self.engine.message_log.add_message(f"The {key.name} stays in the lock.")
+        use_key(self.engine, self.entity, key, info["props"], "door")
+
+
+def find_key(actor, quest_id: str):
+    """The quest item in the actor's inventory that matches quest_id, or None."""
+    return next(
+        (i for i in actor.inventory.items if getattr(i, "quest_id", None) == quest_id),
+        None,
+    )
+
+
+def use_key(engine, actor, key, props: dict, what: str) -> None:
+    from tiles import is_yes
+
+    if is_yes(props.get("consume_key")):
+        actor.inventory.items.remove(key)
+        engine.message_log.add_message(f"The {key.name} stays in the lock.")
+    else:
+        engine.message_log.add_message(f"You unlock the {what} with the {key.name}.")
+
+
+class OpenChestAction(TileBumpAction):
+    """Rolls the chest's loot table and drops the items around it."""
+
+    @staticmethod
+    def wants(info: dict) -> bool:
+        return info["state"] == "closed"
+
+    def perform(self) -> None:
+        import entity_factory
+        from components.loot import roll
+        from entity import Item
+        from events import conditions_met
+
+        info = self.info
+        props = info["props"]
+        if not conditions_met(self.engine, props):
+            raise exceptions.Impossible("The chest won't open.")
+        if props.get("key_id"):
+            key = find_key(self.entity, props["key_id"])
+            if key is None:
+                raise exceptions.Impossible("The chest is locked.")
+            use_key(self.engine, self.entity, key, props, "chest")
+
+        game_map = self.engine.game_map
+        game_map.set_tile_state(self.dest_xy, "open")
+
+        loot = roll(self.engine, props.get("loot_table", ""))
+        guaranteed = getattr(entity_factory, props.get("guaranteed", ""), None)
+        if isinstance(guaranteed, Item):
+            loot.insert(0, guaranteed)
+
+        spots = self.drop_spots()
+        names = []
+        for i, prototype in enumerate(loot):
+            item = prototype.spawn(game_map, *spots[i % len(spots)])
+            names.append(item.name)
+        if names:
+            counts = {}  # keeps the order items came out in
+            for name in names:
+                counts[name] = counts.get(name, 0) + 1
+            listed = ", ".join(
+                f"{name} x{count}" if count > 1 else name for name, count in counts.items()
+            )
+            self.engine.message_log.add_message(
+                f"You open the chest: {listed}.", color.menu_title
+            )
         else:
-            self.engine.message_log.add_message(f"You unlock the door with the {key.name}.")
+            self.engine.message_log.add_message("You open the chest. It is empty.")
+
+        game_map.fire(props.get("link_id", ""))
+
+    def drop_spots(self) -> list:
+        """Walkable cells around the chest, closest to the player first."""
+        game_map = self.engine.game_map
+        cx, cy = self.dest_xy
+        spots = [
+            (cx + dx, cy + dy)
+            for dx in (-1, 0, 1)
+            for dy in (-1, 0, 1)
+            if (dx or dy)
+            and game_map.in_bounds(cx + dx, cy + dy)
+            and game_map.tiles["walkable"][cx + dx, cy + dy]
+        ]
+        spots.sort(key=lambda spot: self.entity.distance(*spot))
+        return spots or [(self.entity.x, self.entity.y)]
 
 
 # TileDef.on_bump name -> action, see tiles.py
 TILE_BUMPS = {
     "lever": PullLeverAction,
     "door": UnlockDoorAction,
+    "chest": OpenChestAction,
 }
 
 

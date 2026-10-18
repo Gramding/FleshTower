@@ -1,0 +1,4 @@
+# one item per line: name weight
+rolls: 1-2
+health_potion 1
+

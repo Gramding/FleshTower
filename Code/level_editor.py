@@ -10,6 +10,7 @@ from collections import deque
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from components.dialouge_parser import load_dialogue, quest_key
+from components import loot
 
 import numpy as np
 import tcod
@@ -195,14 +196,15 @@ def all_levels(current=None) -> List[CustomLevel]:
     return levels
 
 
-def find_lore_users(lore_file, current=None, skip_pos=None) -> List[str]:
-    """Every lore item, in any level, that shows this text file."""
+def find_lore_users(lore_file, current=None, skip_pos=None, key="lore") -> List[str]:
+    """Everything, in any level, whose property key names this file
+    (lore items for "lore", chests for "loot_table")."""
     users = []
     for level in all_levels(current):
         for pos, props in getattr(level, "properties", {}).items():
             if level is current and pos == skip_pos:
                 continue
-            if props.get("lore") == lore_file:
+            if props.get(key) == lore_file:
                 users.append(f"{level.name or 'this level'}: {pos[0]},{pos[1]}")
     return users
 
@@ -481,6 +483,17 @@ def check_level(level) -> List[Problem]:
             os.path.join(DIALOGUE_DIR, props["dialogue"])
         ):
             problems.append((f"Dialogue {props['dialogue']} is missing", pos))
+        table = props.get("loot_table")
+        if table and table != loot.RANDOM_TABLE:
+            try:
+                for problem in loot.load(table).problems:
+                    problems.append((f"{table}: {problem}", pos))
+            except OSError:
+                problems.append((f"Loot table {table} is missing", pos))
+        if props.get("guaranteed") and not isinstance(
+            getattr(entity_factory, props["guaranteed"], None), Item
+        ):
+            problems.append((f"Guaranteed item {props['guaranteed']} no longer exists", pos))
         for key in ("key_id", "requires_item"):
             if props.get(key):
                 produced, _ = find_quest_id(props[key], level)

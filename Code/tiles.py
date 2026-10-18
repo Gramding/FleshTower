@@ -29,6 +29,7 @@ class TileDef:
     solid: bool = False  # clears entities, can't go on the player start
     unique: bool = False  # only one per level, painting it again moves it
     link: Optional[str] = None  # "sends" or "receives" a link_id
+    link_optional: bool = False  # works without a link_id, no warning (chests)
     on_bump: Optional[str] = None  # name in actions.TILE_BUMPS
     start_state: Optional[Callable[[dict], str]] = None  # props -> state when the level loads
     on_link: Optional[Callable[[str, dict], str]] = None  # (state, props) -> state when its link fires
@@ -162,6 +163,23 @@ TILES: List[TileDef] = [
         event=True,
         extra_fields=event_fields,
         editor_char=True,
+    ),
+    TileDef(
+        7, "Chest", "=",
+        {"closed": lambda: tile_types.chest_closed, "open": lambda: tile_types.chest_open},
+        color=(200, 150, 60),
+        properties=[
+            ("loot_table", "loot_table"),  # see components/loot.py
+            ("guaranteed", "item"),
+            ("link_id", "link_id"),  # fired when opened
+            ("key_id", "quest_id"),
+            ("consume_key", "bool"),
+        ]
+        + CONDITION_FIELDS,
+        solid=True,
+        link="sends",
+        link_optional=True,
+        on_bump="chest",
     ),
 ]
 
