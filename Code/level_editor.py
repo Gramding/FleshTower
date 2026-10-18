@@ -786,11 +786,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.level = level
         self.dirty = False
 
-        self.palette = {TILE_GROUP: [(tile.id, tile) for tile in TILES]}
-        self.palette.update(entity_factory.build_palette())
-        self.groups = list(self.palette.keys())
         self.group_index = 0
-        self.palette_index = {group: 0 for group in self.groups}
+        self.palette_index = {}
+        self.refresh_palette()
 
         self.brush = BRUSH_TILE
         self.brush_tile = TILE_FLOOR
@@ -805,6 +803,16 @@ class LevelEditor(input_handlers.BaseEventHandler):
         self.center_camera(*level.player_start)
 
         self.pending = None
+
+    def refresh_palette(self) -> None:
+        """(Re)builds the palette, e.g. after the entity editor saved."""
+        self.palette = {TILE_GROUP: [(tile.id, tile) for tile in TILES]}
+        self.palette.update(entity_factory.build_palette())
+        self.groups = [group for group, entries in self.palette.items() if entries]
+        self.group_index = min(self.group_index, len(self.groups) - 1)
+        for group in self.groups:
+            index = self.palette_index.get(group, 0)
+            self.palette_index[group] = min(index, len(self.palette[group]) - 1)
 
     def center_camera(self, x: int, y: int) -> None:
         self.cam_x = x - VIEW_WIDTH // 2
@@ -1180,6 +1188,10 @@ class LevelEditor(input_handlers.BaseEventHandler):
             return self.ask_save()
         elif key == k.V:
             return self.check_report()
+        elif key == k.E:
+            import entity_editor
+
+            return entity_editor.entity_list(self)
         elif key == k.ESCAPE:
             if self.dirty:
                 return input_handlers.PopupToConfirm(
@@ -1317,6 +1329,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "Wheel scroll/pick",
             "C center on start",
             "V check level",
+            "E edit entities",
             "S save  Esc back",
         ]
         help_y = 11 + PALETTE_ROWS + 1

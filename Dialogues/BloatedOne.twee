@@ -1,0 +1,113 @@
+:: StoryTitle
+BloatedOne
+
+
+:: StoryData
+{
+  "ifid": "E4DCD176-0DEF-4F57-97B7-9758116EC14D",
+  "format": "Harlowe",
+  "format-version": "3.3.9",
+  "start": "Start",
+  "tag-colors": {
+    "flag:KillTheBloatetOne": "red",
+    "if:KillTheBloatetOne": "green",
+    "requires:seed_of_death": "green",
+    "flag:bloatedOneNo": "blue",
+    "start": "purple",
+    "if:bloatedOneNo": "green",
+    "item:health_potion": "green",
+    "organs:20": "green"
+  },
+  "zoom": 1
+}
+
+
+:: But you're immortal, aren't you? [flag:seed_of_death] {"position":"1400,1100","size":"100,100"}
+You could phrase it like that, yes.
+
+*Sadness flits across the creature's face.*
+
+I hope to die at last, even though I don't know if it's possible.
+
+[[Start]]
+
+
+:: Do you need anything? [if:KillTheBloatetOne] {"position":"1000,1100","size":"100,100"}
+*The creature looks surprised.*
+
+Yes, in fact, I need something. It has been a long time since you asked me what I need. Could you, by chance, release me from this eternal life?
+
+[[What, you want me to kill you?]]
+
+
+:: I've found something [requires:seed_of_death if:KillTheBloatetOne if:seed_of_death] {"position":"1000,1300","size":"100,100"}
+*A faint smile crosses the creature's face. It gurgles happily.*
+
+
+At long last, have you really found a way to grant my wish? I never thought it possible. Countless times we have had the same conversation. Countless times I have begged for death. Are you finally going to grant it to me?
+
+[[Yes]]
+[[No]]
+
+
+:: No [flag:bloatedOneNo] {"position":"900,1500","size":"100,100"}
+*Anger and sadness alike pour out as the creature screams in agony.*
+
+Why even find it, then, if you're not going to finish it? I don't want to be alive. I've lived longer than I could ever comprehend. I'm tired of living this eternal life. I can't move, can't sleep; not even death is possible. And now, with it so close before me, I can't even get you to kill me. This existence has been nothing but torture. Reconsider, please, and kill me.
+
+[[Yes]]
+[[No->Leave me be]]
+
+
+:: Leave me be [start if:bloatedOneNo item:health_potion organs:20] {"position":"700,1500","size":"100,100"}
+*The creature turns away from you, its bloated body sagging with sorrow.*
+
+Take this and leave me be.
+
+
+:: Start {"position":"800,900","size":"100,100"}
+My, my, you haven't been here in quite a while. How have you been? Ah, what am I asking? You've forgotten, as always.
+
+[[Who are you?]]
+[[Do you need anything?]]
+[[I've found something]]
+
+
+:: What is your purpose? {"position":"1200,900","size":"100,100"}
+I am a fragment of you, in a way. That is why I'm still alive after essentially fusing with the shell of the tower when I died.
+
+[[You died]]
+
+
+:: What, you want me to kill you? {"position":"1200,1100","size":"100,100"}
+Yes. That would be very kind of you. The countless eternities I've spent here have given me more life than I ever wanted. I can't move from here; I'm stuck for all eternity.
+
+Countless times I've reflected on what led me here, and countless more times I've regretted it. So if you could spare the time, please kill me.
+
+[[But you're immortal, aren't you?]]
+
+
+:: Who are you? {"position":"1000,900","size":"100,100"}
+Me? I'm called "The Bloated One". Fitting, isn't it?
+
+*The creature turns its body to look at itself.*
+
+[[What is your purpose?]]
+
+
+:: Yes [takes:seed_of_death die] {"position":"1200,1300","size":"100,100"}
+*You feed the creature the seed. It gurgles as tears of happiness flow down its bloated body.*
+
+*A memory flashes before your eyes: the person this creature once was, and everything you achieved together.*
+
+
+:: You died [flag:KillTheBloatetOne] {"position":"1400,800","size":"100,100"}
+Yes, quite long ago...
+
+*The creature seems to reminisce about a time long gone and forgotten.*
+
+At your side I fought to climb the tower. As I drew my dying breath, you gave me a fragment of your flesh. Thus I remain here, repaying the gift of eternal life again and again, helping you whenever you die. But lately, you haven't come by much.
+
+*After gurgling the last sentence, the creature looks immeasurably sad.*
+
+[[Start]]

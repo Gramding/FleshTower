@@ -1,6 +1,8 @@
 from typing import Tuple
 import numpy as np
 
+from components import tileset
+
 # this is like a structure in ABAP
 # its got three headers with correspoing values
 # ch: = the character in game
@@ -74,47 +76,25 @@ def randWall() -> np.ndarray:
     return wall
 
 
-chest = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(0, (255, 255, 255), (0, 0, 0)),
-    light=(0, (255, 255, 255), (0, 0, 0)),
-)
+def sprite_tile(*, walkable: bool, transparent: bool, sprite: int) -> np.ndarray:
+    """A tile drawn with a sprite from Res/sprites.png, see components/tileset.py.
+    White on black keeps the sprite's own colours."""
+    return new_tile(
+        walkable=walkable,
+        transparent=transparent,
+        dark=(sprite + tileset.DARK, (255, 255, 255), (0, 0, 0)),
+        light=(sprite, (255, 255, 255), (0, 0, 0)),
+    )
 
-button_on = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("/"), (255, 255, 255), (0, 0, 0)),
-    light=(ord("/"), (255, 255, 255), (0, 0, 0)),
-)
 
-button_off = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("\\"), (255, 255, 255), (0, 0, 0)),
-    light=(ord("\\"), (255, 255, 255), (0, 0, 0)),
-)
+button_off = sprite_tile(walkable=False, transparent=False, sprite=tileset.SPRITE_LEVER_OFF)
+button_on = sprite_tile(walkable=False, transparent=False, sprite=tileset.SPRITE_LEVER_ON)
 
-door_closed = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("+"), (255, 255, 255), (0, 0, 0)),
-    light=(ord("+"), (255, 255, 255), (0, 0, 0)),
-)
+door_closed = sprite_tile(walkable=False, transparent=False, sprite=tileset.SPRITE_DOOR_CLOSED)
+door_open = sprite_tile(walkable=True, transparent=True, sprite=tileset.SPRITE_DOOR_OPEN)
 
-chest_closed = new_tile(
-    walkable=False,
-    transparent=True,
-    dark=(ord("="), (110, 80, 30), (0, 0, 0)),
-    light=(ord("="), (200, 150, 60), (0, 0, 0)),
-)
-
-chest_open = new_tile(
-    walkable=False,
-    transparent=True,
-    dark=(ord("_"), (110, 80, 30), (0, 0, 0)),
-    light=(ord("_"), (200, 150, 60), (0, 0, 0)),
-)
+chest_closed = sprite_tile(walkable=False, transparent=True, sprite=tileset.SPRITE_CHEST_CLOSED)
+chest_open = sprite_tile(walkable=False, transparent=True, sprite=tileset.SPRITE_CHEST_OPEN)
 
 plate_armed = new_tile(
     walkable=True,
@@ -128,11 +108,4 @@ plate_spent = new_tile(
     transparent=True,
     dark=(ord("_"), (120, 120, 120), (0, 0, 0)),
     light=(ord("_"), (200, 200, 200), (0, 0, 0)),
-)
-
-door_open = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("-"), (255, 255, 255), (0, 0, 0)),
-    light=(ord("-"), (255, 255, 255), (0, 0, 0)),
 )

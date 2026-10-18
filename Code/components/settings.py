@@ -34,6 +34,7 @@ CAMPAIGN_EXTENSTION = ".cmp"
 DIALOGUE_DIR = "Dialogues"
 LORE_DIR = "Lore"
 LOOT_DIR = "LootTables"
+DATA_DIR = "Data"  # items and actors, see entity_data.py
 
 
 

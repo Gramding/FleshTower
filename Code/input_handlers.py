@@ -1540,6 +1540,8 @@ class TextPrompt(BaseEventHandler):
         text: str,
         on_submit: Callable[[str], Optional[BaseEventHandler]],
         suggestions: Optional[list] = None,
+        max_length: int = NAME_MAX_LENGTH,
+        any_char: bool = False,  # punctuation too, not only name characters
     ):
         self.parent = parent
         self.title = title
@@ -1548,6 +1550,8 @@ class TextPrompt(BaseEventHandler):
         self.error = ""
         self.suggestions = suggestions or []  # [(value, label)], autocomplete for ids
         self.highlight: Optional[int] = None  # picked with Up/Down
+        self.max_length = max_length
+        self.any_char = any_char
 
     def matches(self) -> list:
         indexes = rank_matches(self.text, [value for value, _ in self.suggestions])
@@ -1556,11 +1560,11 @@ class TextPrompt(BaseEventHandler):
     def on_render(self, console):
         self.parent.on_render(console)
         dim(console)
-        width = NAME_MAX_LENGTH + 8
+        width = min(self.max_length + 8, console.width - 2)
         matches = self.matches() if self.suggestions else []
         list_rows = len(matches) + 1 if matches else 0
         x, y = draw_box(console, width, 7 + list_rows, self.title)
-        console.print(x + 2, y + 2, (self.text + "_").ljust(NAME_MAX_LENGTH + 1),
+        console.print(x + 2, y + 2, (self.text + "_")[-(width - 4):].ljust(width - 4),
                       fg=color.menu_title, bg=(40, 10, 10))
         for i, (_, label) in enumerate(matches):
             text = f" {label}"[: width - 4].ljust(width - 4)
@@ -1597,8 +1601,8 @@ class TextPrompt(BaseEventHandler):
             self.error = ""
             self.highlight = None
             return None
-        char = key_to_char(event)
-        if char and len(self.text) < NAME_MAX_LENGTH:
+        char = typed_char(event) if self.any_char else key_to_char(event)
+        if char and len(self.text) < self.max_length:
             self.text += char
             self.error = ""
             self.highlight = None
@@ -1808,6 +1812,13 @@ class ListPicker(BaseEventHandler):
         if hint:
             console.print(x + 2, y + self.rows + top + 3, hint[: width - 4], fg=color.impossible)
 
+    def ev_mousewheel(self, event):
+        items = self.items
+        if items:
+            step = -3 if event.y > 0 else 3
+            self.selected = max(0, min(len(items) - 1, self.selected + step))
+        return None
+
     def set_query(self, query: str) -> None:
         self.query = query
         self.scroll = 0
@@ -1850,11 +1861,15 @@ class ListPicker(BaseEventHandler):
         return None
 
 class PropertyMenu(BaseEventHandler):
-    def __init__(self, editor, pos, fields, values=None):
+    def __init__(self, editor, pos, fields, values=None, title="Properties",
+                 on_close=None, part_of_level=True):
         self.editor = editor  # the LevelEditor, also the screen we return to
         self.pos = pos  # None for things without a cell, e.g. area triggers
         self._fields = fields  # [(key, kind)], or values -> [(key, kind)]
         self._values = values  # props stored elsewhere than level.properties[pos]
+        self.title = title
+        self.on_close = on_close  # () -> handler on Esc, e.g. saving an entity
+        self.part_of_level = part_of_level  # changes make the level unsaved
         self.selected = 0
 
     @property
@@ -1871,14 +1886,21 @@ class PropertyMenu(BaseEventHandler):
 
     def set_value(self, key, value):
         self.values[key] = value
-        self.editor.dirty = True
+        if self.part_of_level:
+            self.editor.dirty = True
+        return self
+
+    def clear_value(self, key):
+        self.values.pop(key, None)
+        if self.part_of_level:
+            self.editor.dirty = True
         return self
 
     def on_render(self, console):
         self.editor.on_render(console)
         dim(console)
         width = 44
-        x, y = draw_box(console, width, len(self.fields) + 5, "Properties")
+        x, y = draw_box(console, width, len(self.fields) + 5, self.title)
         for i, (key, kind) in enumerate(self.fields):
             value = self.values.get(key, "-")
             text = f" {key}: {value}"[: width - 4].ljust(width - 4)
@@ -1889,7 +1911,7 @@ class PropertyMenu(BaseEventHandler):
     def ev_keydown(self, event):
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:
-            return self.editor
+            return self.on_close() if self.on_close else self.editor
         if key == tcod.event.KeySym.UP:
             self.selected = (self.selected - 1) % len(self.fields)
         elif key == tcod.event.KeySym.DOWN:
@@ -1975,8 +1997,7 @@ class PropertyMenu(BaseEventHandler):
 
             def submit_flag(text):
                 if not text:
-                    self.values.pop(key, None)
-                    self.editor.dirty = True
+                    self.clear_value(key)
                     return self
                 return self.set_value(key, quest_key(text))
 
@@ -1985,8 +2006,7 @@ class PropertyMenu(BaseEventHandler):
         if kind == "int":
             def submit_number(text):
                 if not text:  # empty: back to the entity's own value
-                    self.values.pop(key, None)
-                    self.editor.dirty = True
+                    self.clear_value(key)
                     return self
                 if not text.isdigit():
                     prompt.error = "Enter a whole number"
@@ -2000,9 +2020,41 @@ class PropertyMenu(BaseEventHandler):
                               lambda text: self.set_value(key, text))
         if kind.startswith("choice:"):
             options = kind[len("choice:"):].split(",")
+            if len(options) > 6:  # too many to cycle through, pick from a list
+                return ListPicker(self, key, [(option, option) for option in options],
+                                  lambda option: self.set_value(key, option))
             current = self.values.get(key)
             index = options.index(current) + 1 if current in options else 0
             return self.set_value(key, options[index % len(options)])
+        if kind == "name":  # longer than ids, any character
+            return TextPrompt(self, key, self.values.get(key, ""),
+                              lambda text: self.set_value(key, text) if text else self,
+                              max_length=60, any_char=True)
+        if kind == "char":
+            def submit_char(text):
+                if text.isdigit() and len(text) > 1:  # a tileset code, e.g. 9006
+                    return self.set_value(key, chr(int(text)))
+                if len(text) != 1:
+                    prompt.error = "One character, or a code like 9006"
+                    return None
+                return self.set_value(key, text)
+
+            prompt = TextPrompt(self, key, self.values.get(key, ""), submit_char, any_char=True)
+            return prompt
+        if kind == "color":
+            def submit_color(text):
+                try:
+                    rgb = [int(part) for part in text.replace(" ", "").split(",")]
+                except ValueError:
+                    rgb = []
+                if len(rgb) != 3 or not all(0 <= part <= 255 for part in rgb):
+                    prompt.error = "Three numbers 0-255: r,g,b"
+                    return None
+                return self.set_value(key, ",".join(str(part) for part in rgb))
+
+            prompt = TextPrompt(self, f"{key} (r,g,b)", self.values.get(key, ""),
+                                submit_color, any_char=True)
+            return prompt
         if kind == "entity":
             import entity_factory
 
@@ -2060,8 +2112,7 @@ class PropertyMenu(BaseEventHandler):
         if kind == "quest_id":
             def submit(text):
                 if not text:
-                    self.values.pop(key, None)
-                    self.editor.dirty = True
+                    self.clear_value(key)
                     return self
                 from components.dialouge_parser import quest_key
                 from level_editor import find_quest_id
@@ -2090,8 +2141,7 @@ class PropertyMenu(BaseEventHandler):
         if kind == "link_id":
             def submit(text):
                 if not text:
-                    self.values.pop(key, None)
-                    self.editor.dirty = True
+                    self.clear_value(key)
                     return self
                 from components.dialouge_parser import quest_key
                 from level_editor import find_link_id, tile_at
@@ -2403,7 +2453,15 @@ class DialogueScreen(AskUserEventHandler):
         # passages whose gives/takes already ran for this NPC
         if not hasattr(npc, "dialogue_done"):
             npc.dialogue_done = set()
-        self.enter(self.dialogue.start)
+        self.enter(self.opening_passage())
+
+    def opening_passage(self) -> str:
+        """The first passage tagged "start" whose conditions hold (e.g. a
+        different greeting once a flag is set), else the story's start."""
+        for passage in self.dialogue.passages.values():
+            if "start" in passage.tags and self.can_enter(passage.name):
+                return passage.name
+        return self.dialogue.start
 
     def can_enter(self, name: str) -> bool:
         from events import get_flags
@@ -2473,6 +2531,12 @@ class DialogueScreen(AskUserEventHandler):
             changed = True
         for flag in tag_values(passage, "unflag:"):
             get_flags(self.engine).discard(flag)
+            changed = True
+
+        # "die": the NPC dies as if killed (corpse, xp, drops, on_death signal),
+        # even when it is invulnerable
+        if "die" in passage.tags and self.npc.is_alive and getattr(self.npc, "fighter", None):
+            self.npc.fighter.die()
             changed = True
 
         if changed:

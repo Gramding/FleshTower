@@ -39,6 +39,26 @@ from components.settings import TILE_SET
 # ]
 
 
+# sprites of the level editor tiles: codepoint -> (column, row) on the sheet.
+# Row 5 is the lit version, row 6 the dark one (seen before, out of view).
+SPRITE_DOOR_CLOSED = 9100
+SPRITE_DOOR_OPEN = 9101
+SPRITE_LEVER_OFF = 9102
+SPRITE_LEVER_ON = 9103
+SPRITE_CHEST_CLOSED = 9104
+SPRITE_CHEST_OPEN = 9105
+DARK = 10  # dark version = codepoint + DARK
+
+_TILE_SPRITES = {
+    SPRITE_DOOR_CLOSED: 3,
+    SPRITE_DOOR_OPEN: 4,
+    SPRITE_LEVER_OFF: 5,
+    SPRITE_LEVER_ON: 6,
+    SPRITE_CHEST_CLOSED: 7,
+    SPRITE_CHEST_OPEN: 8,
+}
+
+
 def get_tileset() -> tcod.tileset.Tileset:
     tileset = tcod.tileset.load_tilesheet(TILE_SET, 32, 10, tcod.tileset.CHARMAP_TCOD)
     tileset.remap(9000, 0, 5)  # new wall tile
@@ -47,6 +67,9 @@ def get_tileset() -> tcod.tileset.Tileset:
     tileset.remap(9003, 0, 6)  # new dark wall tile
     tileset.remap(9004, 1, 6)  # new dark floor tile
     tileset.remap(9005, 2, 6)  # new dark stairs tile
+    for codepoint, column in _TILE_SPRITES.items():
+        tileset.remap(codepoint, column, 5)
+        tileset.remap(codepoint + DARK, column, 6)
 
     # floor = tileset.get_tile(9001).astype(np.float32)
     # for codepoint, column, row in _SPRITES:

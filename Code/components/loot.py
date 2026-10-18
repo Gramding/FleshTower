@@ -3,7 +3,7 @@
     # comments start with #
     rolls: 1-3          how many items one chest gives, a number or min-max
     health_potion 35    an item from entity_factory and its weight
-    neural_razor 5      (a missing weight counts as 1)
+    dagger 5            (a missing weight counts as 1)
 
 The built-in table "random" uses the random tower's loot for the current
 floor (procgen.item_chances). Loot is rolled when a chest is opened.

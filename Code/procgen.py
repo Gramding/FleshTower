@@ -16,6 +16,19 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
+def resolve_chances(table: Dict[int, List[Tuple[str, int]]]) -> Dict[int, List[Tuple[Entity, int]]]:
+    """{floor: [(entity id, weight)]} -> prototypes. Ids that are not (or no
+    longer) in Data/*.json are skipped, so removing an entity can't crash the game."""
+    return {
+        floor: [
+            (getattr(entity_factory, entity_id), weight)
+            for entity_id, weight in entries
+            if hasattr(entity_factory, entity_id)
+        ]
+        for floor, entries in table.items()
+    }
+
+
 max_items_by_floor = [
     (1, 1),
     (2, 2),
@@ -38,185 +51,185 @@ max_monsters_by_floor = [
     (8, 6),
 ]
 
-item_chances: Dict[int, List[Tuple[Entity, int]]] = {
+item_chances: Dict[int, List[Tuple[Entity, int]]] = resolve_chances({
     0: [
         # Common early loot
-        (entity_factory.health_potion, 35),
-        (entity_factory.mana_potion, 35),
-        (entity_factory.large_health_potion, 5),
+        ("health_potion", 35),
+        ("mana_potion", 35),
+        ("large_health_potion", 5),
         # Rare early rings
-        (entity_factory.wierd_ring, 1),
-        (entity_factory.ossuary_loop, 1),
-        (entity_factory.veinbinder, 1),
+        ("wierd_ring", 1),
+        ("ossuary_loop", 1),
+        ("veinbinder", 1),
         # Early weapons (basic melee gear)
-        (entity_factory.neural_razor, 5),
-        (entity_factory.sinewcleaver, 5),
-        (entity_factory.spine_talon, 4),
+        ("neural_razor", 5),
+        ("sinewcleaver", 5),
+        ("spine_talon", 4),
         # Early headgear
-        (entity_factory.crimson_skullcap, 2),
-        (entity_factory.boneplate_hood, 2),
-        (entity_factory.sinewcap, 2),
+        ("crimson_skullcap", 2),
+        ("boneplate_hood", 2),
+        ("sinewcap", 2),
         # Early eyes
-        (entity_factory.blindeye_lenses, 2),
-        (entity_factory.hemogaze_lens, 2),
+        ("blindeye_lenses", 2),
+        ("hemogaze_lens", 2),
         # Early necklace
-        (entity_factory.throatlace, 1),
-        (entity_factory.humeral_chain, 1),
+        ("throatlace", 1),
+        ("humeral_chain", 1),
         # Early cloak
-        (entity_factory.shredded_shroud, 2),
-        (entity_factory.skinfold_mantle, 2),
+        ("shredded_shroud", 2),
+        ("skinfold_mantle", 2),
         # Early wrist
-        (entity_factory.gristle_bracer, 2),
-        (entity_factory.bone_cuffs, 2),
+        ("gristle_bracer", 2),
+        ("bone_cuffs", 2),
         # Early belt
-        (entity_factory.guts_belt, 2),
-        (entity_factory.rib_binder, 2),
+        ("guts_belt", 2),
+        ("rib_binder", 2),
         # Early legs
-        (entity_factory.shredded_greaves, 2),
-        (entity_factory.bone_spliced_trousers, 2),
-        (entity_factory.healing_scrollI, 2),
+        ("shredded_greaves", 2),
+        ("bone_spliced_trousers", 2),
+        ("healing_scrollI", 2),
     ],
     1: [
         # Utility scrolls and early upgrades
-        (entity_factory.confusion_scroll, 10),
-        (entity_factory.gristle_hook, 4),
-        (entity_factory.viscera_blade, 3),
+        ("confusion_scroll", 10),
+        ("gristle_hook", 4),
+        ("viscera_blade", 3),
         # Slightly stronger gear starts appearing
-        (entity_factory.ooze_crowned_cap, 1),
-        (entity_factory.veinwoven_circlet, 1),
-        (entity_factory.tumor_amulet, 1),
-        (entity_factory.cystic_cape, 1),
-        (entity_factory.throbbing_band, 1),
-        (entity_factory.tendon_girdle, 1),
+        ("ooze_crowned_cap", 1),
+        ("veinwoven_circlet", 1),
+        ("tumor_amulet", 1),
+        ("cystic_cape", 1),
+        ("throbbing_band", 1),
+        ("tendon_girdle", 1),
     ],
     2: [
         # Mid-tier loot and solid weapons
-        (entity_factory.lightning_scroll, 25),
-        (entity_factory.sword, 5),
-        (entity_factory.phage_fang, 3),
-        (entity_factory.knotted_mace, 3),
+        ("lightning_scroll", 25),
+        ("sword", 5),
+        ("phage_fang", 3),
+        ("knotted_mace", 3),
         # Mid-tier headgear
-        (entity_factory.flayed_helm, 2),
-        (entity_factory.pulsing_cranium, 2),
+        ("flayed_helm", 2),
+        ("pulsing_cranium", 2),
         # Mid-tier eyes
-        (entity_factory.third_orb, 1),
-        (entity_factory.eye_of_the_wyrm, 1),
+        ("third_orb", 1),
+        ("eye_of_the_wyrm", 1),
         # Mid-tier necklace
-        (entity_factory.sinew_choker, 1),
-        (entity_factory.veinloop_necklace, 1),
+        ("sinew_choker", 1),
+        ("veinloop_necklace", 1),
         # Mid-tier cloak
-        (entity_factory.vein_mantle, 2),
-        (entity_factory.tendril_cloak, 1),
+        ("vein_mantle", 2),
+        ("tendril_cloak", 1),
         # Mid-tier wrist
-        (entity_factory.tumorous_wristguard, 1),
-        (entity_factory.veinlace_wristband, 1),
+        ("tumorous_wristguard", 1),
+        ("veinlace_wristband", 1),
         # Mid-tier belt
-        (entity_factory.visceral_cinch, 1),
-        (entity_factory.fleshbinder, 1),
+        ("visceral_cinch", 1),
+        ("fleshbinder", 1),
         # Mid-tier legs
-        (entity_factory.vein_wrapped_leggings, 2),
-        (entity_factory.tendon_laced_pants, 1),
-        (entity_factory.healing_scrollII, 4),
+        ("vein_wrapped_leggings", 2),
+        ("tendon_laced_pants", 1),
+        ("healing_scrollII", 4),
     ],
     3: [
         # Rare mid-high items start appearing
-        (entity_factory.marrow_saw, 2),
-        (entity_factory.bonegrinder_maul, 2),
+        ("marrow_saw", 2),
+        ("bonegrinder_maul", 2),
         # High-tier headgear
-        (entity_factory.tumor_crowned_helm, 1),
-        (entity_factory.marrow_visage, 1),
+        ("tumor_crowned_helm", 1),
+        ("marrow_visage", 1),
         # High-tier eyes
-        (entity_factory.corrupted_iris, 1),
-        (entity_factory.pustular_eyeband, 1),
+        ("corrupted_iris", 1),
+        ("pustular_eyeband", 1),
         # High-tier necklace
-        (entity_factory.ossified_torque, 1),
-        (entity_factory.rib_bound_medallion, 1),
+        ("ossified_torque", 1),
+        ("rib_bound_medallion", 1),
         # High-tier cloak
-        (entity_factory.marrow_veil, 1),
-        (entity_factory.flesh_tattered_robe, 1),
+        ("marrow_veil", 1),
+        ("flesh_tattered_robe", 1),
         # High-tier wrist
-        (entity_factory.marrow_cuff, 1),
-        (entity_factory.pustule_bracelet, 1),
+        ("marrow_cuff", 1),
+        ("pustule_bracelet", 1),
         # High-tier belt
-        (entity_factory.tumor_laced_strap, 1),
-        (entity_factory.bone_clasp_belt, 1),
+        ("tumor_laced_strap", 1),
+        ("bone_clasp_belt", 1),
         # High-tier legs
-        (entity_factory.marrow_stitched_legwraps, 1),
-        (entity_factory.tumorous_legplates, 1),
+        ("marrow_stitched_legwraps", 1),
+        ("tumorous_legplates", 1),
     ],
     4: [
-        (entity_factory.fireball_scroll, 25),
-        (entity_factory.chain_mail, 15),
-        (entity_factory.thrall_reaver, 1),
-        (entity_factory.pulsing_cranium, 1),
-        (entity_factory.bloodstare_monocle, 1),
-        (entity_factory.carotid_chain, 1),
-        (entity_factory.oozing_pall, 1),
-        (entity_factory.ossified_armlet, 1),
-        (entity_factory.marrowstrap, 1),
-        (entity_factory.pulsing_calfwraps, 1),
-        (entity_factory.healing_scrollIII, 3),
+        ("fireball_scroll", 25),
+        ("chain_mail", 15),
+        ("thrall_reaver", 1),
+        ("pulsing_cranium", 1),
+        ("bloodstare_monocle", 1),
+        ("carotid_chain", 1),
+        ("oozing_pall", 1),
+        ("ossified_armlet", 1),
+        ("marrowstrap", 1),
+        ("pulsing_calfwraps", 1),
+        ("healing_scrollIII", 3),
     ],
     5: [
-        (entity_factory.thrall_reaver, 2),
-        (entity_factory.marrow_saw, 1),
-        (entity_factory.knotted_mace, 1),
-        (entity_factory.tumor_crowned_helm, 1),
-        (entity_factory.eye_of_the_wyrm, 1),
-        (entity_factory.ossified_torque, 1),
-        (entity_factory.tendril_cloak, 1),
-        (entity_factory.veinlace_wristband, 1),
-        (entity_factory.bone_clasp_belt, 1),
-        (entity_factory.tumorous_legplates, 1),
+        ("thrall_reaver", 2),
+        ("marrow_saw", 1),
+        ("knotted_mace", 1),
+        ("tumor_crowned_helm", 1),
+        ("eye_of_the_wyrm", 1),
+        ("ossified_torque", 1),
+        ("tendril_cloak", 1),
+        ("veinlace_wristband", 1),
+        ("bone_clasp_belt", 1),
+        ("tumorous_legplates", 1),
     ],
-}
+})
 
 
-enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
+enemy_chances: Dict[int, List[Tuple[Entity, int]]] = resolve_chances({
     0: [
-        (entity_factory.orc, 10),
-        (entity_factory.rat, 60),
-        (entity_factory.goblin, 60),
-        (entity_factory.flayed_thrall, 8),
-        (entity_factory.sinew_crawler, 6),
+        ("orc", 10),
+        ("rat", 60),
+        ("goblin", 60),
+        ("flayed_thrall", 8),
+        ("sinew_crawler", 6),
     ],
     1: [
-        (entity_factory.zombie, 1),
-        (entity_factory.eye_screamer, 4),
-        (entity_factory.gnashing_swarm, 5),
+        ("zombie", 1),
+        ("eye_screamer", 4),
+        ("gnashing_swarm", 5),
     ],
     2: [
-        (entity_factory.troll, 15),
-        (entity_factory.howling_cyst, 5),
-        (entity_factory.gnashing_swarm, 8),
+        ("troll", 15),
+        ("howling_cyst", 5),
+        ("gnashing_swarm", 8),
     ],
     3: [
-        (entity_factory.flesh_golem, 1),
-        (entity_factory.vendor, 10),
-        (entity_factory.howling_cyst, 6),
-        (entity_factory.eye_screamer, 5),
+        ("flesh_golem", 1),
+        ("vendor", 10),
+        ("howling_cyst", 6),
+        ("eye_screamer", 5),
     ],
     4: [
-        (entity_factory.troll, 30),
-        (entity_factory.vein_reaper, 10),
-        (entity_factory.tumor_host, 8),
-        (entity_factory.viscera_hound, 12),
+        ("troll", 30),
+        ("vein_reaper", 10),
+        ("tumor_host", 8),
+        ("viscera_hound", 12),
     ],
     5: [
-        (entity_factory.vein_reaper, 15),
-        (entity_factory.tumor_host, 10),
-        (entity_factory.viscera_hound, 15),
+        ("vein_reaper", 15),
+        ("tumor_host", 10),
+        ("viscera_hound", 15),
     ],
     6: [
-        (entity_factory.troll, 60),
-        (entity_factory.stitched_abomination, 10),
-        (entity_factory.marrow_drinker, 12),
+        ("troll", 60),
+        ("stitched_abomination", 10),
+        ("marrow_drinker", 12),
     ],
     7: [
-        (entity_factory.stitched_abomination, 15),
-        (entity_factory.marrow_drinker, 18),
+        ("stitched_abomination", 15),
+        ("marrow_drinker", 18),
     ],
-}
+})
 
 boss_dict = {
     5: entity_factory.vicera_abomination,
