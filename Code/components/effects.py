@@ -1,6 +1,7 @@
 from __future__ import annotations
 from components.affix import PercentHPIncrease
 from components.settings import PlayerClass
+from components import stats
 from typing import TYPE_CHECKING, Optional
 import color
 from components.spells import (
@@ -41,14 +42,14 @@ class Effect:
     ):
         engine.player.logbook.write_to_book(entity_name=corpse.name[:30])
         if engine.player.player_class == PlayerClass.FIGHTER:
-            increase = random.randint(1, 15)  # Rebalance the amount of mass gained
-            # increas player mass level
-            if engine.player.fighter.mass + increase <= engine.player.fighter.max_mass:
-                engine.player.fighter.mass += increase
-            else:
-                engine.player.fighter.mass = 0
-                engine.player.fighter.max_mass += 10
-                engine.player.fighter.mass_level += 1
+            fighter = engine.player.fighter
+            # Rebalance the amount of mass gained
+            increase = random.randint(1, 15) + fighter.mass_per_corpse
+            if fighter.gain_mass(increase):
+                engine.message_log.add_message(
+                    f"Your mass grows to level {fighter.mass_level}. Your flesh hardens.",
+                    color.corpse_consumption,
+                )
 
         if first:
             engine.message_log.add_message(
@@ -95,7 +96,7 @@ class OrcEffect(Effect):
         else:
             super().activate(engine, corpse, False)
         self.add_currency(engine, random.randint(3, 5))
-        engine.affixManager.gain_affix(PercentHPIncrease(percentValue=0.01))
+        engine.affixManager.gain_affix(PercentHPIncrease(0.01))
 
 
 class TrollEffect(Effect):
@@ -116,6 +117,8 @@ class TrollEffect(Effect):
 
 
 class Lvl5BossEffect(Effect):
+    """The Weak Mage boss: a Helixbound learns its lightning bolt."""
+
     def __init__(self):
         super().__init__()
 
@@ -125,31 +128,58 @@ class Lvl5BossEffect(Effect):
         corpse,
         first=False,
     ):
-        gorebound = ""
-        for entity in engine.game_map.entities:
-            if "Gore" in entity.name:
-                gorebound = entity
-        if gorebound != "":
-            engine.game_map.entities.remove(gorebound)
-        if corpse.name not in engine.player.logbook.book:
-            super().activate(engine, corpse, False)
-            engine.player.is_mage = True
-            engine.player.is_rouge = False
-            engine.player.fighter.base_hp = 20
-            engine.player.fighter.hp = 20
+        learned = engine.player.spellbook.learn_spell(
+            spell=LightningSpell(
+                engine=engine, name="Lightning Bolt I", mana_cost=stats.STARTER_SPELL_COST, damage=5
+            ),
+            engine=engine,
+        )
+        super().activate(engine, corpse, learned)
+        self.add_currency(engine, random.randint(3, 5))
+
+
+def choose_class(engine: Engine, corpse: Entity, player_class, other_corpse: str) -> bool:
+    """Eating a class corpse in the start room picks the class, once."""
+    from components.stats import class_info
+
+    player = engine.player
+    if player.class_chosen:
+        return False
+    for entity in list(engine.game_map.entities):
+        if other_corpse in entity.name:
+            engine.game_map.entities.remove(entity)
+    info = class_info(player_class)
+    player.player_class = player_class
+    player.class_chosen = True
+    fighter = player.fighter
+    fighter.base_hp += info["hp"]
+    fighter.hp = fighter.max_hp
+    fighter.mana = fighter.max_mana
+    fighter.stamina = fighter.max_stamina
+    engine.message_log.add_message(f"You are {info['name']} now.", color.mage)
+    return True
+
+
+class HelixboundEffect(Effect):
+    """The blue class corpse of the start room."""
+
+    def __init__(self):
+        super().__init__()
+
+    def activate(self, engine, corpse, first=False):
+        chosen = choose_class(engine, corpse, PlayerClass.MAGE, "Gore")
+        if chosen:
             engine.message_log.add_message(
                 "You feel the mutagen of the mage coursing through your blood. Your flesh weakens but your mind strengthens",
                 color.mage,
             )
             engine.player.spellbook.learn_spell(
                 spell=LightningSpell(
-                    engine=engine, name="Lightning Bolt I", mana_cost=2, damage=5
+                    engine=engine, name="Lightning Bolt I", mana_cost=stats.STARTER_SPELL_COST, damage=5
                 ),
                 engine=engine,
             )
-        else:
-            super().activate(engine, corpse, False)
-        self.add_currency(engine, random.randint(3, 5))
+        return super().activate(engine, corpse, chosen)
 
 
 class LightningEffect(Effect):
@@ -339,6 +369,8 @@ class ChainMailEffect(Effect):
 
 
 class GoreboundEffect(Effect):
+    """The red class corpse of the start room."""
+
     def __init__(self):
         super().__init__()
 
@@ -348,17 +380,8 @@ class GoreboundEffect(Effect):
         corpse,
         first=False,
     ):
-        helixbound = ""
-        for entity in engine.game_map.entities:
-            if "Helix" in entity.name:
-                helixbound = entity
-        if helixbound:
-            engine.game_map.entities.remove(helixbound)
-            engine.player.is_fighter = True
-            engine.player.is_rouge = False
-            engine.player.fighter.base_hp = 40
-            engine.player.fighter.hp = 40
-        return super().activate(engine, corpse, True)
+        chosen = choose_class(engine, corpse, PlayerClass.FIGHTER, "Helix")
+        return super().activate(engine, corpse, chosen)
 
 
 class FleshGolemEffect(Effect):
@@ -373,8 +396,7 @@ class FleshGolemEffect(Effect):
     ):
         if corpse.name not in engine.player.logbook.book:
             first = True
-            engine.player.fighter.bonus_attack_count += 1
-            engine.player.is_mage = False
+            engine.player.fighter.bonus_attacks += 1
             engine.player.fighter.base_hp *= 2
         return super().activate(engine, corpse, first)
 

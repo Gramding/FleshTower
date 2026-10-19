@@ -1,8 +1,9 @@
 """Every item and actor the game knows.
 
-The player is defined here. Everything else comes from the data files in
-Data/ (see entity_data.py) and becomes an attribute of this module under its
-id, so entity_factory.health_potion and `from entity_factory import rat` work.
+Everything comes from the data files in Data/ (see entity_data.py) and becomes
+an attribute of this module under its id, so entity_factory.health_potion and
+`from entity_factory import rat` work. The player is the "player" entry of
+Data/actors.json; it is editable but never placed or spawned.
 """
 from components.ai import (
     HostileEnemy,
@@ -15,6 +16,7 @@ from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
 from components.spells import SpellBook
+from components import stats
 from entity import Actor, Item
 import entity_data
 
@@ -33,6 +35,8 @@ AI_OVERRIDES = {
     "neutral": Vendor,  # stands still, never attacks
 }
 
+PLAYER_ID = "player"
+
 # entity id -> data file category ("actors", "items", "equipment"), in load order
 CATEGORY: Dict[str, str] = {}
 
@@ -45,6 +49,8 @@ def build_palette() -> Dict[str, List[Tuple[str, object]]]:
     """Level editor palette groups, one per data file."""
     palette = {group: [] for group in entity_data.CATEGORIES.values()}
     for entity_id, category in CATEGORY.items():
+        if entity_id == PLAYER_ID:
+            continue
         palette[entity_data.CATEGORIES[category]].append((entity_id, globals()[entity_id]))
     return palette
 
@@ -56,7 +62,7 @@ def editable_properties(attr: str) -> List[Tuple[str, str]]:
         fields += [  # overrides of this one placed actor, see level_editor.apply_overrides
             ("hp", "int"),
             ("power", "int"),
-            ("defense", "int"),
+            ("armor", "int"),
             ("xp", "int"),
             ("ai", "choice:default," + ",".join(AI_OVERRIDES)),
         ]
@@ -80,24 +86,27 @@ def load_entities() -> None:
             print(f"Entity data: {entry.get('id', '?')} could not be built: {exc}")
             continue
         CATEGORY[entry["id"]] = category
+    if not isinstance(globals().get(PLAYER_ID), Actor):
+        print("Entity data: no player entry in actors.json, using the built-in one")
+        globals()[PLAYER_ID] = fallback_player()
+    globals()[PLAYER_ID].player_class = stats.DEFAULT_CLASS
 
 
-player = Actor(
-    char="@",
-    color=(255, 255, 255),
-    name="Player",
-    ai_cls=HostileEnemy,
-    equipment=Equipment(),
-    fighter=Fighter(
-        base_hp=30,
-        base_defense=1,
-        base_power=2,
-    ),
-    inventory=Inventory(capacity=26),
-    level=Level(level_up_base=0),
-    spellbook=SpellBook(10),
-    logbook=LogBook(),
-    effect=DefaultEffect(),
-)
+def fallback_player() -> Actor:
+    """Used when Data/actors.json has no usable player entry."""
+    return Actor(
+        char="@",
+        color=(255, 255, 255),
+        name="Player",
+        ai_cls=HostileEnemy,
+        equipment=Equipment(),
+        fighter=Fighter(base_hp=30, base_armor=0, base_power=2, main_stat=5),
+        inventory=Inventory(capacity=26),
+        level=Level(level_up_base=0),
+        spellbook=SpellBook(10),
+        logbook=LogBook(),
+        effect=DefaultEffect(),
+    )
+
 
 load_entities()

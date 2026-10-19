@@ -37,7 +37,11 @@ class EquipAction(Action):
 
 class WaitAction(Action):
     def perform(self):
-        pass
+        from components import stats
+
+        fighter = self.entity.fighter
+        if stats.STAMINA_REGEN_ON_WAIT and self.entity is self.engine.player:
+            fighter.stamina = min(fighter.max_stamina, fighter.stamina + fighter.stamina_regen)
 
 
 class TakeStairsAction(Action):
@@ -132,62 +136,52 @@ class ActionWithDirection(Action):
 class MeleeAction(ActionWithDirection):
     def perform(self) -> None:
         target = self.target_actor
-        doged = False
-        damage = 0
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
         if getattr(target, "invulnerable", False):
             raise exceptions.Impossible(f"{target.name} cannot be harmed.")
-        for i in range(self.entity.fighter.attack_count):
-            dmg_chance = random.randint(0, 100)
-            if dmg_chance >= target.fighter.damage_reduction:
-                # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-                # crit damage on movement was OP. so changed
-                # damage = self.entity.fighter.power * 2
-                # damage = self.entity.fighter.power
-                # else:
-                damage = self.entity.fighter.power
-                self.typal_damage()
-            else:
-                doged = True
 
-            attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
-            # if self.dx == 2 or self.dx == -2 or self.dy == 2 or self.dy == -2:
-            # attack_desc += " critically"
-            if self.engine is self.engine.player:
-                attack_color = color.player_atk
+        from components import stats
+
+        diagonal = self.dx != 0 and self.dy != 0
+        if diagonal and self.entity is not self.engine.player and not stats.ENEMY_DIAGONAL_ATTACKS:
+            raise exceptions.Impossible("Enemies can't attack diagonally.")  # e.g. confused
+
+        player = self.engine.player
+        attack_color = color.player_atk if self.entity is player else color.enemy_atk
+        attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+        power = self.entity.fighter.power
+        if abs(self.dx) == 2 or abs(self.dy) == 2:  # Whisperbound lunge
+            power *= stats.LUNGE_DAMAGE
+            attack_desc = f"{self.entity.name.capitalize()} lunges at {target.name}"
+        for _ in range(self.entity.fighter.attack_count):
+            if not target.is_alive:
+                break
+            if random.randint(1, 100) <= target.fighter.dodge:
+                self.engine.message_log.add_message(f"{attack_desc}, dodged")
+                continue
+            if target is player and GENERAL_CHEATS["god_mode"]:
+                continue
+            damage = target.fighter.take_damage(power)
+            if damage:
+                text = f"{attack_desc} for {damage} HP."
             else:
-                attack_color = color.enemy_atk
-            if damage > 0 and not doged:
-                self.engine.message_log.add_message(
-                    f"{attack_desc} for {damage} HP.", attack_color
-                )
-                if target == self.engine.player and GENERAL_CHEATS["god_mode"]:
-                    pass
-                else:
-                    target.fighter.hp -= damage
-            elif doged:
-                self.engine.message_log.add_message(f"{attack_desc}, doged")
-            else:
-                self.engine.message_log.add_message(
-                    f"{attack_desc} but does no damage.", attack_color
-                )
+                text = f"{attack_desc} but the blow glances off."
+            self.engine.message_log.add_message(text, attack_color)
+            if target is player:
+                self.typal_damage()
 
     def typal_damage(self) -> None:
-        # this function is supposed to represent damages to the class
-        # specific functions ie. fighter takes mass damage
-        if self.engine.player.player_class == PlayerClass.FIGHTER:
-            damage_to_mass_probability = random.randint(0, 100)
-            if damage_to_mass_probability <= (
-                10 - self.engine.player.fighter.mass_level
-            ):
-                mass_damage = random.randint(1, 2)
-                self.engine.message_log.add_message(
-                    f"You're mass is damaged by {mass_damage}"
-                )
-                self.engine.player.fighter.mass -= mass_damage
-                if self.engine.player.fighter.mass < 0:
-                    self.engine.player.fighter.mass = 0
+        """Class specific damage when the player is hit: the Gorebound may
+        lose mass."""
+        fighter = self.engine.player.fighter
+        if self.engine.player.player_class != PlayerClass.FIGHTER:
+            return
+        if random.randint(1, 100) <= fighter.mass_loss_chance:
+            mass_damage = min(fighter.mass, random.randint(1, 2))
+            if mass_damage:
+                fighter.mass -= mass_damage
+                self.engine.message_log.add_message(f"Your mass is damaged by {mass_damage}")
 
 
 class MovementAction(ActionWithDirection):
@@ -367,26 +361,26 @@ class BumpAction(ActionWithDirection):
             bump = TILE_BUMPS.get(TILE_BY_ID[info["tile"]].on_bump)
             if bump is not None and bump.wants(info):
                 return bump(self.entity, self.dx, self.dy).perform()
+        sprint = abs(self.dx) == 2 or abs(self.dy) == 2
         if self.target_actor:
             # if entity is a vendor meele action is disabled
             if not self.target_actor.name == "Organ trader":
-                if self.entity.player_class == PlayerClass.ROUGE:
-                    MovementCheck(dx=self.dx, dy=self.dy, entity=self.entity)
+                if sprint:
+                    spend_stamina(self.entity, self.entity.fighter.lunge_cost, "lunge")
                 return MeleeAction(self.entity, self.dx, self.dy).perform()
         else:
-            if "2" in str(self.dx) or "2" in str(self.dy):
-                if not GENERAL_CHEATS["inf_stamina"]:
-                    self.entity.fighter.stamina -= 2
+            if sprint:
+                spend_stamina(self.entity, self.entity.fighter.sprint_cost, "sprint")
             return MovementAction(self.entity, self.dx, self.dy).perform()
 
 
-# Function to check whether the stamina action of the Rouge is permitted
-def MovementCheck(dx, dy, entity):
-    if "2" in str(dx) or "2" in str(dy) and entity.fighter.stamina >= 10:
-        if not GENERAL_CHEATS["inf_stamina"]:
-            entity.fighter.stamina -= 10
-    else:
-        return dx / 2, dy / 2
+def spend_stamina(entity, cost: int, what: str) -> None:
+    """Whisperbound sprinting: 2 tiles at once costs stamina."""
+    if GENERAL_CHEATS["inf_stamina"]:
+        return
+    if entity.fighter.stamina < cost:
+        raise exceptions.Impossible(f"You are too exhausted to {what}.")
+    entity.fighter.stamina -= cost
 
 
 class ConsumeCorpseAction(Action):

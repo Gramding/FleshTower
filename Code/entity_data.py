@@ -107,8 +107,9 @@ def build(entry: dict, category: str) -> Entity:
             equipment=Equipment(),
             fighter=Fighter(
                 base_hp=entry.get("hp", 1),
-                base_defense=entry.get("defense", 0),
+                base_armor=entry.get("armor", entry.get("defense", 0)),
                 base_power=entry.get("power", 0),
+                main_stat=entry.get("main_stat", 0),
             ),
             inventory=Inventory(capacity=entry.get("inventory", 0)),
             level=Level(xp_given=entry.get("xp", 0)),
@@ -127,7 +128,7 @@ def build(entry: dict, category: str) -> Entity:
         equippable=Equippable(
             equipment_type=SLOTS[gear["slot"]],
             power_bonus=gear.get("power", 0),
-            defense_bonus=gear.get("defense", 0),
+            armor_bonus=gear.get("armor", gear.get("defense", 0)),
         )
         if gear
         else None,
@@ -153,7 +154,7 @@ def to_entry(entity_id: str, entity: Entity) -> Tuple[str, dict]:
             ai=next(key for key, cls in AI_TYPES.items() if type(entity.ai) is cls),
             hp=entity.fighter.base_hp,
             power=entity.fighter.base_power,
-            defense=entity.fighter.base_defense,
+            armor=entity.fighter.base_armor,
             xp=entity.level.xp_given,
             inventory=entity.inventory.capacity,
             spell_slots=entity.spellbook.capacity,
@@ -170,7 +171,7 @@ def to_entry(entity_id: str, entity: Entity) -> Tuple[str, dict]:
             entry["equippable"] = {
                 "slot": gear.equipment_type.name.lower(),
                 "power": gear.power_bonus,
-                "defense": gear.defense_bonus,
+                "armor": gear.armor_bonus,
             }
         category = "equipment" if entity.equippable else "items"
     entry["effect"] = component_spec(EFFECT_TYPES, entity.effect)

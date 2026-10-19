@@ -122,23 +122,27 @@ class Actor(Entity):
         self.level.parent = self
         self.equipment: Equipment = equipment
         self.equipment.parent = self
-        self.is_rouge = True
-        self.is_mage = False
-        self.is_fighter = False
+        # set for the player only (entity_factory), None for monsters
+        self.player_class: Optional[PlayerClass] = None
+        self.class_chosen = False
         self.spellbook: SpellBook = spellbook
         self.effect = effect
         self.logbook: LogBook = logbook
         self.currency = 0
 
-    @property
-    def player_class(self):
-        if self.is_rouge:
-            return PlayerClass.ROUGE
-        elif self.is_mage:
-            return PlayerClass.MAGE
-        elif self.is_fighter:
-            return PlayerClass.FIGHTER
-        return ""
+    def __setstate__(self, state: dict) -> None:
+        # savegames from before the stat rework kept the class in three flags
+        if "player_class" not in state:
+            if state.pop("is_fighter", False):
+                state["player_class"] = PlayerClass.FIGHTER
+            elif state.pop("is_mage", False):
+                state["player_class"] = PlayerClass.MAGE
+            else:
+                state["player_class"] = PlayerClass.ROUGE
+            state.setdefault("class_chosen", state["player_class"] != PlayerClass.ROUGE)
+            state.pop("is_rouge", None)
+            state.pop("is_mage", None)
+        self.__dict__.update(state)
 
     @property
     def is_alive(self) -> bool:
@@ -146,13 +150,14 @@ class Actor(Entity):
 
     @property
     def class_name(self) -> str:
-        if self.is_fighter:
-            return f"Gorebound {self.fighter.mass_level}"
-        elif self.is_mage:
-            return "Helixbound"
-        elif self.is_rouge:
-            return "Whisperbound"
-        return ""
+        from components.stats import class_info
+
+        info = class_info(self.player_class)
+        if info is None:
+            return ""
+        if self.player_class == PlayerClass.FIGHTER:
+            return f"{info['name']} {self.fighter.mass_level}"
+        return info["name"]
 
 
 class Item(Entity):

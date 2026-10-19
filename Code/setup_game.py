@@ -65,6 +65,12 @@ def load_game(filename: str) -> Engine:
     with open(filename, "rb") as f:
         engine = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(engine, Engine)
+    # old savegames gave every actor a class; only the player has one now
+    for actor in engine.game_map.actors:
+        if actor is not engine.player:
+            actor.player_class = None
+    if not engine.player.fighter.main_stat:  # had no main stat yet
+        engine.player.fighter.main_stat = entity_factory.player.fighter.main_stat
     return engine
 
 

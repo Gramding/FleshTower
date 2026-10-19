@@ -21,6 +21,7 @@ from components.settings import (
     PlayerClass,
 )
 import components.affix as affix
+from components import stats
 
 # from procgen import item_chances, enemy_chances
 # from components.procgen_chances import item_chances
@@ -36,7 +37,13 @@ MOVE_KEYS = {
     101: (0, 1),
     102: (-1, 0),
     103: (1, 0),
+    # diagonals (Y U B N), only with stats.PLAYER_DIAGONALS
+    104: (-1, -1),
+    105: (1, -1),
+    106: (-1, 1),
+    107: (1, 1),
 }
+DIAGONAL_MOVES = (104, 105, 106, 107)
 
 WAIT_KEYS = {
     tcod.event.KeySym.PERIOD,
@@ -151,6 +158,15 @@ class EventHandler(BaseEventHandler):
             self.engine.message_log.add_message(exc.args[0], color.impossible)
             return False  # Skip enemy turn on exceptions.
         self.engine.handle_enemy_turns()
+        self.engine.player.fighter.regenerate()
+        game_map = self.engine.game_map
+        in_combat = any(
+            actor.ai and actor is not self.engine.player and game_map.visible[actor.x, actor.y]
+            and not getattr(actor, "invulnerable", False)
+            and type(actor.ai).__name__ != "Vendor"
+            for actor in game_map.actors
+        )
+        self.engine.player.fighter.regenerate_hp(in_combat)
         from events import tick
 
         tick(self.engine.game_map)  # delayed level editor events
@@ -185,6 +201,26 @@ class AskUserEventHandler(EventHandler):
 
     def on_exit(self) -> Optional[ActionOrHandler]:
         return MainGameEventHandler(self.engine)
+
+
+def stat_lines(player) -> list:
+    """(label, value) rows of the stats screen, at most five."""
+    fighter = player.fighter
+    kind = fighter.main_stat_kind
+    lines = []
+    if kind:
+        lines.append((stats.STAT_NAMES[kind], fighter.stat))
+    lines.append(("Max HP", fighter.max_hp))
+    attacks = f"  x{fighter.attack_count}" if fighter.attack_count > 1 else ""
+    lines.append(("Melee damage", f"{fighter.power}{attacks}"))
+    lines.append(("Armor", fighter.armor))
+    if kind == stats.DEX:
+        lines.append(("Dodge", f"{fighter.dodge}%"))
+    elif kind == stats.INT:
+        lines.append(("Spell damage", f"+{fighter.spell_bonus}"))
+    elif kind == stats.STR:
+        lines.append(("Mass level", fighter.mass_level))
+    return lines
 
 
 class CharacterScreenEventHandler(AskUserEventHandler):
@@ -290,36 +326,12 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             width=width - 2,
             height=1,
         )
-        text = "Meele Damage"
-        console.print(
-            x=x + 1,
-            y=8 + affix_max_len,
-            text=f"{text:<20}: {self.engine.player.fighter.power}",
-        )
-        text = "Defense"
-        console.print(
-            x=x + 1,
-            y=9 + affix_max_len,
-            text=f"{text:<20}: {self.engine.player.fighter.defense}",
-        )
-        text = "Spell Damage"
-        console.print(
-            x=x + 1,
-            y=10 + affix_max_len,
-            text=f"{text:<20}: {self.engine.player.fighter.spell_damage_bonus}",
-        )
-        text = "Price Discount"
-        console.print(
-            x=x + 1,
-            y=11 + affix_max_len,
-            text=f"{text:<20}: {self.engine.player.fighter.price_discount}",
-        )
-        text = "Attack Count"
-        console.print(
-            x=x + 1,
-            y=12 + affix_max_len,
-            text=f"{text:<20}: {self.engine.player.fighter.attack_count}",
-        )
+        for row, (label, value) in enumerate(stat_lines(self.engine.player)):
+            console.print(
+                x=x + 1,
+                y=8 + affix_max_len + row,
+                text=f"{label:<20}: {value}",
+            )
 
     def ev_keydown(self, event):
         if event.sym in CURSOR_Y_KEYS:
@@ -381,46 +393,77 @@ class ConsumptionScreenEventHandler(AskUserEventHandler):
 
 
 class LevelUpEventHandler(AskUserEventHandler):
+    """Level up: HP and resources refill, +1 main stat and the player picks
+    one of a few affixes (components/affix.py). The offers are rolled once
+    when the screen opens; only picking one closes it."""
+
     TITLE = "Level Up"
+    WIDTH = 50
+    FIRST_CHOICE_ROW = 5
+
+    def __init__(self, engine):
+        super().__init__(engine)
+        new_level = engine.player.level.current_level + 1
+        self.choices = engine.affixManager.roll_choices(level=new_level)
+        engine.player.fighter.reset_self()
+
+    @property
+    def x(self) -> int:
+        return 30 if self.engine.player.x <= 30 else 0
 
     def on_render(self, console):
         super().on_render(console)
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.x
         console.draw_frame(
             x=x,
             y=0,
-            width=40,
-            height=13,
+            width=self.WIDTH,
+            height=self.FIRST_CHOICE_ROW + len(self.choices) + 2,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
         console.print(x=x + 1, y=1, string="The tower grants you power")
+        kind = self.engine.player.fighter.main_stat_kind
+        if kind:
+            console.print(x=x + 1, y=2, string=f"+{stats.LEVEL_UP_STAT} {stats.STAT_NAMES[kind]}")
+        console.print(x=x + 1, y=self.FIRST_CHOICE_ROW - 1, string="Choose one:")
+        for i, affix in enumerate(self.choices):
+            console.print(
+                x=x + 2,
+                y=self.FIRST_CHOICE_ROW + i,
+                string=f"{chr(ord('a') + i)}) {affix.AFFIX_NAME}",
+                fg=affix.AFFIX_COLOR.value,
+            )
 
-        self.affix = random_affix = self.engine.affixManager.rand_affix()
-        self.engine.player.fighter.reset_self()
-
-        console.print(
-            x=x + 1,
-            y=4,
-            string=random_affix.AFFIX_NAME,
-            fg=random_affix.AFFIX_COLOR.value,
-        )
+    def pick(self, index: int):
+        if not 0 <= index < len(self.choices):
+            return None
+        player = self.engine.player
+        if player.fighter.main_stat_kind:
+            player.fighter.main_stat += stats.LEVEL_UP_STAT
+        self.engine.affixManager.gain_affix(self.choices[index])
+        player.level.increase_level()
+        return MainGameEventHandler(self.engine)
 
     def ev_keydown(self, event):
-        self.engine.affixManager.gain_affix(self.affix)
-        self.engine.affixManager.derive_affixes()
-        self.engine.player.level.increase_level()
-
-        return super().ev_keydown(event)
+        key = event.sym
+        if tcod.event.KeySym.A <= key <= tcod.event.KeySym.Z:
+            return self.pick(key - tcod.event.KeySym.A)
+        if tcod.event.KeySym.N1 <= key <= tcod.event.KeySym.N9:
+            return self.pick(key - tcod.event.KeySym.N1)
+        return None  # level up is mandatory: other keys do nothing
 
     def ev_mousebuttondown(self, event):
-        # none disallows player to exit via mouseclick
-        # level up is mandatory
+        from level_editor import event_tile
+
+        tile = event_tile(event)
+        if tile is None:
+            return None
+        x, y = tile
+        if self.x <= x < self.x + self.WIDTH:
+            return self.pick(y - self.FIRST_CHOICE_ROW)
         return None
 
 
@@ -642,11 +685,7 @@ class ShopHandler(AskUserEventHandler):
 
 class ShopActivateHandler(ShopHandler):
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        # player price discount from Visceral Influence -> Flesh Bargain taken into acount
-        real_price = item.price - (
-            item.price * (self.engine.player.fighter.price_discount / 100)
-        )
-        real_price = int(real_price)
+        real_price = item.price
         if self.engine.player.currency >= item.price:
             i_tem = copy.deepcopy(item)
 
@@ -945,7 +984,9 @@ class MainGameEventHandler(EventHandler):
             )
             return None
 
-        for movement_id in range(100, 104):
+        for movement_id in MOVE_KEYS:
+            if movement_id in DIAGONAL_MOVES and not stats.PLAYER_DIAGONALS:
+                continue
             c_event = get_event_by_id(movement_id)
             if c_event["ID"] in MOVE_KEYS and key == c_event["KEY"]:
                 dx, dy = MOVE_KEYS[c_event["ID"]]
@@ -953,18 +994,17 @@ class MainGameEventHandler(EventHandler):
                 if (
                     self.engine.player.player_class == PlayerClass.ROUGE
                     and tcod.event.Modifier(c_event["MOD"]) in modifier
-                    and self.engine.player.fighter.stamina >= 2
+                    and self.engine.player.fighter.stamina >= self.engine.player.fighter.sprint_cost
                 ):
                     dx = dx * 2
                     dy = dy * 2
-                    # stamina is now handlede by the bump action
-                    # self.engine.player.fighter.stamina -= 2
-                elif (
-                    self.engine.player.fighter.stamina
-                    < self.engine.player.fighter.max_stamina
-                ):
-                    # if player is not sprinting they regain 1 stamina per movement
-                    self.engine.player.fighter.stamina += 1
+                    # stamina is handled by the bump action
+                else:
+                    # not sprinting: regain stamina per step, more with DEX
+                    fighter = self.engine.player.fighter
+                    fighter.stamina = min(
+                        fighter.max_stamina, fighter.stamina + fighter.stamina_regen
+                    )
                 return BumpAction(player, dx, dy)
             elif key in WAIT_KEYS:
                 return WaitAction(player)
@@ -1131,8 +1171,8 @@ class EquipmentScreen(AskUserEventHandler):
                 if slot:
                     line = slot.name
                     x_save = x
-                    if slot.equippable.defense_bonus != 0:
-                        line = line + f" Defense: {slot.equippable.defense_bonus}"
+                    if slot.equippable.armor_bonus != 0:
+                        line = line + f" Armor: {slot.equippable.armor_bonus}"
                     if slot.equippable.power_bonus != 0:
                         line = line + f" Attack: {slot.equippable.power_bonus}"
                     console.print(x=x + 13, y=y, string=line)

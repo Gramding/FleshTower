@@ -22,12 +22,13 @@ NO_CONSUMABLE = "none"
 
 NEW_ENTRIES = {
     "actors": {"name": "New Monster", "char": "m", "color": [200, 200, 200], "ai": "hostile",
-               "hp": 5, "power": 1, "defense": 0, "xp": 5, "inventory": 0, "spell_slots": 0},
+               "hp": 5, "power": 1, "armor": 0, "xp": 5, "inventory": 0, "spell_slots": 0},
     "items": {"name": "New Item", "char": "!", "color": [200, 200, 200], "price": 10},
     "equipment": {"name": "New Gear", "char": "[", "color": [200, 200, 200], "price": 100,
-                  "equippable": {"slot": "weapon", "power": 1, "defense": 0}},
+                  "equippable": {"slot": "weapon", "power": 1, "armor": 0}},
 }
-ACTOR_NUMBERS = ("hp", "power", "defense", "xp", "inventory", "spell_slots")
+ACTOR_NUMBERS = ("hp", "power", "armor", "xp", "inventory", "spell_slots")
+PLAYER_NUMBERS = ("main_stat",)  # only the player entry has these
 
 
 def choice(options) -> str:
@@ -39,6 +40,7 @@ def form_fields(category: str, form: dict) -> list:
     fields = [("name", "name"), ("char", "char"), ("color", "color")]
     if category == "actors":
         fields += [("ai", choice(AI_TYPES))] + [(key, "int") for key in ACTOR_NUMBERS]
+        fields += [(key, "int") for key in PLAYER_NUMBERS if key in form]
     else:
         fields += [("price", "int")]
     if category == "items":
@@ -48,7 +50,7 @@ def form_fields(category: str, form: dict) -> list:
         if consumable is not None:
             fields += [(f"consumable.{name}", kind) for name, kind in params_of(consumable)]
     if category == "equipment":
-        fields += [("slot", choice(SLOTS)), ("power", "int"), ("defense", "int")]
+        fields += [("slot", choice(SLOTS)), ("power", "int"), ("armor", "int")]
     fields += [("effect", choice(EFFECT_TYPES))]
     effect = EFFECT_TYPES.get(form.get("effect", ""))
     if effect is not None:
@@ -66,6 +68,11 @@ def to_form(category: str, entry: dict) -> dict:
         form["ai"] = entry.get("ai", "hostile")
         for key in ACTOR_NUMBERS:
             form[key] = str(entry.get(key, 0))
+        if "armor" not in entry:
+            form["armor"] = str(entry.get("defense", 0))  # before the stat rework
+        for key in PLAYER_NUMBERS:
+            if key in entry:
+                form[key] = str(entry[key])
     else:
         form["price"] = str(entry.get("price", 0))
     if entry.get("quest_id"):
@@ -78,7 +85,8 @@ def to_form(category: str, entry: dict) -> dict:
     if category == "equipment":
         gear = entry.get("equippable") or {}
         form.update(slot=gear.get("slot", "weapon"),
-                    power=str(gear.get("power", 0)), defense=str(gear.get("defense", 0)))
+                    power=str(gear.get("power", 0)),
+                    armor=str(gear.get("armor", gear.get("defense", 0))))
     effect = entry.get("effect") or {"type": "default"}
     form["effect"] = effect["type"]
     for key, value in effect.items():
@@ -109,8 +117,9 @@ def from_form(category: str, entity_id: str, form: dict) -> dict:
     }
     if category == "actors":
         entry["ai"] = form.get("ai", "hostile")
-        for key in ACTOR_NUMBERS:
-            entry[key] = number(key)
+        for key in ACTOR_NUMBERS + PLAYER_NUMBERS:
+            if key in form:
+                entry[key] = number(key)
     else:
         entry["price"] = number("price")
     if category == "items":
@@ -121,7 +130,7 @@ def from_form(category: str, entity_id: str, form: dict) -> dict:
             entry["consumable"] = {"type": form["consumable"], **params("consumable", consumable)}
     if category == "equipment":
         entry["equippable"] = {"slot": form.get("slot", "weapon"),
-                               "power": number("power"), "defense": number("defense")}
+                               "power": number("power"), "armor": number("armor")}
     effect_type = form.get("effect", "default")
     entry["effect"] = {"type": effect_type, **params("effect", EFFECT_TYPES[effect_type])}
     return entry

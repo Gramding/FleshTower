@@ -79,7 +79,7 @@ class FireballDamageConsumable(Consumable):
         for actor in self.engine.game_map.actors:
             if actor.distance(*target_xy) <= self.radius:
                 living_name = actor.name
-                real_damage = actor.fighter.take_damage(self.damage)
+                real_damage = actor.fighter.take_damage(self.damage, True)
                 self.engine.message_log.add_message(
                     f"{living_name} explodes in fire taking {real_damage} HP"
                 )
@@ -112,7 +112,7 @@ class LightningDamageConsumable(Consumable):
 
         if target:
             living_name = target.name
-            actual_damage = target.fighter.take_damage(self.damage)
+            actual_damage = target.fighter.take_damage(self.damage, True)
             self.engine.message_log.add_message(
                 f"A bolt of lightning strikes {living_name} with a bang for {actual_damage} HP"
             )
@@ -121,7 +121,7 @@ class LightningDamageConsumable(Consumable):
         else:
             self.fuck_around_find_out += 1
             if self.fuck_around_find_out > 3:
-                actual_damage = consumer.fighter.take_damage(self.damage)
+                actual_damage = consumer.fighter.take_damage(self.damage, True)
                 self.consume()
                 self.fuck_around_find_out = 0
                 raise Impossible(

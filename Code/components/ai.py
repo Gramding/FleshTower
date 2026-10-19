@@ -37,6 +37,23 @@ class BaseAI(Action):
         path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
         return [(index[0], index[1]) for index in path]
 
+    def melee_or_close(self, dx: int, dy: int) -> None:
+        """Attack the adjacent player. Without stats.ENEMY_DIAGONAL_ATTACKS a
+        diagonal neighbour first steps beside the player (it can't hit
+        diagonally, just like the player)."""
+        from components import stats
+
+        if stats.ENEMY_DIAGONAL_ATTACKS or dx == 0 or dy == 0:
+            return MeleeAction(self.entity, dx, dy).perform()
+        steps = [(dx, 0), (0, dy)]
+        random.shuffle(steps)
+        game_map = self.engine.game_map
+        for step_x, step_y in steps:
+            x, y = self.entity.x + step_x, self.entity.y + step_y
+            if game_map.tiles["walkable"][x, y] and not game_map.get_blocking_entity_at_location(x, y):
+                return MovementAction(self.entity, step_x, step_y).perform()
+        return WaitAction(self.entity).perform()
+
 
 class ConfusedEnemy(BaseAI):
     def __init__(self, entity, previous_ai: Optional[BaseAI], turns_remaining):
@@ -79,7 +96,7 @@ class HostileEnemy(BaseAI):
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
-                return MeleeAction(self.entity, dx, dy).perform()
+                return self.melee_or_close(dx, dy)
             self.path = self.get_path_to(target.x, target.y)
 
         if self.path:
@@ -129,7 +146,7 @@ class HostileCaster(BaseAI):
         else:
             if self.engine.game_map.visible[self.entity.x, self.entity.y]:
                 if distance <= 1:
-                    return MeleeAction(self.entity, dx, dy).perform()
+                    return self.melee_or_close(dx, dy)
                 self.path = self.get_path_to(target.x, target.y)
 
             if self.path:
@@ -172,7 +189,7 @@ class ViceraAbomination(BaseAI):
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
-                return MeleeAction(self.entity, dx, dy).perform()
+                return self.melee_or_close(dx, dy)
             self.path = self.get_path_to(target.x, target.y)
 
         if self.path:
@@ -203,7 +220,7 @@ class BloatedCorpseFly(BaseAI):
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
-                return MeleeAction(self.entity, dx, dy).perform()
+                return self.melee_or_close(dx, dy)
             self.path = self.get_path_to(target.x, target.y)
 
         if self.path:

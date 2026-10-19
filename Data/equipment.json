@@ -2,10 +2,10 @@
   "format": "flesh-tower-entities",
   "version": 1,
   "entries": [
-    {"id": "dagger", "name": "Dagger", "char": "/", "color": [0, 191, 255], "price": 200, "equippable": {"slot": "weapon", "power": 2, "defense": 0}, "effect": {"type": "dagger"}},
-    {"id": "sword", "name": "Sword", "char": "/", "color": [0, 191, 255], "price": 250, "equippable": {"slot": "weapon", "power": 4, "defense": 0}, "effect": {"type": "sword"}},
-    {"id": "leather_armor", "name": "Leather Armor", "char": "[", "color": [139, 69, 19], "price": 200, "equippable": {"slot": "armor", "power": 0, "defense": 1}, "effect": {"type": "leather_armor"}},
-    {"id": "chain_mail", "name": "Chain Mail", "char": "[", "color": [139, 69, 19], "price": 300, "equippable": {"slot": "armor", "power": 0, "defense": 3}, "effect": {"type": "chain_mail"}},
-    {"id": "eyes_of_the_bloated_one", "name": "Eyes of The Bloadte One", "char": "0", "color": [200, 200, 200], "price": 100, "equippable": {"slot": "eyes", "power": 3, "defense": 0}, "effect": {"type": "default"}}
+    {"id": "dagger", "name": "Dagger", "char": "/", "color": [0, 191, 255], "price": 200, "equippable": {"slot": "weapon", "power": 2, "armor": 0}, "effect": {"type": "dagger"}},
+    {"id": "sword", "name": "Sword", "char": "/", "color": [0, 191, 255], "price": 250, "equippable": {"slot": "weapon", "power": 4, "armor": 0}, "effect": {"type": "sword"}},
+    {"id": "leather_armor", "name": "Leather Armor", "char": "[", "color": [139, 69, 19], "price": 200, "equippable": {"slot": "armor", "power": 0, "armor": 1}, "effect": {"type": "leather_armor"}},
+    {"id": "chain_mail", "name": "Chain Mail", "char": "[", "color": [139, 69, 19], "price": 300, "equippable": {"slot": "armor", "power": 0, "armor": 3}, "effect": {"type": "chain_mail"}},
+    {"id": "eyes_of_the_bloated_one", "name": "Eyes of The Bloadte One", "char": "0", "color": [200, 200, 200], "price": 100, "equippable": {"slot": "eyes", "power": 3, "armor": 0}, "effect": {"type": "default"}}
   ]
 }

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from components.settings import PlayerClass
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
@@ -51,44 +50,3 @@ class Level(BaseComponent):
         self.current_xp -= self.xp_to_next_level
 
         self.current_level += 1
-
-    def increase_max_hp(
-        self, amount: int = 20, needs_level_up: Optional[bool] = True
-    ) -> None:
-        if self.parent.player_class == PlayerClass.MAGE:
-            amount = int(amount / 2)
-
-        self.parent.fighter.max_hp += amount
-        self.parent.fighter.hp += amount
-
-        self.engine.message_log.add_message("Your health improves!")
-        if needs_level_up:
-            self.increase_level()
-
-    def increase_power(
-        self, amount: int = 1, needs_level_up: Optional[bool] = True
-    ) -> None:
-        self.parent.fighter.base_power += amount
-
-        self.engine.message_log.add_message("You feel stronger!")
-
-        if needs_level_up:
-            self.increase_level()
-
-    def increase_defense(
-        self, amount: int = 1, needs_level_up: Optional[bool] = True
-    ) -> None:
-        self.parent.fighter.base_defense += amount
-
-        self.engine.message_log.add_message("Your movements are getting swifter!")
-
-        if needs_level_up:
-            self.increase_level()
-
-    def increase_max_mana(
-        self, amount: int = 10, needs_level_up: Optional[bool] = True
-    ) -> None:
-        self.parent.fighter.max_mana += amount
-        self.engine.message_log.add_message("Your blood thickens with mana")
-        if needs_level_up:
-            self.increase_level()

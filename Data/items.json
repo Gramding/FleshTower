@@ -14,7 +14,7 @@
     {"id": "confusion_scroll", "name": "Scroll of Confusion", "char": "~", "color": [207, 63, 255], "price": 100, "consumable": {"type": "confusion", "number_of_turns": 10}, "effect": {"type": "confusion"}},
     {"id": "fireball_scroll", "name": "Scroll of Fireball", "char": "~", "color": [255, 0, 0], "price": 150, "consumable": {"type": "fireball_damage", "damage": 12, "radius": 3}, "effect": {"type": "fireball"}},
     {"id": "gorebound", "name": "- Gorebound -                  The Gorebound is an abomination that feeds to grow.          They do not wear armor. They become it.", "char": "@", "color": [255, 0, 0], "price": 100, "effect": {"type": "gorebound"}},
-    {"id": "helixbound", "name": "- Helixbound -                  The Helixbound is a vessel of unstable genetic recursion—a caster whose power is drawn not from words or will, but from rewriting their own biology.", "char": "@", "color": [0, 0, 255], "price": 100, "effect": {"type": "lvl5_boss"}},
+    {"id": "helixbound", "name": "- Helixbound -                  The Helixbound is a vessel of unstable genetic recursion—a caster whose power is drawn not from words or will, but from rewriting their own biology.", "char": "@", "color": [0, 0, 255], "price": 100, "effect": {"type": "helixbound"}},
     {"id": "goblinkey", "name": "Goblin Key", "char": "C", "color": [200, 200, 200], "price": 10, "quest_id": "f3_npc", "effect": {"type": "default"}}
   ]
 }

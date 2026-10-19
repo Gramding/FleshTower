@@ -534,16 +534,16 @@ def apply_overrides(actor, props: dict) -> None:
 
     hp = number("hp")
     if hp:
-        fighter.base_hp = fighter.max_hp = hp
-        fighter._hp = hp
+        fighter.base_hp = hp
+        fighter._hp = fighter.max_hp
     power = number("power")
     if power is not None:
         fighter.base_power = power
-        fighter.power = power + fighter.bonus_power
-    defense = number("defense")
-    if defense is not None:
-        fighter.base_defense = defense
-        fighter.defense = defense + fighter.bonus_defense
+    armor = number("armor")
+    if armor is None:
+        armor = number("defense")  # levels from before the stat rework
+    if armor is not None:
+        fighter.base_armor = armor
     xp = number("xp")
     if xp is not None and getattr(actor, "level", None) is not None:
         actor.level.xp_given = xp

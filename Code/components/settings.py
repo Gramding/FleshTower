@@ -67,6 +67,31 @@ KEYBINDS = {
             "KEY": event.KeySym.RIGHT,
             "MOD": event.Modifier.LSHIFT,
         },
+        # diagonals, only used when components/stats.py PLAYER_DIAGONALS is on
+        "UP_LEFT": {
+            "NAME": "Move up-left",
+            "ID": 104,
+            "KEY": event.KeySym.Y,
+            "MOD": event.Modifier.LSHIFT,
+        },
+        "UP_RIGHT": {
+            "NAME": "Move up-right",
+            "ID": 105,
+            "KEY": event.KeySym.U,
+            "MOD": event.Modifier.LSHIFT,
+        },
+        "DOWN_LEFT": {
+            "NAME": "Move down-left",
+            "ID": 106,
+            "KEY": event.KeySym.B,
+            "MOD": event.Modifier.LSHIFT,
+        },
+        "DOWN_RIGHT": {
+            "NAME": "Move down-right",
+            "ID": 107,
+            "KEY": event.KeySym.N,
+            "MOD": event.Modifier.LSHIFT,
+        },
     },
     "Interaction": {
         "PERIOD + SHIFT": {

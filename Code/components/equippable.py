@@ -19,11 +19,17 @@ class Equippable(BaseComponent):
         self,
         equipment_type: EquipmentType,
         power_bonus: int = 0,
-        defense_bonus: int = 0,
+        armor_bonus: int = 0,
     ):
         self.equipment_type = equipment_type
         self.power_bonus = power_bonus
-        self.defense_bonus = defense_bonus
+        self.armor_bonus = armor_bonus
+
+    def __setstate__(self, state: dict) -> None:
+        # savegames from before the stat rework called armor "defense"
+        if "defense_bonus" in state:
+            state["armor_bonus"] = state.pop("defense_bonus")
+        self.__dict__.update(state)
 
 
 def __getattr__(name: str):

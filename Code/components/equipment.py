@@ -61,28 +61,20 @@ class Equipment(BaseComponent):
         self.belt = belt
         self.legs = legs
 
+    def equipped_items(self) -> list:
+        return [
+            item
+            for slot, item in vars(self).items()
+            if slot != "parent" and item is not None and getattr(item, "equippable", None)
+        ]
+
     @property
-    def defence_bonus(self) -> int:
-        bonus = 0
-        if self.weapon is not None and self.weapon.equippable is not None:
-            bonus += self.weapon.equippable.defense_bonus
-
-        if self.armor is not None and self.armor.equippable is not None:
-            bonus += self.armor.equippable.defense_bonus
-
-        return bonus
+    def armor_bonus(self) -> int:
+        return sum(item.equippable.armor_bonus for item in self.equipped_items())
 
     @property
     def power_bonus(self) -> int:
-        bonus = 0
-
-        if self.weapon is not None and self.weapon.equippable is not None:
-            bonus += self.weapon.equippable.power_bonus
-
-        if self.armor is not None and self.armor.equippable is not None:
-            bonus += self.armor.equippable.power_bonus
-
-        return bonus
+        return sum(item.equippable.power_bonus for item in self.equipped_items())
 
     def item_is_equipped(self, item: Item) -> bool:
         # new logic allows for dynamic check if any slot is currently equipped
