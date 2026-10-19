@@ -16,10 +16,28 @@ BloatedOne
     "start": "purple",
     "if:bloatedOneNo": "green",
     "item:health_potion": "green",
-    "organs:20": "green"
+    "organs:20": "green",
+    "signal:f3_spawn_corpse_fly": "green"
   },
   "zoom": 1
 }
+
+
+:: *As it dies, give it another fragment of yourself* {"position":"1400,1300","size":"100,100"}
+*The creature's eyes follow your movements in terror as you approach it again. Sensing what you want to do, it screams. The writhing mass of flesh tries so desperately to move...*
+
+[[*Feed it*]]
+[[*Let it die*]]
+
+
+:: *Feed it* [signal:f3_spawn_corpse_fly] {"position":"1300,1500","size":"100,100"}
+*The creature tries with all its might to flee, but over countless years it has fused so deeply with its surroundings that it cannot move. Desperately, it starts ripping its own flesh apart just to get further away from you.*
+
+*Just before you reach it, the creature rips apart in a squelching burst. From its struggle, another grotesque abomination is born. Faceted eyes stare at you with murderous intent.*
+
+
+:: *Let it die* {"position":"1500,1500","size":"100,100"}
+*You change your mind, not wanting the creature you once called your friend to suffer any more. You lay your hand upon its swollen face, cradling it in its last moments of sentient existence. Death, finally.*
 
 
 :: But you're immortal, aren't you? [flag:seed_of_death] {"position":"1400,1100","size":"100,100"}
@@ -50,6 +68,12 @@ At long last, have you really found a way to grant my wish? I never thought it p
 [[No]]
 
 
+:: Leave me be [start if:bloatedOneNo item:health_potion organs:20] {"position":"700,1500","size":"100,100"}
+*The creature turns away from you, its bloated body sagging with sorrow.*
+
+Take this and leave me be.
+
+
 :: No [flag:bloatedOneNo] {"position":"900,1500","size":"100,100"}
 *Anger and sadness alike pour out as the creature screams in agony.*
 
@@ -57,12 +81,6 @@ Why even find it, then, if you're not going to finish it? I don't want to be ali
 
 [[Yes]]
 [[No->Leave me be]]
-
-
-:: Leave me be [start if:bloatedOneNo item:health_potion organs:20] {"position":"700,1500","size":"100,100"}
-*The creature turns away from you, its bloated body sagging with sorrow.*
-
-Take this and leave me be.
 
 
 :: Start {"position":"800,900","size":"100,100"}
@@ -99,6 +117,8 @@ Me? I'm called "The Bloated One". Fitting, isn't it?
 *You feed the creature the seed. It gurgles as tears of happiness flow down its bloated body.*
 
 *A memory flashes before your eyes: the person this creature once was, and everything you achieved together.*
+
+[[*As it dies, give it another fragment of yourself*]]
 
 
 :: You died [flag:KillTheBloatetOne] {"position":"1400,800","size":"100,100"}
