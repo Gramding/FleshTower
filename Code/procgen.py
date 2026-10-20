@@ -256,6 +256,9 @@ def get_entities_at_random(
     number_of_entities: int,
     floor: int,
 ) -> List[Entity]:
+    if weighted_chances_by_floor:
+        # custom levels run on floor -1: use the first floor's table
+        floor = max(floor, min(weighted_chances_by_floor))
     entity_weighted_chances = {}
     for key, values in weighted_chances_by_floor.items():
         if key > floor:
@@ -268,6 +271,8 @@ def get_entities_at_random(
 
     entities = list(entity_weighted_chances.keys())
     entity_weighted_chance_values = list(entity_weighted_chances.values())
+    if not entities:
+        return []
     chosen_entities = random.choices(
         entities, weights=entity_weighted_chance_values, k=number_of_entities
     )

@@ -10,7 +10,6 @@ from actions import Action, BumpAction, WaitAction, PickupAction
 import color
 import exceptions
 import libtcodpy
-from numpy import array_split
 from components.dialouge_parser import quest_key
 
 
@@ -1056,15 +1055,15 @@ class MainGameEventHandler(EventHandler):
             return EquipmentScreen(self.engine)
 
         if key == tcod.event.KeySym.F1 and CHEATS:
-            return CheatActiveHandler(self.engine)
+            return cheat_spawn_picker(self.engine, "Spawn item", ("items", "equipment"))
         elif key == tcod.event.KeySym.F2 and CHEATS:
-            return EnemyCheatActiveHandler(self.engine)
+            return cheat_spawn_picker(self.engine, "Spawn monster", ("actors",))
         elif key == tcod.event.KeySym.F3 and CHEATS:
-            return GerneralCheatActiveHandler(self.engine)
+            return toggle_cheat_picker(self.engine)
         elif key == tcod.event.KeySym.F4 and CHEATS:
-            return GerneralCheatActivationActiveHandler(self.engine)
+            return action_cheat_picker(self.engine)
         elif key == tcod.event.KeySym.F5 and CHEATS:
-            return AffixCheatActiveHandler(self.engine)
+            return affix_cheat_picker(self.engine)
         # No valid key was pressed
         # action = None
         return action
@@ -1182,334 +1181,151 @@ class EquipmentScreen(AskUserEventHandler):
                 y += 2
 
 
-class ItemCheatScreen(AskUserEventHandler):
-    TITLE = "Item cheats"
+def cheat_spawn_picker(engine: Engine, title: str, categories) -> "ListPicker":
+    """F1 / F2: every entity of these data categories (Data/*.json, so new and
+    edited entities are included), filterable. Enter spawns one; the list
+    stays open for more, Esc closes it."""
+    import entity_data
+    import entity_factory
 
-    def on_render(self, console):
-        super().on_render(console)
-        x = 0
-        y = 0
-        title = f"{self.TITLE} Floor {self.engine.current_cheat_page}"
-        width = len(title) + 15
-        pages = []
-        for floor in self.engine.item_chances:
-            pages.append(floor)
+    def short_name(entity_id) -> str:
+        # class corpses carry their description in the name
+        return getattr(entity_factory, entity_id).name.split("  ")[0].strip()
 
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=40,
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-        # this increment is for not writin in title line
-        y += 1
-        if self.engine.current_cheat_page > len(self.engine.item_chances) - 1:
-            # set to 0 so that different indecies from different cheat menues dont wrongfully collide
-            self.engine.current_cheat_page = 0
-        itemOnFloor = self.engine.item_chances[self.engine.current_cheat_page]
-        for i, item in enumerate(itemOnFloor):
-            item_key = chr(ord("a") + i)
-            item_string = f"({item_key}) {item[0].name}"
-            console.print(x + 1, y + i + 1, item_string)
+    entries = [
+        (f"{entity_data.CATEGORIES[category]}: {short_name(entity_id)} ({entity_id})", entity_id)
+        for category in categories
+        for entity_id, entry_category in entity_factory.CATEGORY.items()
+        if entry_category == category and entity_id != entity_factory.PLAYER_ID
+    ]
 
-    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.A
+    def spawn(entity_id):
+        from entity import Actor
 
-        if not cheatNav(engine=self.engine, key=key, arr=self.engine.item_chances):
-            if 0 <= index <= 26:
-                try:
-                    selected_item = self.engine.item_chances[
-                        self.engine.current_cheat_page
-                    ][index]
-                except IndexError:
-                    self.engine.message_log.add_message(
-                        "Invalid input slot.", color.invalid
-                    )
-                    return None
-                return self.on_item_selected(selected_item)
-        return super().ev_keydown(event)
+        prototype = getattr(entity_factory, entity_id, None)
+        if prototype is None:
+            return None
+        spot = cheat_spawn_spot(engine, actor=isinstance(prototype, Actor))
+        if spot is None:
+            engine.message_log.add_message("No free tile next to you.", color.invalid)
+            return None
+        prototype.spawn(engine.game_map, *spot)
+        engine.message_log.add_message(f"The Tower creates 1 {short_name(entity_id)}")
+        return None
+
+    return ListPicker(MainGameEventHandler(engine), title, entries, spawn)
 
 
-class CheatActiveHandler(ItemCheatScreen):
-    def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        item[0].spawn(
-            gamemap=self.engine.game_map, x=self.engine.player.x, y=self.engine.player.y
-        )
-        self.engine.message_log.add_message(f"The Tower creates 1 {item[0].name}")
+def cheat_spawn_spot(engine: Engine, actor: bool):
+    """Items land under the player; actors on the nearest free walkable tile."""
+    player = engine.player
+    if not actor:
+        return player.x, player.y
+    game_map = engine.game_map
+    for radius in (1, 2, 3):
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                x, y = player.x + dx, player.y + dy
+                if (
+                    max(abs(dx), abs(dy)) == radius
+                    and game_map.in_bounds(x, y)
+                    and game_map.tiles["walkable"][x, y]
+                    and not game_map.get_blocking_entity_at_location(x, y)
+                ):
+                    return x, y
+    return None
 
 
-class EnemyCheatScreen(AskUserEventHandler):
-    TITLE = "Enemy cheats"
+def toggle_cheat_picker(engine: Engine) -> "ListPicker":
+    """F3: switch the GENERAL_CHEATS on and off; the list stays open."""
 
-    def on_render(self, console):
-        super().on_render(console)
-        x = 0
-        y = 0
-        title = f"{self.TITLE} Floor {self.engine.current_cheat_page}"
-        width = len(title) + 15
-        pages = []
-        for floor in self.engine.enemy_chances:
-            pages.append(floor)
+    def entries():
+        return [
+            (f"{name.replace('_', ' ').capitalize():<12} {'ON' if on else 'off'}", name)
+            for name, on in GENERAL_CHEATS.items()
+        ]
 
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=40,
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-        # this increment is for not writin in title line
-        y += 1
-        if self.engine.current_cheat_page > len(self.engine.enemy_chances) - 1:
-            self.engine.current_cheat_page = 0
-        enemyOnFloor = self.engine.enemy_chances[self.engine.current_cheat_page]
-        for i, enemy in enumerate(enemyOnFloor):
-            enemyKey = chr(ord("a") + i)
-            enemyString = f"({enemyKey}) {enemy[0].name}"
-            console.print(x + 1, y + i + 1, enemyString)
+    def toggle(name):
+        if name is None:
+            return None
+        GENERAL_CHEATS[name] = not GENERAL_CHEATS[name]
+        picker.all_items = entries()
+        state = "on" if GENERAL_CHEATS[name] else "off"
+        engine.message_log.add_message(f"Cheat {name.replace('_', ' ')} {state}")
+        return None
 
-    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.A
-
-        if not cheatNav(engine=self.engine, key=key, arr=self.engine.enemy_chances):
-            if 0 <= index <= 26:
-                try:
-                    selected_enemy = self.engine.enemy_chances[
-                        self.engine.current_cheat_page
-                    ][index]
-                except IndexError:
-                    self.engine.message_log.add_message(
-                        "Invalid input slot.", color.invalid
-                    )
-                    return None
-                return self.on_enemy_selected(selected_enemy)
-        return super().ev_keydown(event)
+    picker = ListPicker(MainGameEventHandler(engine), "Cheat toggles", entries(), toggle)
+    return picker
 
 
-class EnemyCheatActiveHandler(EnemyCheatScreen):
-    def on_enemy_selected(self, enemy: Actor) -> Optional[ActionOrHandler]:
-        enemy[0].spawn(
-            gamemap=self.engine.game_map,
-            x=self.engine.player.x + 1,
-            y=self.engine.player.y,
-        )
-        self.engine.message_log.add_message(f"The Tower creates 1 {enemy[0].name}")
+def action_cheat_picker(engine: Engine) -> "ListPicker":
+    """F4: one-off cheats from GENERAL_CHEAT_ACTIVATIONS."""
+    labels = {
+        "spawn_shop": "Go to a shop room",
+        "current_floor_+": "Floor +1",
+        "current_floor_-": "Floor -1",
+        "level_up": "Level up",
+        "die": "Die",
+    }
 
+    def entries():
+        floor = engine.game_world.current_floor
+        return [
+            (labels.get(name, name) + (f"  (floor {floor})" if name.startswith("current_floor") else ""), name)
+            for name in GENERAL_CHEAT_ACTIVATIONS
+        ]
 
-# Since it was now reused code this is now its own function
-# Cheat Navigation is now reusable
-def cheatNav(key, engine, arr) -> bool:
-    if key == tcod.event.KeySym.PAGEUP:
-        if len(arr) - 1 >= engine.current_cheat_page + 1:
-            engine.current_cheat_page += 1
-        else:
-            engine.current_cheat_page = 0
-            return True
-    elif key == tcod.event.KeySym.PAGEDOWN:
-        if 0 <= engine.current_cheat_page - 1:
-            engine.current_cheat_page -= 1
-        else:
-            engine.current_cheat_page = len(arr) - 1
-            return True
-    return False
-
-
-class GeneralCheats(AskUserEventHandler):
-    TITLE = "Gerneral Cheats"
-
-    def on_render(self, console):
-        super().on_render(console)
-        x = 0
-        y = 0
-        title = f"{self.TITLE}"
-        width = len(title) + 15
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=40,
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-        # this increment is for not writin in title line
-        y += 1
-        for i, cheat in enumerate(GENERAL_CHEATS):
-            cheatKey = chr(ord("a") + i)
-            cheatString = f"({cheatKey}) {cheat:<17}: {GENERAL_CHEATS[cheat]}"
-            console.print(x + 1, y + i + 1, cheatString)
-
-    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.A
-
-        if 0 <= index <= 26:
-            try:
-                cheatSelected = list(GENERAL_CHEATS)[index]
-            except IndexError:
-                self.engine.message_log.add_message(
-                    "Invalid input slot.", color.invalid
-                )
-                return None
-            return self.on_cheat_select(cheatSelected)
-        return super().ev_keydown(event)
-
-
-class GerneralCheatActiveHandler(GeneralCheats):
-    def on_cheat_select(self, cheat) -> Optional[ActionOrHandler]:
-        if GENERAL_CHEATS[cheat]:
-            GENERAL_CHEATS[cheat] = False
-        else:
-            GENERAL_CHEATS[cheat] = True
-
-
-class GeneralCheatsActivaions(AskUserEventHandler):
-    TITLE = "Gerneral Cheats to Activate"
-
-    def on_render(self, console):
-        super().on_render(console)
-        x = 0
-        y = 0
-        title = f"{self.TITLE}"
-        width = len(title) + 15
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=40,
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-        # this increment is for not writin in title line
-        y += 1
-        for i, cheat in enumerate(GENERAL_CHEAT_ACTIVATIONS):
-            cheatKey = chr(ord("a") + i)
-            cheatString = f"({cheatKey}) {cheat:<17}"
-            console.print(x + 1, y + i + 1, cheatString)
-
-    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.A
-
-        if 0 <= index <= 26:
-            try:
-                cheatSelected = list(GENERAL_CHEAT_ACTIVATIONS)[index]
-            except IndexError:
-                self.engine.message_log.add_message(
-                    "Invalid input slot.", color.invalid
-                )
-                return None
-            return self.on_cheat_select(cheatSelected)
-        return super().ev_keydown(event)
-
-
-class GerneralCheatActivationActiveHandler(GeneralCheatsActivaions):
-    def on_cheat_select(self, cheat) -> Optional[ActionOrHandler]:
+    def run(name):
         from procgen import generate_shop_room
 
-        match cheat:
+        match name:
             case "spawn_shop":
-                self.engine.game_map = generate_shop_room(
-                    engine=self.engine,
+                engine.game_map = generate_shop_room(
+                    engine=engine,
                     map_width=100,
                     map_height=100,
-                    current_floor=self.engine.game_world.current_floor,
+                    current_floor=engine.game_world.current_floor,
                 )
+                engine.update_fov()
+                return MainGameEventHandler(engine)
             case "current_floor_+":
-                self.engine.game_world.current_floor += 1
+                engine.game_world.current_floor += 1
             case "current_floor_-":
-                self.engine.game_world.current_floor -= 1
+                engine.game_world.current_floor -= 1
             case "level_up":
-                self.engine.player.level.current_xp = (
-                    self.engine.player.level.xp_to_next_level
-                )
-                return LevelUpEventHandler(engine=self.engine)
+                engine.player.level.current_xp = engine.player.level.xp_to_next_level
+                return LevelUpEventHandler(engine=engine)
             case "die":
-                self.engine.player.fighter.die()
+                engine.player.fighter.die()
+                return GameOverEventHandler(engine)
+        picker.all_items = entries()
+        return None
+
+    picker = ListPicker(MainGameEventHandler(engine), "Cheat actions", entries(), run)
+    return picker
 
 
-class AffixCheatScreen(AskUserEventHandler):
-    TITLE = "Affix cheats"
+def affix_cheat_picker(engine: Engine) -> "ListPicker":
+    """F5: every affix of the affix table, for any class, rolled once for the
+    current level when the list opens. Enter grants exactly what is shown;
+    the list stays open for more."""
+    from components.affix import AFFIX_TABLE
 
-    def on_render(self, console):
-        if self.engine.current_cheat_page > len(self.engine.enemy_chances) - 1:
-            self.engine.current_cheat_page = 0
-        affixesOnPage = array_split(
-            self.engine.affixManager.get_affix_dir(),
-            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
-        )[self.engine.current_cheat_page]
+    rolled = [engine.affixManager.make(row) for row in AFFIX_TABLE]
+    entries = [
+        (f"{affix.AFFIX_COLOR.name.capitalize():<9} {affix.AFFIX_NAME}", index)
+        for index, affix in enumerate(rolled)
+    ]
 
-        super().on_render(console)
-        x = 0
-        y = 0
-        title = f"{self.TITLE} Page {self.engine.current_cheat_page}"
-        width = len(title) + 25
-        pages = []
-        for floor in self.engine.enemy_chances:
-            pages.append(floor)
+    def grant(index):
+        if index is None:
+            return None
+        gained = copy.deepcopy(rolled[index])
+        engine.affixManager.gain_affix(gained)
+        engine.message_log.add_message(f"The Tower grants you {gained.AFFIX_NAME}")
+        return None
 
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=3 + len(affixesOnPage),
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-        # this increment is for not writin in title line
-        y += 1
-        for i, affix_page in enumerate(affixesOnPage):
-            affix_key = chr(ord("a") + i)
-            affixString = f"({affix_key}) {affix_page.AFFIX_NAME}"
-            console.print(
-                x + 1, y + i + 1, text=affixString, fg=affix_page.AFFIX_COLOR.value
-            )
-
-    def ev_keydown(self, event) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.A
-        affixesPages = array_split(
-            self.engine.affixManager.get_affix_dir(),
-            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
-        )
-        affixesOnPage = array_split(
-            self.engine.affixManager.get_affix_dir(),
-            math.ceil(len(self.engine.affixManager.get_affix_dir()) / 25),
-        )[self.engine.current_cheat_page]
-
-        if not cheatNav(engine=self.engine, key=key, arr=affixesPages):
-            if 0 <= index <= 26:
-                try:
-                    affix_selected = affixesOnPage[index]
-                except IndexError:
-                    self.engine.message_log.add_message(
-                        "Invalid input slot.", color.invalid
-                    )
-                    return None
-                return self.on_affix_selected(affix_selected)
-        return super().ev_keydown(event)
-
-
-class AffixCheatActiveHandler(AffixCheatScreen):
-    def on_affix_selected(self, affix: affix.Affix) -> Optional[ActionOrHandler]:
-        self.engine.affixManager.gain_affix(affix)
-        self.engine.message_log.add_message(f"The Tower grants you {affix.AFFIX_NAME}")
+    return ListPicker(MainGameEventHandler(engine), "Grant affix", entries, grant)
 
 
 
