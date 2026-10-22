@@ -656,6 +656,41 @@ def new_custom_game(level: CustomLevel) -> Engine:
     return engine
 
 
+UNDO_STEPS = 200  # level states kept for undo
+
+
+def level_state(level: CustomLevel) -> tuple:
+    """Everything undo restores: tiles, entities, their properties, areas and
+    the player start (not the name; saving is not an edit)."""
+    return (
+        level.tiles.copy(order="F"),
+        copy.deepcopy(level.entities),
+        copy.deepcopy(level.properties),
+        copy.deepcopy(level.areas),
+        level.player_start,
+    )
+
+
+def same_state(level: CustomLevel, state: tuple) -> bool:
+    tiles, entities, properties, areas, start = state
+    return (
+        np.array_equal(level.tiles, tiles)
+        and level.entities == entities
+        and level.properties == properties
+        and level.areas == areas
+        and level.player_start == start
+    )
+
+
+def restore_state(level: CustomLevel, state: tuple) -> None:
+    tiles, entities, properties, areas, start = copy.deepcopy(state)
+    level.tiles[:] = tiles
+    level.entities = entities
+    level.properties = properties
+    level.areas = areas
+    level.player_start = start
+
+
 def event_tile(event) -> Optional[Tuple[int, int]]:
     try:
         tile = event.tile
@@ -801,6 +836,12 @@ class LevelEditor(input_handlers.BaseEventHandler):
 
         self.status = "Shape the flesh. [S] saves."
         self.center_camera(*level.player_start)
+
+        # undo: states before each finished change; a change is committed once
+        # it is complete (a brush stroke, a rectangle, a closed property menu)
+        self.undo_stack: List[tuple] = []
+        self.redo_stack: List[tuple] = []
+        self.last_state = level_state(level)
 
         self.pending = None
 
@@ -1073,11 +1114,48 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 traceback.print_exc()
         raise SystemExit()
 
+    def commit_history(self) -> None:
+        """Records the level as it was before the last finished change. Called
+        on every input; while a mouse stroke is held it waits for the release,
+        so one stroke is one undo step."""
+        if self.held_button is not None:
+            return
+        if same_state(self.level, self.last_state):
+            return
+        self.undo_stack.append(self.last_state)
+        del self.undo_stack[:-UNDO_STEPS]
+        self.redo_stack.clear()
+        self.last_state = level_state(self.level)
+
+    def undo(self) -> None:
+        self.commit_history()
+        if not self.undo_stack:
+            self.status = "Nothing to undo"
+            return
+        self.redo_stack.append(self.last_state)
+        self.last_state = self.undo_stack.pop()
+        restore_state(self.level, self.last_state)
+        self.dirty = True
+        self.status = f"Undo ({len(self.undo_stack)} more)"
+
+    def redo(self) -> None:
+        self.commit_history()
+        if not self.redo_stack:
+            self.status = "Nothing to redo"
+            return
+        self.undo_stack.append(self.last_state)
+        self.last_state = self.redo_stack.pop()
+        restore_state(self.level, self.last_state)
+        self.dirty = True
+        self.status = f"Redo ({len(self.redo_stack)} more)"
+
     def ev_mousemotion(self, event):
+        self.commit_history()
         self.mouse = event_tile(event)
         self.apply_at_mouse()
 
     def ev_mousebuttondown(self, event):
+        self.commit_history()
         tile = event_tile(event)
         if tile is not None:
             self.mouse = tile
@@ -1108,6 +1186,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
                 self.fill_rect(self.rect_anchor, end, erase=self.held_button == 3)
         self.rect_anchor = None
         self.held_button = None
+        self.commit_history()
         return handler
 
     def area_menu(self, area: dict):
@@ -1147,6 +1226,17 @@ class LevelEditor(input_handlers.BaseEventHandler):
         key = event.sym
         mod = event.mod
         k = tcod.event.KeySym
+        self.commit_history()
+
+        if key == k.Z and mod & SHIFT and mod & tcod.event.Modifier.CTRL:
+            self.redo()  # Ctrl+Shift+Z
+            return None
+        if key == k.Z:
+            self.undo()  # Z or Ctrl+Z
+            return None
+        if key == k.Y:
+            self.redo()  # Y or Ctrl+Y
+            return None
 
         pan = 10 if mod & SHIFT else 1
         if key == k.UP:
@@ -1330,6 +1420,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             "C center on start",
             "V check level",
             "E edit entities",
+            "Z undo  Y redo",
             "S save  Esc back",
         ]
         help_y = 11 + PALETTE_ROWS + 1
