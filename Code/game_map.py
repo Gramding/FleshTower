@@ -40,6 +40,9 @@ class GameMap:
         self.tile_state = {}
         self.areas = []  # area triggers: {"rect", "props", "spent"}
         self.pending_events = []  # delayed events: [turns left, marker pos]
+        from rules import RULES_VERSION
+
+        self.rules_version = RULES_VERSION  # property names in tile_state, see rules.upgrade_props
 
     def set_tile_state(self, pos, state: str) -> None:
         from tiles import TILE_BY_ID

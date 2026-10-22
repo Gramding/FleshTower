@@ -11,6 +11,8 @@ from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from components.dialouge_parser import load_dialogue, quest_key
 from components import loot
+import id_index
+import rules
 
 import numpy as np
 import tcod
@@ -109,6 +111,7 @@ class CustomLevel:
         self.properties: Dict[Tuple[int, int], Dict[str, str]] = {}
         # area triggers: {"rect": (x1, y1, x2, y2), "props": {...}}, see tiles.AREA_FIELDS
         self.areas: List[dict] = []
+        self.rules_version = rules.RULES_VERSION  # property names, see rules.upgrade_props
 
     def __setstate__(self, state):
         self.__dict__.update(state)
@@ -116,6 +119,30 @@ class CustomLevel:
             self.properties = {}
         if "areas" not in self.__dict__:
             self.areas = []
+        self.upgrade()
+
+    def upgrade(self) -> None:
+        """Older level files: today's property names and data ids
+        (rules.upgrade_props), and pressure plates (removed) become 1x1 area
+        triggers on floor."""
+        from tiles import PLATE_ID
+
+        version = getattr(self, "rules_version", 0)
+        if version >= rules.RULES_VERSION:
+            return
+        self.properties = {
+            pos: rules.upgrade_props(props, version) for pos, props in self.properties.items()
+        }
+        for area in self.areas:
+            area["props"] = rules.upgrade_props(area["props"], version)
+        self.entities = {pos: rules.entity_id(attr) for pos, attr in self.entities.items()}
+        for x, y in np.argwhere(self.tiles == PLATE_ID):
+            pos = (int(x), int(y))
+            props = self.properties.pop(pos, {})
+            props.pop("hidden", None)
+            self.tiles[pos] = TILE_FLOOR
+            self.areas.append({"rect": (pos[0], pos[1], pos[0], pos[1]), "props": props})
+        self.rules_version = rules.RULES_VERSION
 
     def area_at(self, pos) -> Optional[dict]:
         """The last drawn area containing pos."""
@@ -180,193 +207,30 @@ def list_levels() -> List[Tuple[str, str]]:
     return results
 
 
-def all_levels(current=None) -> List[CustomLevel]:
-    """Every saved level, with the one open in the editor replacing its saved copy."""
-    levels = []
-    for _, filename in list_levels():
-        try:
-            level = load_level(filename)
-        except Exception:
-            continue
-        if current is not None and current.name and level.name == current.name:
-            continue  # the open version replaces the saved one
-        levels.append(level)
-    if current is not None:
-        levels.append(current)
-    return levels
-
-
-def find_lore_users(lore_file, current=None, skip_pos=None, key="lore") -> List[str]:
-    """Everything, in any level, whose property key names this file
-    (lore items for "lore", chests for "loot_table")."""
-    users = []
-    for level in all_levels(current):
-        for pos, props in getattr(level, "properties", {}).items():
-            if level is current and pos == skip_pos:
-                continue
-            if props.get(key) == lore_file:
-                users.append(f"{level.name or 'this level'}: {pos[0]},{pos[1]}")
-    return users
-
-
-def find_quest_id(quest_id, current=None, skip_pos=None):
-    from components.dialouge_parser import quest_key, list_dialogues, load_dialogue
-
-    quest_id = quest_key(quest_id)
-    produced, used = [], []
-
-    for level in all_levels(current):
-        name = level.name or "this level"
-        for pos, props in getattr(level, "properties", {}).items():
-            if level is current and pos == skip_pos:
-                continue
-            attr = level.entities.get(pos, "?")
-            if quest_key(props.get("quest_id", "")) == quest_id:
-                produced.append(f"{name}: {attr} on the floor")
-            if quest_key(props.get("drop_id", "")) == quest_id:
-                produced.append(f"{name}: dropped by {attr}")
-            if quest_key(props.get("key_id", "")) == quest_id:
-                used.append(f"{name}: unlocks door at {pos[0]},{pos[1]}")
-
-    for _, filename in list_dialogues():
-        try:
-            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
-        except Exception:
-            continue
-        for passage in dialogue.passages.values():
-            for tag in passage.tags:
-                kind, _, value = tag.partition(":")
-                if quest_key(value) != quest_id:
-                    continue
-                if kind == "gives":
-                    produced.append(f"{filename}: gives in '{passage.name}'")
-                elif kind in ("requires", "takes"):
-                    used.append(f"{filename}: {kind} in '{passage.name}'")
-    return produced, used
+# --- lookups: questions to the id index (id_index.py) ---
 
 
 def tile_at(level, pos) -> Optional[TileDef]:
     return TILE_BY_ID.get(int(level.tiles[pos]))
 
 
-def signal_users(level):
-    """Everything in this level that sends or receives a signal,
-    as (signal, "sends"/"receives", label, pos)."""
-    for pos, props in level.properties.items():
-        tile = tile_at(level, pos)
-        link_id = quest_key(props.get("link_id", ""))
-        if link_id and tile is not None and tile.link:
-            yield link_id, tile.link, tile.name, pos
-        attr = level.entities.get(pos)
-        for key in SIGNAL_PROPERTIES:
-            signal = quest_key(props.get(key, ""))
-            if signal and attr:
-                yield signal, "sends", f"{attr} {key}", pos
-        signal = quest_key(props.get("signal", ""))
-        if signal and tile is not None and tile.event and props.get("action") == "fire_signal":
-            yield signal, "sends", f"{tile.name} fire_signal", pos
-    for area in getattr(level, "areas", []):
-        signal = quest_key(area["props"].get("link_id", ""))
-        if signal:
-            yield signal, "sends", "Area", area["rect"][:2]
+def level_signals(level) -> List[id_index.Use]:
+    """Signal uses in this level only: links work inside one level."""
+    return [use for use in id_index.level_uses(level, current=True) if use.kind == "signal"]
 
 
 def dialogue_signals() -> set:
     """Signals fired by a signal:<id> tag in any dialogue."""
-    from components.dialouge_parser import list_dialogues
-
-    found = set()
-    for _, filename in list_dialogues():
-        try:
-            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
-        except Exception:
-            continue
-        for passage in dialogue.passages.values():
-            for tag in passage.tags:
-                if tag.startswith("signal:"):
-                    found.add(quest_key(tag[len("signal:") :]))
-    return found
+    return {use.id for use in id_index.dialogue_uses() if use.kind == "signal"}
 
 
-def known_signals(level) -> List[Tuple[str, int]]:
-    """Signals in use, most used first, for autocomplete: (signal, uses)."""
-    counts: Dict[str, int] = {START_SIGNAL: 0}
-    for signal, _, _, _ in signal_users(level):
-        counts[signal] = counts.get(signal, 0) + 1
-    for signal in dialogue_signals():
-        counts[signal] = counts.get(signal, 0) + 1
-    return sorted(counts.items(), key=lambda item: -item[1])
-
-
-def flag_users(current=None):
-    """Every use of a flag, as (flag, "sets"/"reads", where)."""
-    from components.dialouge_parser import list_dialogues
-
-    for level in all_levels(current):
-        for pos, props in getattr(level, "properties", {}).items():
-            name = f"{level.name or 'this level'} {pos[0]},{pos[1]}"
-            if props.get("flag") and props.get("action") == "set_flag":
-                yield quest_key(props["flag"]), "sets", name
-            for key in ("requires_flag", "requires_not_flag"):
-                if props.get(key):
-                    yield quest_key(props[key]), "reads", name
-    for _, filename in list_dialogues():
-        try:
-            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
-        except Exception:
-            continue
-        for passage in dialogue.passages.values():
-            for tag in passage.tags:
-                kind, _, value = tag.partition(":")
-                if kind in ("flag", "unflag"):
-                    yield quest_key(value), "sets", filename
-                elif kind in ("if", "ifnot"):
-                    yield quest_key(value), "reads", filename
-
-
-def known_flags(current=None) -> List[Tuple[str, int]]:
-    """Flags in use anywhere, most used first, for autocomplete: (flag, uses)."""
-    counts: Dict[str, int] = {}
-    for flag, _, _ in flag_users(current):
-        counts[flag] = counts.get(flag, 0) + 1
-    return sorted(counts.items(), key=lambda item: -item[1])
-
-
-def known_quest_ids(current=None) -> List[Tuple[str, int]]:
-    """Quest ids used in any level or dialogue, most used first: (id, uses)."""
-    from components.dialouge_parser import list_dialogues
-
-    counts: Dict[str, int] = {}
-
-    def add(value):
-        value = quest_key(value or "")
-        if value:
-            counts[value] = counts.get(value, 0) + 1
-
-    for level in all_levels(current):
-        for props in getattr(level, "properties", {}).values():
-            for key in ("quest_id", "drop_id", "key_id", "item_id"):
-                add(props.get(key))
-    for _, filename in list_dialogues():
-        try:
-            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
-        except Exception:
-            continue
-        for passage in dialogue.passages.values():
-            for tag in passage.tags:
-                kind, _, value = tag.partition(":")
-                if kind in ("gives", "requires", "takes"):
-                    add(value)
-    return sorted(counts.items(), key=lambda item: -item[1])
-
-
-def find_link_id(level, link_id, skip_pos=None) -> List[Tuple[str, str, Tuple[int, int]]]:
+def find_signal(level, signal, skip_pos=None) -> List[Tuple[str, str, Tuple[int, int]]]:
     """Everything in this level that uses this signal, as (label, role, pos)."""
-    link_id = quest_key(link_id)
+    signal = quest_key(signal)
     return [
-        (label, role, pos)
-        for signal, role, label, pos in signal_users(level)
-        if signal == link_id and pos != skip_pos
+        (use.label, use.role, use.pos)
+        for use in level_signals(level)
+        if use.id == signal and use.pos != skip_pos
     ]
 
 
@@ -375,7 +239,7 @@ Problem = Tuple[str, Optional[Tuple[int, int]]]  # (text, where to jump to)
 
 def link_problems(level) -> List[Problem]:
     """Linkable tiles without an id or action, and signals nothing sends or receives."""
-    from tiles import ACTION_FIELDS, OPTIONAL_FIELDS
+    from rules import ACTIONS, conditions_from_props
 
     problems = []
     linkable = [tile.id for tile in TILES if tile.link]
@@ -383,36 +247,38 @@ def link_problems(level) -> List[Problem]:
         pos = (int(x), int(y))
         tile = tile_at(level, pos)
         props = level.properties.get(pos, {})
-        if not props.get("link_id") and not props.get("key_id"):  # a locked door needs no button
-            problems.append((f"{tile.name} has no link", pos))
+        # a locked door or chest works without a link
+        if not props.get("signal") and not tile.link_optional and not conditions_from_props(props):
+            problems.append((f"{tile.name} has no signal", pos))
         if tile.event:
-            action = props.get("action")
-            if not action:
+            action = ACTIONS.get(props.get("action", ""))
+            if action is None:
                 problems.append((f"{tile.name} has no action", pos))
-            for key, _ in ACTION_FIELDS.get(action, []):
-                if key not in OPTIONAL_FIELDS and not props.get(key):
-                    problems.append((f"{action} event has no {key}", pos))
+                continue
+            for key, _ in action.fields:
+                if key not in action.optional and not props.get(key):
+                    problems.append((f"{action.name} event has no {key}", pos))
 
     for area in getattr(level, "areas", []):
-        if not area["props"].get("link_id"):
-            problems.append(("Area has no link", area["rect"][:2]))
+        if not area["props"].get("signal"):
+            problems.append(("Area has no signal", area["rect"][:2]))
 
-    users: Dict[str, Dict[str, Tuple[int, int]]] = {}  # signal -> role -> first pos
-    for signal, role, _, pos in signal_users(level):
-        users.setdefault(signal, {}).setdefault(role, pos)
+    roles: Dict[str, Dict[str, Tuple[int, int]]] = {}  # signal -> role -> first pos
+    for use in level_signals(level):
+        roles.setdefault(use.id, {}).setdefault(use.role, use.pos)
     sent_elsewhere = {START_SIGNAL} | dialogue_signals()
-    for signal, roles in users.items():
-        first = next(iter(roles.values()))
-        if "receives" not in roles:
+    for signal, found in roles.items():
+        first = next(iter(found.values()))
+        if "receives" not in found:
             problems.append((f"'{signal}' triggers nothing", first))
-        if "sends" not in roles and signal not in sent_elsewhere:
+        if "sends" not in found and signal not in sent_elsewhere:
             problems.append((f"nothing triggers '{signal}'", first))
     return problems
 
 
 def sent_signals(level) -> set:
     """Signals something in or around this level can fire."""
-    sent = {signal for signal, role, _, _ in signal_users(level) if role == "sends"}
+    sent = {use.id for use in level_signals(level) if use.role == "sends"}
     return sent | {START_SIGNAL} | dialogue_signals()
 
 
@@ -431,8 +297,10 @@ def reachable(level) -> np.ndarray:
         if tile is None or not tile.stateful:
             continue
         open_now = tile.make(tile.initial_state(props))["walkable"]
-        can_open = tile.on_link is not None and quest_key(props.get("link_id", "")) in signals
-        passable[pos] = open_now or can_open or bool(props.get("key_id"))
+        can_open = tile.on_link is not None and quest_key(props.get("signal", "")) in signals
+        # a door with a key or other condition can be opened by hand
+        can_unlock = tile.on_bump == "door" and bool(rules.conditions_from_props(props))
+        passable[pos] = open_now or can_open or can_unlock
 
     seen = np.zeros_like(passable)
     queue = deque([level.player_start])
@@ -473,7 +341,7 @@ def check_level(level) -> List[Problem]:
     for x, y in np.argwhere(level.tiles != TILE_WALL):
         pos = (int(x), int(y))
         tile = tile_at(level, pos)
-        if tile is not None and (tile.on_bump or tile.on_step) and not can_reach(pos):
+        if tile is not None and tile.on_bump and not can_reach(pos):
             problems.append((f"{tile.name} can't be reached", pos))
 
     for pos, props in level.properties.items():
@@ -490,29 +358,34 @@ def check_level(level) -> List[Problem]:
                     problems.append((f"{table}: {problem}", pos))
             except OSError:
                 problems.append((f"Loot table {table} is missing", pos))
-        if props.get("guaranteed") and not isinstance(
-            getattr(entity_factory, props["guaranteed"], None), Item
-        ):
-            problems.append((f"Guaranteed item {props['guaranteed']} no longer exists", pos))
-        for key in ("key_id", "requires_item"):
-            if props.get(key):
-                produced, _ = find_quest_id(props[key], level)
-                if not produced:
-                    problems.append((f"Nothing gives '{quest_key(props[key])}' ({key})", pos))
 
-    # flags this level reads that nothing anywhere sets
-    users = list(flag_users(level))
-    set_somewhere = {flag for flag, role, _ in users if role == "sets"}
-    for pos, props in level.properties.items():
-        for key in ("requires_flag", "requires_not_flag"):
-            flag = quest_key(props.get(key, ""))
-            if flag and flag not in set_somewhere:
-                problems.append((f"Flag '{flag}' is never set", pos))
+    # quest items and flags this level needs that nothing anywhere provides
+    uses = id_index.all_uses(level)
+    given = {use.id for use in uses if use.kind == "quest" and use.role == "gives"}
+    set_somewhere = {use.id for use in uses if use.kind == "flag" and use.role == "sets"}
+    for use in uses:
+        if not use.current:
+            continue
+        if use.kind == "quest" and use.role == "uses" and use.id not in given:
+            problems.append((f"Nothing gives '{use.id}' ({use.label})", use.pos))
+        if use.kind == "flag" and use.role == "reads" and use.id not in set_somewhere:
+            problems.append((f"Flag '{use.id}' is never set ({use.label})", use.pos))
+
+    # dialogues of this level that still use old tag names
+    for filename in sorted({props["dialogue"] for props in level.properties.values() if props.get("dialogue")}):
+        try:
+            dialogue = load_dialogue(os.path.join(DIALOGUE_DIR, filename))
+        except Exception:
+            continue
+        for passage in dialogue.passages.values():
+            for old, new in rules.old_tags(passage.tags):
+                problems.append((f"{filename} '{passage.name}': {old} is now {new}", None))
     return problems
 
 
 def normalised(props: dict) -> dict:
-    """Copy of props with every id written the way the game compares them."""
+    """Copy of props with every id written the way the game compares them
+    (the level was upgraded to today's names when it was loaded)."""
     props = dict(props)
     for key in ID_PROPERTIES:
         if key in props:
@@ -616,14 +489,12 @@ def build_game_map(level: CustomLevel, engine: Engine) -> Tuple[GameMap, int]:
                 spawned.lore = "The pages are blank."
 
         # a quest item lying on the floor
-        if "quest_id" in props:
-            spawned.quest_id = quest_key(props["quest_id"])
+        if "quest" in props:
+            spawned.quest_id = quest_key(props["quest"])
 
         # a quest item carried by an enemy or NPC, dropped on death
-        if "drop_id" in props and hasattr(spawned, "inventory"):
-            drop = copy.deepcopy(entity_factory.quest_item)
-            drop.quest_id = quest_key(props["drop_id"])
-            drop.name = props.get("drop_name") or props["drop_id"]
+        if props.get("drop") and hasattr(spawned, "inventory"):
+            drop = rules.make_item(props["drop"], props.get("drop_name", ""))
             drop.parent = spawned.inventory
             spawned.inventory.items.append(drop)
             spawned.guaranteed_drop = drop
@@ -923,13 +794,13 @@ class LevelEditor(input_handlers.BaseEventHandler):
         return entity_factory.short_name(self.selected_entity()[1])
 
     def hovered_link(self, pos: Optional[Tuple[int, int]]) -> str:
-        """link_id of the linkable tile under the mouse, '' if there is none."""
+        """Signal of the linkable tile under the mouse, '' if there is none."""
         if pos is None:
             return ""
         tile = tile_at(self.level, pos)
         if tile is None or not tile.link:
             return ""
-        return quest_key(self.level.properties.get(pos, {}).get("link_id", ""))
+        return quest_key(self.level.properties.get(pos, {}).get("signal", ""))
 
     def brush_glyph(self) -> Tuple[str, Tuple[int, int, int]]:
         if self.brush == BRUSH_TILE:
@@ -1200,7 +1071,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
         area = {"rect": (x1, y1, x2, y2), "props": {}}
         self.level.areas.append(area)
         self.dirty = True
-        self.status = "Area added, give it a link_id"
+        self.status = "Area added, give it a signal"
         return self.area_menu(area)
 
     def delete_area(self, pos: Tuple[int, int]) -> None:
@@ -1319,10 +1190,10 @@ class LevelEditor(input_handlers.BaseEventHandler):
             console.print(px, py, "@", fg=color.white, bg=START_BG)
 
         pos = self.map_pos()
-        link_id = self.hovered_link(pos)
-        if link_id:
+        hovered_signal = self.hovered_link(pos)
+        if hovered_signal:
             # show everything this button/door is linked with
-            for _, _, (lx, ly) in find_link_id(level, link_id):
+            for _, _, (lx, ly) in find_signal(level, hovered_signal):
                 sx, sy = lx - cx, ly - cy
                 if 0 <= sx < VIEW_WIDTH and 0 <= sy < VIEW_HEIGHT:
                     console.rgb["bg"][sx, sy] = LINK_BG
@@ -1372,9 +1243,9 @@ class LevelEditor(input_handlers.BaseEventHandler):
             else:
                 tile = tile_at(self.level, pos)
                 if tile is not None and tile.link:
-                    link_id = self.hovered_link(pos) or "-"
+                    hovered_signal = self.hovered_link(pos) or "-"
                     console.print(
-                        x + 1, 7, f"link: {link_id}"[:inner], fg=color.impossible
+                        x + 1, 7, f"signal: {hovered_signal}"[:inner], fg=color.impossible
                     )
                 if tile is not None and tile.event:
                     action = self.level.properties.get(pos, {}).get("action", "-")
@@ -1382,7 +1253,7 @@ class LevelEditor(input_handlers.BaseEventHandler):
             area = self.level.area_at(pos)
             hovered = tile_at(self.level, pos)
             if area is not None and not (hovered is not None and hovered.event):  # "do:" uses line 8
-                area_link = area["props"].get("link_id") or "-"
+                area_link = area["props"].get("signal") or "-"
                 console.print(x + 1, 8, f"area: {area_link}"[:inner], fg=color.impossible)
 
         console.print(x + 1, 9, f"<{self.group}> Tab"[:inner], fg=color.menu_title)

@@ -44,7 +44,7 @@ def form_fields(category: str, form: dict) -> list:
     else:
         fields += [("price", "int")]
     if category == "items":
-        fields += [("quest_id", "quest_id"),
+        fields += [("quest", "quest"),
                    ("consumable", choice([NO_CONSUMABLE] + list(CONSUMABLE_TYPES)))]
         consumable = CONSUMABLE_TYPES.get(form.get("consumable", ""))
         if consumable is not None:
@@ -75,8 +75,8 @@ def to_form(category: str, entry: dict) -> dict:
                 form[key] = str(entry[key])
     else:
         form["price"] = str(entry.get("price", 0))
-    if entry.get("quest_id"):
-        form["quest_id"] = entry["quest_id"]
+    if entry.get("quest", entry.get("quest_id")):
+        form["quest"] = entry.get("quest", entry.get("quest_id"))
     consumable = entry.get("consumable")
     form["consumable"] = consumable["type"] if consumable else NO_CONSUMABLE
     for key, value in (consumable or {}).items():
@@ -123,8 +123,8 @@ def from_form(category: str, entity_id: str, form: dict) -> dict:
     else:
         entry["price"] = number("price")
     if category == "items":
-        if form.get("quest_id"):
-            entry["quest_id"] = form["quest_id"]
+        if form.get("quest"):
+            entry["quest"] = form["quest"]
         consumable = CONSUMABLE_TYPES.get(form.get("consumable", ""))
         if consumable is not None:
             entry["consumable"] = {"type": form["consumable"], **params("consumable", consumable)}

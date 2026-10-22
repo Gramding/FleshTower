@@ -2,19 +2,19 @@
   "format": "flesh-tower-entities",
   "version": 1,
   "entries": [
-    {"id": "genericLoreItem", "name": "Note", "char": "?", "color": [215, 200, 160], "price": 0, "effect": {"type": "default"}},
-    {"id": "quest_item", "name": "Quest Item", "char": "k", "color": [230, 200, 120], "price": 0, "quest_id": "quest_item", "effect": {"type": "default"}},
+    {"id": "lore_note", "name": "Note", "char": "?", "color": [215, 200, 160], "price": 0, "effect": {"type": "default"}},
+    {"id": "quest_item", "name": "Quest Item", "char": "k", "color": [230, 200, 120], "price": 0, "quest": "quest_item", "effect": {"type": "default"}},
     {"id": "health_potion", "name": "Health Potion", "char": "!", "color": [127, 0, 255], "price": 10, "consumable": {"type": "healing", "amount": 15}, "effect": {"type": "health"}},
     {"id": "large_health_potion", "name": "Large Health Potion", "char": "!", "color": [255, 0, 127], "price": 50, "consumable": {"type": "healing", "amount": 30}, "effect": {"type": "health"}},
     {"id": "mana_potion", "name": "Mutagen Potion", "char": "!", "color": [0, 0, 255], "price": 10, "consumable": {"type": "mana", "amount": 10}, "effect": {"type": "mana"}},
     {"id": "lightning_scroll", "name": "Scroll of Lightning", "char": "~", "color": [255, 255, 0], "price": 100, "consumable": {"type": "lightning_damage", "damage": 20, "maximum_range": 5}, "effect": {"type": "lightning"}},
-    {"id": "healing_scrollI", "name": "Scroll of Healing I", "char": "~", "color": [0, 100, 0], "price": 20, "consumable": {"type": "healing", "amount": 10}, "effect": {"type": "healing_scroll", "spellName": "Healing I", "mana_cost": 10, "healing": 10}},
-    {"id": "healing_scrollII", "name": "Scroll of Healing II", "char": "~", "color": [0, 150, 0], "price": 40, "consumable": {"type": "healing", "amount": 15}, "effect": {"type": "healing_scroll", "spellName": "Healing II", "mana_cost": 15, "healing": 15}},
-    {"id": "healing_scrollIII", "name": "Scroll of Healing III", "char": "~", "color": [0, 255, 0], "price": 40, "consumable": {"type": "healing", "amount": 30}, "effect": {"type": "healing_scroll", "spellName": "Healing III", "mana_cost": 20, "healing": 30}},
+    {"id": "healing_scroll_1", "name": "Scroll of Healing I", "char": "~", "color": [0, 100, 0], "price": 20, "consumable": {"type": "healing", "amount": 10}, "effect": {"type": "healing_scroll", "spellName": "Healing I", "mana_cost": 10, "healing": 10}},
+    {"id": "healing_scroll_2", "name": "Scroll of Healing II", "char": "~", "color": [0, 150, 0], "price": 40, "consumable": {"type": "healing", "amount": 15}, "effect": {"type": "healing_scroll", "spellName": "Healing II", "mana_cost": 15, "healing": 15}},
+    {"id": "healing_scroll_3", "name": "Scroll of Healing III", "char": "~", "color": [0, 255, 0], "price": 40, "consumable": {"type": "healing", "amount": 30}, "effect": {"type": "healing_scroll", "spellName": "Healing III", "mana_cost": 20, "healing": 30}},
     {"id": "confusion_scroll", "name": "Scroll of Confusion", "char": "~", "color": [207, 63, 255], "price": 100, "consumable": {"type": "confusion", "number_of_turns": 10}, "effect": {"type": "confusion"}},
     {"id": "fireball_scroll", "name": "Scroll of Fireball", "char": "~", "color": [255, 0, 0], "price": 150, "consumable": {"type": "fireball_damage", "damage": 12, "radius": 3}, "effect": {"type": "fireball"}},
     {"id": "gorebound", "name": "- Gorebound -                  The Gorebound is an abomination that feeds to grow.          They do not wear armor. They become it.", "char": "@", "color": [255, 0, 0], "price": 100, "effect": {"type": "gorebound"}},
     {"id": "helixbound", "name": "- Helixbound -                  The Helixbound is a vessel of unstable genetic recursion—a caster whose power is drawn not from words or will, but from rewriting their own biology.", "char": "@", "color": [0, 0, 255], "price": 100, "effect": {"type": "helixbound"}},
-    {"id": "goblinkey", "name": "Goblin Key", "char": "C", "color": [200, 200, 200], "price": 10, "quest_id": "f3_npc", "effect": {"type": "default"}}
+    {"id": "goblinkey", "name": "Goblin Key", "char": "C", "color": [200, 200, 200], "price": 10, "quest": "f3_npc", "effect": {"type": "default"}}
   ]
 }

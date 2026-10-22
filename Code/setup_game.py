@@ -71,7 +71,33 @@ def load_game(filename: str) -> Engine:
             actor.player_class = None
     if not engine.player.fighter.main_stat:  # had no main stat yet
         engine.player.fighter.main_stat = entity_factory.player.fighter.main_stat
+    upgrade_saved_map(engine.game_map)
     return engine
+
+
+def upgrade_saved_map(game_map) -> None:
+    """Savegames with older property names (rules.upgrade_props); pressure
+    plates (removed) become 1x1 area triggers."""
+    import rules
+    from tiles import PLATE_ID, TILE_BY_ID, TILE_FLOOR
+
+    version = getattr(game_map, "rules_version", 0)
+    if version >= rules.RULES_VERSION:
+        return
+    if not hasattr(game_map, "areas"):
+        game_map.areas = []
+    for area in game_map.areas:
+        area["props"] = rules.upgrade_props(area["props"], version)
+    for pos, info in list(getattr(game_map, "tile_state", {}).items()):
+        info["props"] = rules.upgrade_props(info["props"], version)
+        if info["tile"] == PLATE_ID:
+            del game_map.tile_state[pos]
+            game_map.tiles[pos] = TILE_BY_ID[TILE_FLOOR].make()
+            props = {k: v for k, v in info["props"].items() if k != "hidden"}
+            game_map.areas.append(
+                {"rect": (pos[0], pos[1], pos[0], pos[1]), "props": props, "spent": info.get("spent", False)}
+            )
+    game_map.rules_version = rules.RULES_VERSION
 
 
 class MainMenu(input_handlers.BaseEventHandler):

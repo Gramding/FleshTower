@@ -222,15 +222,15 @@ class TileBumpAction(ActionWithDirection):
 
 class PullLeverAction(TileBumpAction):
     def perform(self) -> None:
-        from events import conditions_met
+        import rules
 
         game_map = self.engine.game_map
         info = self.info
-        if not conditions_met(self.engine, info["props"]):
+        if not rules.props_met(self.engine, info["props"]):
             raise exceptions.Impossible("The lever won't budge.")
         game_map.set_tile_state(self.dest_xy, "on" if info["state"] == "off" else "off")
 
-        if game_map.fire(info["props"].get("link_id", "")):
+        if game_map.fire(info["props"].get("signal", "")):
             self.engine.message_log.add_message(
                 "You pull the lever. Something grinds in the walls."
             )
@@ -241,39 +241,43 @@ class PullLeverAction(TileBumpAction):
 
 
 class UnlockDoorAction(TileBumpAction):
+    """A closed door with conditions (rules.py) opens for good when they hold:
+    a key is "requires", a flag can lock it too."""
+
     @staticmethod
     def wants(info: dict) -> bool:
-        return bool(info["props"].get("key_id")) and info["state"] != "open"
+        import rules
+
+        return bool(rules.conditions_from_props(info["props"])) and info["state"] != "open"
 
     def perform(self) -> None:
+        import rules
+
         info = self.info
-        key = find_key(self.entity, info["props"]["key_id"])
-        if key is None:
-            if info["state"] == "hidden":
-                # don't give the secret away
-                raise exceptions.Impossible("Path inaccessible!")
-            raise exceptions.Impossible("The door is locked.")
-
+        if info["state"] == "hidden" and not rules.props_met(self.engine, info["props"]):
+            raise exceptions.Impossible("Path inaccessible!")  # don't give the secret away
+        check_lock(self.engine, info["props"], "door")
         self.engine.game_map.set_tile_state(self.dest_xy, "open")
-        use_key(self.engine, self.entity, key, info["props"], "door")
 
 
-def find_key(actor, quest_id: str):
-    """The quest item in the actor's inventory that matches quest_id, or None."""
-    return next(
-        (i for i in actor.inventory.items if getattr(i, "quest_id", None) == quest_id),
-        None,
-    )
-
-
-def use_key(engine, actor, key, props: dict, what: str) -> None:
+def check_lock(engine, props: dict, what: str) -> None:
+    """Doors and chests: raises Impossible when their conditions fail, else
+    uses the required item (taken when consume is yes)."""
+    import rules
     from tiles import is_yes
 
-    if is_yes(props.get("consume_key")):
-        actor.inventory.items.remove(key)
-        engine.message_log.add_message(f"The {key.name} stays in the lock.")
+    failed = rules.failed_condition(engine, rules.conditions_from_props(props))
+    if failed is not None:
+        reason = "is locked" if failed[0] == "requires" else "won't open"
+        raise exceptions.Impossible(f"The {what} {reason}.")
+    item = rules.carried_quest_item(engine.player, props.get("requires", ""))
+    if item is None:
+        return
+    if is_yes(props.get("consume")):
+        engine.player.inventory.items.remove(item)
+        engine.message_log.add_message(f"The {item.name} stays in the lock.")
     else:
-        engine.message_log.add_message(f"You unlock the {what} with the {key.name}.")
+        engine.message_log.add_message(f"You unlock the {what} with the {item.name}.")
 
 
 class OpenChestAction(TileBumpAction):
@@ -284,28 +288,19 @@ class OpenChestAction(TileBumpAction):
         return info["state"] == "closed"
 
     def perform(self) -> None:
-        import entity_factory
+        import rules
         from components.loot import roll
-        from entity import Item
-        from events import conditions_met
 
         info = self.info
         props = info["props"]
-        if not conditions_met(self.engine, props):
-            raise exceptions.Impossible("The chest won't open.")
-        if props.get("key_id"):
-            key = find_key(self.entity, props["key_id"])
-            if key is None:
-                raise exceptions.Impossible("The chest is locked.")
-            use_key(self.engine, self.entity, key, props, "chest")
+        check_lock(self.engine, props, "chest")
 
         game_map = self.engine.game_map
         game_map.set_tile_state(self.dest_xy, "open")
 
         loot = roll(self.engine, props.get("loot_table", ""))
-        guaranteed = getattr(entity_factory, props.get("guaranteed", ""), None)
-        if isinstance(guaranteed, Item):
-            loot.insert(0, guaranteed)
+        if props.get("gives"):  # always in this chest: a data item or a quest item
+            loot.insert(0, rules.make_item(props["gives"]))
 
         spots = self.drop_spots()
         names = []
@@ -325,7 +320,7 @@ class OpenChestAction(TileBumpAction):
         else:
             self.engine.message_log.add_message("You open the chest. It is empty.")
 
-        game_map.fire(props.get("link_id", ""))
+        game_map.fire(props.get("signal", ""))
 
     def drop_spots(self) -> list:
         """Walkable cells around the chest, closest to the player first."""

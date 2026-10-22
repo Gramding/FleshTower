@@ -3,7 +3,7 @@
   "version": 1,
   "entries": [
     {"id": "player", "name": "Player", "char": "@", "color": [255, 255, 255], "ai": "hostile", "hp": 30, "power": 2, "armor": 0, "main_stat": 5, "xp": 0, "inventory": 26, "spell_slots": 10, "effect": {"type": "default"}},
-    {"id": "genericNPC", "name": "testNPCDialogue", "char": "T", "color": [200, 180, 150], "ai": "neutral", "hp": 10, "power": 0, "armor": 0, "xp": 0, "inventory": 0, "spell_slots": 0, "effect": {"type": "default"}},
+    {"id": "npc", "name": "testNPCDialogue", "char": "T", "color": [200, 180, 150], "ai": "neutral", "hp": 10, "power": 0, "armor": 0, "xp": 0, "inventory": 0, "spell_slots": 0, "effect": {"type": "default"}},
     {"id": "rat", "name": "Rat", "char": "r", "color": [88, 57, 39], "ai": "hostile", "hp": 3, "power": 1, "armor": 0, "xp": 5, "inventory": 1, "spell_slots": 0, "effect": {"type": "default"}},
     {"id": "goblin", "name": "Goblin", "char": "g", "color": [0, 128, 0], "ai": "hostile", "hp": 6, "power": 2, "armor": 0, "xp": 20, "inventory": 1, "spell_slots": 0, "effect": {"type": "default"}},
     {"id": "orc", "name": "Orc", "char": "o", "color": [63, 127, 63], "ai": "hostile", "hp": 10, "power": 3, "armor": 0, "xp": 35, "inventory": 1, "spell_slots": 0, "effect": {"type": "orc"}},

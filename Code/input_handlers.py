@@ -1782,10 +1782,10 @@ class PropertyMenu(BaseEventHandler):
         create a new one or edit it in place.
         built_in: extra (label, value) entries that are not files.
         check: text -> problems, shown after saving."""
-        from level_editor import find_lore_users
+        import id_index
 
         def open_editor(filename, text):
-            others = find_lore_users(filename, self.editor.level, self.pos, key)
+            others = id_index.uses_of(key, filename, self.editor.level, self.pos)
             title = filename + (f" (used {len(others)}x more)" if others else "")
 
             def save(new_text):
@@ -1843,22 +1843,46 @@ class PropertyMenu(BaseEventHandler):
         entries = [(f"+ New {what}...", None)] + list(built_in) + files
         return ListPicker(self, f"Choose {what}", entries, pick)
 
+    def id_field(self, key, kind):
+        """A flag, quest id or signal: autocomplete from the id index, then a
+        popup of everything else that uses the same id."""
+        import id_index
+        from components.dialouge_parser import quest_key
+
+        level = self.editor.level
+
+        def submit(text):
+            if not text:
+                self.clear_value(key)
+                return self
+            value = quest_key(text)
+            self.set_value(key, value)
+            lines = id_index.describe(kind, value, self.field_role(key, kind), level, self.pos)
+            return PopupMessage(self, "\n".join(lines), halved=True, alignment=libtcodpy.CENTER)
+
+        suggestions = id_suggestions(id_index.suggestions(kind, level))
+        return TextPrompt(self, key, self.values.get(key, ""), submit, suggestions=suggestions)
+
+    def field_role(self, key, kind) -> str:
+        """What this field does with its id: sends / receives, sets / reads, gives / uses."""
+        if kind == "signal":
+            if key == "signal" and self.pos is not None:
+                from level_editor import tile_at
+
+                tile = tile_at(self.editor.level, self.pos)
+                if tile is not None and tile.link:
+                    return tile.link
+            return "sends"  # areas, target, on_death, on_pickup
+        if kind == "flag":
+            return "reads" if key in ("if", "ifnot") else "sets"
+        return "gives" if key == "quest" else "uses"
+
     def edit(self, key, kind):
+        if kind in ("flag", "quest", "signal"):
+            return self.id_field(key, kind)
         if kind == "text":
             return TextPrompt(self, key, self.values.get(key, ""),
                               lambda text: self.set_value(key, text))
-        if kind == "flag":
-            from components.dialouge_parser import quest_key
-            from level_editor import known_flags
-
-            def submit_flag(text):
-                if not text:
-                    self.clear_value(key)
-                    return self
-                return self.set_value(key, quest_key(text))
-
-            return TextPrompt(self, key, self.values.get(key, ""), submit_flag,
-                              suggestions=id_suggestions(known_flags(self.editor.level)))
         if kind == "int":
             def submit_number(text):
                 if not text:  # empty: back to the entity's own value
@@ -1871,6 +1895,36 @@ class PropertyMenu(BaseEventHandler):
 
             prompt = TextPrompt(self, key, self.values.get(key, ""), submit_number)
             return prompt
+        if kind == "signed_int":  # may be negative, e.g. organs to pay
+            def submit_signed(text):
+                if not text:
+                    self.clear_value(key)
+                    return self
+                if not text.lstrip("-").isdigit():
+                    prompt.error = "Enter a whole number, - to take"
+                    return None
+                return self.set_value(key, text)
+
+            prompt = TextPrompt(self, key, self.values.get(key, ""), submit_signed, any_char=True)
+            return prompt
+        if kind == "gives":  # an item id from the data files, or a quest id
+            import rules
+            from components.dialouge_parser import quest_key
+            import id_index
+            from components.loot import item_names
+
+            def submit_gives(text):
+                if not text:
+                    self.clear_value(key)
+                    return self
+                if rules.item_prototype(text) is not None:
+                    return self.set_value(key, text)  # data ids keep their spelling
+                return self.set_value(key, quest_key(text))
+
+            suggestions = [(name, f"{name}  (item)") for name in item_names()]
+            suggestions += id_suggestions(id_index.suggestions("quest", self.editor.level))
+            return TextPrompt(self, f"{key} (item id or quest id)", self.values.get(key, ""),
+                              submit_gives, suggestions=suggestions)
         if kind == "long_text":  # multi-line, e.g. the text of a message event
             return LoreEditor(self, key, self.values.get(key, ""),
                               lambda text: self.set_value(key, text))
@@ -1953,82 +2007,10 @@ class PropertyMenu(BaseEventHandler):
                 suggestions=loot.item_names() + ["rolls:"],
                 check=check,
             )
-        if kind == "item":
-            import entity_factory
-            from entity import Item
-
-            entries = [
-                (entity_factory.short_name(prototype), attr)
-                for items in entity_factory.build_palette().values()
-                for attr, prototype in items
-                if isinstance(prototype, Item)
-            ]
-            return ListPicker(self, "Choose item", [("(none)", "")] + entries,
-                              lambda attr: self.set_value(key, attr))
-        if kind == "quest_id":
-            def submit(text):
-                if not text:
-                    self.clear_value(key)
-                    return self
-                from components.dialouge_parser import quest_key
-                from level_editor import find_quest_id
-
-                quest_id = quest_key(text)
-                self.set_value(key, quest_id)
-                produced, used = find_quest_id(quest_id, self.editor.level, self.pos)
-                if not produced and not used:
-                    return self
-                lines = [f"ID '{quest_id}'"]
-                if produced:
-                    lines += ["", "Also produced by:"] + produced
-                if used:
-                    lines += ["", "Used by:"] + used
-                return PopupMessage(self, "\n".join(lines), halved=True,
-                                    alignment=libtcodpy.CENTER)
-
-            from level_editor import known_quest_ids
-
-            return TextPrompt(self, key, self.values.get(key, ""), submit,
-                              suggestions=id_suggestions(known_quest_ids(self.editor.level)))
         if kind == "bool":
             from level_editor import is_yes
 
             return self.set_value(key, "no" if is_yes(self.values.get(key)) else "yes")
-        if kind == "link_id":
-            def submit(text):
-                if not text:
-                    self.clear_value(key)
-                    return self
-                from components.dialouge_parser import quest_key
-                from level_editor import find_link_id, tile_at
-
-                link_id = quest_key(text)
-                self.set_value(key, link_id)
-                tile = tile_at(self.editor.level, self.pos) if self.pos is not None else None
-                # a tile's link_id has the tile's role, any other signal field sends
-                role = tile.link if key == "link_id" and tile is not None and tile.link else "sends"
-                others = find_link_id(self.editor.level, link_id, self.pos)
-                lines = [f"ID '{link_id}'", ""]
-                if others:
-                    lines.append("Already used by:")
-                    lines += [f"{label} at {x},{y}" for label, _, (x, y) in others]
-                else:
-                    lines.append("Not linked yet")
-                needed = "receives" if role == "sends" else "sends"
-                from tiles import START_SIGNAL
-
-                if link_id == START_SIGNAL:
-                    lines += ["", "Fired when the level starts"]
-                elif not any(other_role == needed for _, other_role, _ in others):
-                    missing = "Nothing reacts to" if needed == "receives" else "Nothing triggers"
-                    lines += ["", f"{missing} this id yet"]
-                return PopupMessage(self, "\n".join(lines), halved=True,
-                                    alignment=libtcodpy.CENTER)
-
-            from level_editor import known_signals
-
-            return TextPrompt(self, key, self.values.get(key, ""), submit,
-                              suggestions=id_suggestions(known_signals(self.editor.level)))
         return None
 
 class LoreEditor(BaseEventHandler):
@@ -2266,39 +2248,6 @@ def wrap_text(text: str, width: int) -> list:
         lines.extend(textwrap.wrap(paragraph, width) or [""])
     return lines
 
-def tag_values(passage, prefix: str) -> list:
-    return [quest_key(tag[len(prefix):]) for tag in passage.tags if tag.startswith(prefix)]
-
-
-def find_quest_item(player, quest_id: str):
-    for item in player.inventory.items:
-        if getattr(item, "quest_id", None) == quest_id:
-            return item
-    return None
-
-
-def give_item(engine, item) -> None:
-    """Puts an item into the player's inventory, or on the floor if it is full."""
-    player = engine.player
-    if len(player.inventory.items) < player.inventory.capacity:
-        item.parent = player.inventory
-        player.inventory.items.append(item)
-        engine.message_log.add_message(f"You receive the {item.name}.", color.menu_title)
-    else:
-        item.place(player.x, player.y, engine.game_map)
-        engine.message_log.add_message(
-            f"Your hands are full. The {item.name} falls to the floor.", color.menu_title
-        )
-
-
-def give_quest_item(engine, quest_id: str) -> None:
-    import entity_factory
-
-    item = copy.deepcopy(entity_factory.quest_item)
-    item.quest_id = quest_id
-    item.name = quest_id.replace("_", " ").title()
-    give_item(engine, item)
-
 class DialogueScreen(AskUserEventHandler):
     WIDTH = 50
 
@@ -2320,82 +2269,27 @@ class DialogueScreen(AskUserEventHandler):
         return self.dialogue.start
 
     def can_enter(self, name: str) -> bool:
-        from events import get_flags
+        """if: / ifnot: / requires: tags, the same conditions as in levels."""
+        import rules
 
-        target = self.dialogue.passages[name]
-        player = self.engine.player
-        flags = get_flags(self.engine)
-        return (
-            all(find_quest_item(player, q) for q in tag_values(target, "requires:"))
-            and all(flag in flags for flag in tag_values(target, "if:"))
-            and not any(flag in flags for flag in tag_values(target, "ifnot:"))
-        )
+        tags = self.dialogue.passages[name].tags
+        return rules.conditions_met(self.engine, rules.conditions_from_tags(tags))
 
     def enter(self, name: str) -> None:
-        import entity_factory
-        from entity import Item
+        """Shows a passage and runs its action tags (rules.ACTIONS: gives:,
+        takes:, organs:, signal:, flag:, unflag:, die, spawn:, lore:, ...)
+        in the order written. A passage that did something only does it once
+        per NPC."""
+        import rules
 
         self.current = name
-        passage = self.passage
         if name in self.npc.dialogue_done:
             return
-
-        player = self.engine.player
-        log = self.engine.message_log
-        changed = False  # anything handed over: then this passage only runs once
-
-        for quest_id in tag_values(passage, "takes:"):
-            item = find_quest_item(player, quest_id)
-            if item is not None:
-                player.inventory.items.remove(item)
-                log.add_message(f"You hand over the {item.name}.")
-                changed = True
-
-        for quest_id in tag_values(passage, "gives:"):
-            give_quest_item(self.engine, quest_id)
-            changed = True
-
-        for attr in tag_values(passage, "item:"):
-            prototype = getattr(entity_factory, attr, None)
-            if not isinstance(prototype, Item):
-                print(f"Dialogue tag item:{attr} names no item in entity_factory")
-                continue
-            give_item(self.engine, copy.deepcopy(prototype))
-            changed = True
-
-        for amount in tag_values(passage, "organs:"):
-            try:
-                organs = int(amount)
-            except ValueError:
-                print(f"Dialogue tag organs:{amount} is not a number")
-                continue
-            player.currency += organs
-            if organs >= 0:
-                log.add_message(f"You receive {organs} organs.", color.menu_title)
-            else:
-                log.add_message(f"You pay {-organs} organs.")
-            changed = True
-
-        for signal in tag_values(passage, "signal:"):  # see events.py
-            self.engine.game_map.fire(signal)
-            changed = True
-
-        from events import get_flags
-
-        for flag in tag_values(passage, "flag:"):
-            get_flags(self.engine).add(flag)
-            changed = True
-        for flag in tag_values(passage, "unflag:"):
-            get_flags(self.engine).discard(flag)
-            changed = True
-
-        # "die": the NPC dies as if killed (corpse, xp, drops, on_death signal),
-        # even when it is invulnerable
-        if "die" in passage.tags and self.npc.is_alive and getattr(self.npc, "fighter", None):
-            self.npc.fighter.die()
-            changed = True
-
-        if changed:
+        actions = rules.tag_actions(self.passage.tags)
+        ctx = rules.context(self.engine, self.engine.game_map, (self.npc.x, self.npc.y), npc=self.npc)
+        for action, props in actions:
+            rules.run_action(action, ctx, props)
+        if actions:
             self.npc.dialogue_done.add(name)
 
     def answers(self):

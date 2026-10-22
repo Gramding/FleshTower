@@ -96,16 +96,3 @@ door_open = sprite_tile(walkable=True, transparent=True, sprite=tileset.SPRITE_D
 chest_closed = sprite_tile(walkable=False, transparent=True, sprite=tileset.SPRITE_CHEST_CLOSED)
 chest_open = sprite_tile(walkable=False, transparent=True, sprite=tileset.SPRITE_CHEST_OPEN)
 
-plate_armed = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("^"), (120, 120, 120), (0, 0, 0)),
-    light=(ord("^"), (200, 200, 200), (0, 0, 0)),
-)
-
-plate_spent = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("_"), (120, 120, 120), (0, 0, 0)),
-    light=(ord("_"), (200, 200, 200), (0, 0, 0)),
-)

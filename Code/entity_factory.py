@@ -22,12 +22,6 @@ import entity_data
 
 from typing import Dict, List, Tuple
 
-EDITABLE_PROPERTIES = {
-    "genericNPC": [("name", "text"), ("dialogue", "dialogue"), ("invulnerable", "bool")],
-    "genericLoreItem": [("name", "text"), ("lore", "lore")],
-    "quest_item": [("name", "text"), ("quest_id", "quest_id")],
-}
-
 # AIs a placed actor can be switched to in the level editor
 AI_OVERRIDES = {
     "hostile": HostileEnemy,
@@ -56,19 +50,37 @@ def build_palette() -> Dict[str, List[Tuple[str, object]]]:
 
 
 def editable_properties(attr: str) -> List[Tuple[str, str]]:
-    fields = list(EDITABLE_PROPERTIES.get(attr, []))
-    if isinstance(globals().get(attr), Actor):
-        fields += [("drop_name", "text"), ("drop_id", "quest_id"), ("on_death", "link_id")]
-        fields += [  # overrides of this one placed actor, see level_editor.apply_overrides
+    """Level editor fields of one placed entity, by what it is: any monster
+    or NPC can talk and drop a quest item, any item can be a quest item or a
+    note. These only change that one placed entity, see build_game_map."""
+    prototype = globals().get(attr)
+    if isinstance(prototype, Actor):
+        return [
+            ("name", "name"),
+            ("dialogue", "dialogue"),
+            ("invulnerable", "bool"),
+            ("drop", "gives"),  # a data item or a quest item it drops on death
+            ("drop_name", "name"),
+            ("on_death", "signal"),
+            # overrides of this one placed actor, see level_editor.apply_overrides
             ("hp", "int"),
             ("power", "int"),
             ("armor", "int"),
             ("xp", "int"),
             ("ai", "choice:default," + ",".join(AI_OVERRIDES)),
         ]
-    elif isinstance(globals().get(attr), Item):
-        fields += [("on_pickup", "link_id")]
-    return fields
+    if isinstance(prototype, Item):
+        return [("name", "name"), ("quest", "quest"), ("lore", "lore"), ("on_pickup", "signal")]
+    return []
+
+
+def __getattr__(name: str):
+    """Data ids that were renamed (rules.OLD_ENTITY_IDS) still resolve."""
+    from rules import OLD_ENTITY_IDS
+
+    if name in OLD_ENTITY_IDS and OLD_ENTITY_IDS[name] in globals():
+        return globals()[OLD_ENTITY_IDS[name]]
+    raise AttributeError(name)
 
 
 def load_entities() -> None:

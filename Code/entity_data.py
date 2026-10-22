@@ -121,7 +121,7 @@ def build(entry: dict, category: str) -> Entity:
     return Item(
         **common,
         price=entry.get("price", 0),
-        quest_id=entry.get("quest_id"),
+        quest_id=entry.get("quest", entry.get("quest_id")),
         consumable=make_component(CONSUMABLE_TYPES, entry["consumable"])
         if entry.get("consumable")
         else None,
@@ -163,7 +163,7 @@ def to_entry(entity_id: str, entity: Entity) -> Tuple[str, dict]:
     else:
         entry["price"] = entity.price
         if entity.quest_id:
-            entry["quest_id"] = entity.quest_id
+            entry["quest"] = entity.quest_id
         if entity.consumable:
             entry["consumable"] = component_spec(CONSUMABLE_TYPES, entity.consumable)
         if entity.equippable:

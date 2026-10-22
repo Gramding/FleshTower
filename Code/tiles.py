@@ -12,6 +12,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 import numpy as np
 
 import tile_types
+from rules import ACTIONS, CONDITION_FIELDS, LOCK_FIELDS
 
 
 def is_yes(value) -> bool:
@@ -28,12 +29,11 @@ class TileDef:
     properties: List[Tuple[str, str]] = field(default_factory=list)  # editor fields
     solid: bool = False  # clears entities, can't go on the player start
     unique: bool = False  # only one per level, painting it again moves it
-    link: Optional[str] = None  # "sends" or "receives" a link_id
-    link_optional: bool = False  # works without a link_id, no warning (chests)
+    link: Optional[str] = None  # "sends" or "receives" its signal
+    link_optional: bool = False  # works without a signal, no warning (chests)
     on_bump: Optional[str] = None  # name in actions.TILE_BUMPS
     start_state: Optional[Callable[[dict], str]] = None  # props -> state when the level loads
-    on_link: Optional[Callable[[str, dict], str]] = None  # (state, props) -> state when its link fires
-    on_step: bool = False  # the player stepping on it fires its link_id (plates)
+    on_link: Optional[Callable[[str, dict], str]] = None  # (state, props) -> state when its signal fires
     event: bool = False  # runs its "action" when its link fires (event markers, see events.py)
     extra_fields: Optional[Callable[[dict], List[Tuple[str, str]]]] = None  # fields that depend on props
     editor_char: bool = False  # show char instead of the game graphic in the editor
@@ -69,38 +69,15 @@ def door_on_link(state: str, props: dict) -> str:
     return "hidden" if is_yes(props.get("hidden")) else "closed"
 
 
-def plate_start(props: dict) -> str:
-    return "hidden" if is_yes(props.get("hidden")) else "armed"
-
-
-# what an event marker can do, and the fields each action needs (run in events.py)
-ACTION_FIELDS: Dict[str, List[Tuple[str, str]]] = {
-    "message": [("text", "long_text")],
-    "lore": [("lore", "lore")],
-    "spawn": [("entity", "entity")],
-    "teleport": [],
-    "give_item": [("item_id", "quest_id"), ("item_name", "text")],
-    "fire_signal": [("signal", "link_id")],
-    "set_flag": [("flag", "flag"), ("value", "choice:on,off")],
-    "end_level": [],
-}
-OPTIONAL_FIELDS = ("item_name", "value")  # action fields that may stay empty
-
-# only react when these hold, checked by events.conditions_met
-CONDITION_FIELDS: List[Tuple[str, str]] = [
-    ("requires_flag", "flag"),
-    ("requires_not_flag", "flag"),
-    ("requires_item", "quest_id"),
-]
-
-
-# area triggers: a rectangle in the level that fires link_id when the player walks in
-AREA_FIELDS: List[Tuple[str, str]] = [("link_id", "link_id"), ("repeat", "bool")] + CONDITION_FIELDS
+# area triggers: a rectangle in the level that fires its signal when the player
+# walks in (also the invisible pressure plate: a 1x1 area)
+AREA_FIELDS: List[Tuple[str, str]] = [("signal", "signal"), ("repeat", "bool")] + CONDITION_FIELDS
 
 
 def event_fields(props: dict) -> List[Tuple[str, str]]:
-    action = ACTION_FIELDS.get(props.get("action", ""), [])
-    return action + [("delay", "int")] + CONDITION_FIELDS
+    """The chosen action's fields (rules.ACTIONS), then delay and conditions."""
+    action = ACTIONS.get(props.get("action", ""))
+    return (action.fields if action else []) + [("delay", "int")] + CONDITION_FIELDS
 
 
 TILES: List[TileDef] = [
@@ -108,10 +85,10 @@ TILES: List[TileDef] = [
     TileDef(1, "Floor", ".", {"default": tile_types.randFloor}),
     TileDef(2, "Stairs", ">", {"default": lambda: tile_types.stairs_up}, unique=True),
     TileDef(
-        3, "Button", "/",
+        3, "Lever", "/",
         {"off": lambda: tile_types.button_off, "on": lambda: tile_types.button_on},
         color=(230, 200, 120),
-        properties=[("link_id", "link_id")] + CONDITION_FIELDS,
+        properties=[("signal", "signal")] + CONDITION_FIELDS,
         solid=True,
         link="sends",
         on_bump="lever",
@@ -124,40 +101,21 @@ TILES: List[TileDef] = [
             "hidden": tile_types.randWall,
         },
         color=(180, 120, 70),
-        properties=[
-            ("link_id", "link_id"),
-            ("hidden", "bool"),
-            ("open", "bool"),
-            ("key_id", "quest_id"),
-            ("consume_key", "bool"),
-        ],
+        # conditions: what opening it by hand needs (a key is "requires");
+        # a signal toggles it regardless
+        properties=[("signal", "signal"), ("hidden", "bool"), ("open", "bool")] + LOCK_FIELDS,
         solid=True,
         link="receives",
         on_bump="door",
         start_state=door_start,
         on_link=door_on_link,
     ),
-    TileDef(
-        5, "Plate", "^",
-        {
-            "armed": lambda: tile_types.plate_armed,
-            "spent": lambda: tile_types.plate_spent,
-            "hidden": tile_types.randFloor,
-        },
-        color=(200, 200, 200),
-        properties=[("link_id", "link_id"), ("hidden", "bool"), ("repeat", "bool")]
-        + CONDITION_FIELDS,
-        solid=True,  # keeps entities off the cell, the player can still walk on it
-        link="sends",
-        on_step=True,
-        start_state=plate_start,
-        editor_char=True,
-    ),
+    # 5 was the pressure plate: removed, old plates load as 1x1 area triggers
     TileDef(
         6, "Event", "!",
         {"default": tile_types.randFloor},  # looks like floor in game
         color=(200, 80, 220),
-        properties=[("link_id", "link_id"), ("action", "choice:" + ",".join(ACTION_FIELDS))],
+        properties=[("signal", "signal"), ("action", "choice:" + ",".join(ACTIONS))],
         solid=True,
         link="receives",
         event=True,
@@ -170,12 +128,10 @@ TILES: List[TileDef] = [
         color=(200, 150, 60),
         properties=[
             ("loot_table", "loot_table"),  # see components/loot.py
-            ("guaranteed", "item"),
-            ("link_id", "link_id"),  # fired when opened
-            ("key_id", "quest_id"),
-            ("consume_key", "bool"),
+            ("gives", "gives"),  # always in it: a data item or a quest item
+            ("signal", "signal"),  # fired when opened
         ]
-        + CONDITION_FIELDS,
+        + LOCK_FIELDS,
         solid=True,
         link="sends",
         link_optional=True,
@@ -191,16 +147,16 @@ TILE_WALL = 0
 TILE_FLOOR = 1
 TILE_STAIRS = 2
 
-# props that hold ids, normalised when a level is built
-ID_PROPERTIES = (
-    "link_id", "key_id", "signal", "item_id",
-    "flag", "requires_flag", "requires_not_flag", "requires_item",
-)
+PLATE_ID = 5  # removed tile, see rules / level_editor upgrades
+
+# props that hold ids, normalised when a level is built ("item" of gives may
+# be a case-sensitive data id, rules.act_gives normalises quest ids itself)
+ID_PROPERTIES = ("signal", "target", "flag", "if", "ifnot", "requires")
 
 # props holding a flag name, for autocomplete and checks
-FLAG_PROPERTIES = ("flag", "requires_flag", "requires_not_flag")
+FLAG_PROPERTIES = ("flag", "if", "ifnot")
 
-# entity props that fire a signal (tiles send theirs through link_id)
+# entity props that fire a signal (tiles and areas send their "signal")
 SIGNAL_PROPERTIES = ("on_death", "on_pickup")
 
 # fired by the level itself when it starts

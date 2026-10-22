@@ -87,7 +87,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = resolve_chances({
         # Early legs
         ("shredded_greaves", 2),
         ("bone_spliced_trousers", 2),
-        ("healing_scrollI", 2),
+        ("healing_scroll_1", 2),
     ],
     1: [
         # Utility scrolls and early upgrades
@@ -129,7 +129,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = resolve_chances({
         # Mid-tier legs
         ("vein_wrapped_leggings", 2),
         ("tendon_laced_pants", 1),
-        ("healing_scrollII", 4),
+        ("healing_scroll_2", 4),
     ],
     3: [
         # Rare mid-high items start appearing
@@ -168,7 +168,7 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = resolve_chances({
         ("ossified_armlet", 1),
         ("marrowstrap", 1),
         ("pulsing_calfwraps", 1),
-        ("healing_scrollIII", 3),
+        ("healing_scroll_3", 3),
     ],
     5: [
         ("thrall_reaver", 2),
